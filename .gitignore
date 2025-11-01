@@ -1,0 +1,38 @@
+# Dependențe Node.js
+node_modules/
+package-lock.json
+yarn.lock
+
+[switcore]/postgres/node_modules/
+[switcore]/postgres/package-lock.json
+[switcore]/postgres/yarn.lock
+[switcore]/postgres/.env
+[switcore]/postgres/.env.local
+[switcore]/postgres/.env.*.local
+[switcore]/postgres/config.local.js
+
+# Log-uri
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+
+# Fișiere de configurare sensibile (NU URCĂ PE GIT!)
+config.local.js
+[switcore]/postgres/config.local.js
+.env
+.env.local
+.env.*.local
+
+# Fișiere temporare
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~

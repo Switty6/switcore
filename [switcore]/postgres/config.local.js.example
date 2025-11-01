@@ -1,0 +1,36 @@
+// Configurație LOCAL PostgreSQL
+// Modifică direct valorile de mai jos cu datele tale de conexiune
+// ATENȚIE: Nu pune acest fișier pe git dacă conține date sensibile!
+// Acest fișier este folosit dacă NU există variabile de mediu
+
+module.exports = {
+    // Host-ul bazei de date PostgreSQL
+    // Exemplu: 'localhost' sau '192.168.1.100' sau 'postgres.example.com'
+    host: 'localhost',
+    
+    // Port-ul bazei de date (implicit PostgreSQL folosește 5432)
+    port: 5432,
+    
+    // Numele bazei de date pe care vrei să te conectezi
+    database: 'fivem',
+    
+    // Utilizatorul pentru baza de date
+    user: 'postgres',
+    
+    // Parola pentru utilizator
+    // ⚠️ SCHIMBĂ ACEASTĂ PAROLĂ CU PAROLA TA!
+    password: 'postgres',
+    
+    // Folosește SSL pentru conexiune? (false pentru local, true pentru servere remote)
+    ssl: false,
+    
+    // Numărul maxim de conexiuni în pool (recomandat: 20)
+    max: 20,
+    
+    // Timpul după care se închid conexiunile inactive (în milisecunde)
+    idleTimeoutMillis: 30000,
+    
+    // Timpul maxim de așteptare pentru o conexiune nouă (în milisecunde)
+    connectionTimeoutMillis: 2000
+};
+
