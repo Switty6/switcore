@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proximity UI</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="interaction-container" class="hidden">
+        <div class="interaction-wrapper">
+            <div class="distance-display" id="distanceDisplay"></div>
+            <div class="compact-marker">
+                <div class="marker-dot"></div>
+                <div class="marker-ring"></div>
+                <div class="marker-pulse"></div>
+            </div>
+            <div class="compact-text">
+                <span class="key-badge" id="keyBadge">E</span>
+                <span class="label-text" id="label">Interacțiune</span>
+            </div>
+            <div class="interaction-counter" id="counter"></div>
+            <div class="interactions-list" id="interactionsList"></div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
