@@ -11,6 +11,7 @@ yarn.lock
 [switcore]/postgres/.env.*.local
 [switcore]/postgres/config.local.js
 [switcore]/proximity_test/
+test.lua
 
 # Log-uri
 npm-debug.log*
