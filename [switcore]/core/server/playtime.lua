@@ -55,6 +55,8 @@ end
 
 -- Actualizează playtime-ul în DB pentru toți jucătorii activi
 function PlaytimeTracker.updateAllPlaytimes()
+    local timersToRemove = {}
+    
     for source, timer in pairs(playtimeTimers) do
         local elapsed = os.time() - timer.startTime
         local newPlaytime = timer.totalPlaytime + elapsed
@@ -69,7 +71,13 @@ function PlaytimeTracker.updateAllPlaytimes()
                 startTime = os.time(),
                 totalPlaytime = newPlaytime
             }
+        else
+            table.insert(timersToRemove, source)
         end
+    end
+    
+    for _, source in ipairs(timersToRemove) do
+        playtimeTimers[source] = nil
     end
 end
 
@@ -81,6 +89,12 @@ end
 -- Obține intervalul de actualizare
 function PlaytimeTracker.getUpdateInterval()
     return updateInterval
+end
+
+-- Verifică dacă există un timer activ pentru un jucător
+function PlaytimeTracker.isTracking(source)
+    source = tostring(source)
+    return playtimeTimers[source] ~= nil
 end
 
 -- Inițializează thread-ul de actualizare periodică
