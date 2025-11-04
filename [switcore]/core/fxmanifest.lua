@@ -15,6 +15,8 @@ server_scripts {
     'server/player_cache.lua',
     'server/database.lua',
     'server/playtime.lua',
+    'server/groups.lua',
+    'server/permissions.lua',
     'server/commands.lua',
     'server/server.lua'
 }

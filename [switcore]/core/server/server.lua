@@ -14,6 +14,9 @@ function InitializeCore()
         PlaytimeTracker.setUpdateInterval(Config.PLAYTIME_UPDATE_INTERVAL)
     end
     
+    -- Inițializează grupurile default
+    Groups.initializeDefaults()
+    
     print('[CORE] Core inițializat cu succes')
 end
 
@@ -135,6 +138,13 @@ AddEventHandler('playerConnecting', function(name, setKickReason, deferrals)
         Database.updatePlayerLastSeen(playerData.dbId)
         PlayerCache.updateInCache(source, {last_seen = currentTime})
         
+        local groups = Database.getPlayerGroups(playerData.dbId)
+        local permissions = Database.getPlayerPermissions(playerData.dbId)
+        PlayerCache.updateInCache(source, {
+            groups = groups,
+            permissions = permissions
+        })
+        
         PlaytimeTracker.startTracking(source)
         
         if not playerData._justCreated then
@@ -220,6 +230,15 @@ CreateThread(function()
             
             local player = PlayerCache.getFromCache(source)
             if player then
+                if not player.permissions or not player.groups then
+                    local groups = Database.getPlayerGroups(player.dbId)
+                    local permissions = Database.getPlayerPermissions(player.dbId)
+                    PlayerCache.updateInCache(source, {
+                        groups = groups,
+                        permissions = permissions
+                    })
+                end
+                
                 if not PlaytimeTracker.isTracking(source) then
                     PlaytimeTracker.startTracking(source)
                 end
@@ -280,6 +299,162 @@ exports('updatePlayerPlaytime', function(source, seconds)
     
     PlayerCache.updateInCache(source, {playtime = seconds})
     return Database.updatePlayerPlaytime(player.dbId, seconds)
+end)
+
+-- ==================== FUNCȚII PERMISIUNI ====================
+
+-- Adaugă grup la jucător (logică)
+local function addPlayerGroup(source, groupName, expiresAt, assignedBy)
+    if not source or not groupName or type(groupName) ~= 'string' or groupName == '' then
+        return false
+    end
+    
+    local player = PlayerCache.getFromCache(source)
+    if not player then
+        return false
+    end
+    
+    local group = Groups.getGroupByName(groupName)
+    if not group then
+        print('[CORE] Grupul ' .. groupName .. ' nu există')
+        return false
+    end
+    
+    local assignedById = nil
+    if assignedBy then
+        local assignedByPlayer = PlayerCache.getFromCache(assignedBy)
+        if assignedByPlayer then
+            assignedById = assignedByPlayer.dbId
+        end
+    end
+    
+    local expiresAtTimestamp = nil
+    if expiresAt then
+        expiresAtTimestamp = expiresAt
+    end
+    
+    local success = Database.addGroupToPlayer(player.dbId, group.id, assignedById, expiresAtTimestamp)
+    
+    if success then
+        Permissions.reloadPlayerPermissions(source)
+    end
+    
+    return success
+end
+
+-- Elimină grup de la jucător (logică)
+local function removePlayerGroup(source, groupName)
+    if not source or not groupName or type(groupName) ~= 'string' or groupName == '' then
+        return false
+    end
+    
+    local player = PlayerCache.getFromCache(source)
+    if not player then
+        return false
+    end
+    
+    local group = Groups.getGroupByName(groupName)
+    if not group then
+        print('[CORE] Grupul ' .. groupName .. ' nu există')
+        return false
+    end
+    
+    local success = Database.removeGroupFromPlayer(player.dbId, group.id)
+    
+    if success then
+        Permissions.reloadPlayerPermissions(source)
+    end
+    
+    return success
+end
+
+-- ==================== EXPORTS PERMISIUNI ====================
+
+-- Verifică dacă un jucător are o permisiune
+exports('hasPermission', function(source, permission)
+    return Permissions.hasPermission(source, permission)
+end)
+
+-- Verifică dacă un jucător are un grup
+exports('hasGroup', function(source, groupName)
+    return Permissions.hasGroup(source, groupName)
+end)
+
+-- Obține toate permisiunile unui jucător
+exports('getPlayerPermissions', function(source)
+    return Permissions.getPlayerPermissions(source)
+end)
+
+-- Obține toate grupurile unui jucător
+exports('getPlayerGroups', function(source)
+    return Permissions.getPlayerGroups(source)
+end)
+
+-- Adaugă grup la jucător
+exports('addPlayerGroup', function(source, groupName, expiresAt, assignedBy)
+    return addPlayerGroup(source, groupName, expiresAt, assignedBy)
+end)
+
+-- Elimină grup de la jucător
+exports('removePlayerGroup', function(source, groupName)
+    return removePlayerGroup(source, groupName)
+end)
+
+-- Creează un grup nou
+exports('createGroup', function(groupName, displayName, priority, description)
+    return Groups.createGroup(groupName, displayName, priority, description)
+end)
+
+-- Reîncarcă permisiunile unui jucător
+exports('reloadPlayerPermissions', function(source)
+    return Permissions.reloadPlayerPermissions(source)
+end)
+
+-- Obține toate grupurile
+exports('getAllGroups', function()
+    return Groups.getAllGroups()
+end)
+
+-- Șterge un grup
+exports('deleteGroup', function(groupName)
+    return Groups.deleteGroup(groupName)
+end)
+
+-- Actualizează un grup
+exports('updateGroup', function(groupName, displayName, priority, description)
+    return Groups.updateGroup(groupName, displayName, priority, description)
+end)
+
+-- Elimină permisiune dintr-un grup
+exports('removePermissionFromGroup', function(groupName, permissionName)
+    local group = Groups.getGroupByName(groupName)
+    if not group then
+        return false
+    end
+    
+    local permission = Database.findPermission(permissionName)
+    if not permission then
+        print('[CORE] Permisiunea ' .. permissionName .. ' nu există')
+        return false
+    end
+    
+    return Database.removePermissionFromGroup(group.id, permission.id)
+end)
+
+-- Obține toate permisiunile
+exports('getAllPermissions', function()
+    return Database.getAllPermissions()
+end)
+
+-- Șterge o permisiune
+exports('deletePermission', function(permissionName)
+    local permission = Database.findPermission(permissionName)
+    if not permission then
+        print('[CORE] Permisiunea ' .. permissionName .. ' nu există')
+        return false
+    end
+    
+    return Database.deletePermission(permission.id)
 end)
 
 -- Emite eveniment când jucătorul e încărcat
