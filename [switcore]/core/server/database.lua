@@ -21,6 +21,15 @@ local function ensurePostgres()
     return true
 end
 
+-- Helper pentru a construi lista de identifiers din rezultatul DB
+local function buildIdentifierList(identifierRows)
+    local identifierList = {}
+    for _, idRow in ipairs(identifierRows) do
+        table.insert(identifierList, idRow.type .. ':' .. idRow.value)
+    end
+    return identifierList
+end
+
 -- Găsește un jucător după identifier (query DB - pentru cold data)
 function Database.findPlayerByIdentifier(identifier)
     if not ensurePostgres() then
@@ -54,15 +63,10 @@ function Database.findPlayerByIdentifier(identifier)
         {playerId}
     )
     
-    local identifierList = {}
-    for _, idRow in ipairs(identifiers) do
-        table.insert(identifierList, idRow.type .. ':' .. idRow.value)
-    end
-    
     return {
         dbId = player.id,
         name = player.name,
-        identifiers = identifierList,
+        identifiers = buildIdentifierList(identifiers),
         last_seen = player.last_seen,
         playtime = player.playtime or 0,
         created_at = player.created_at
@@ -104,12 +108,16 @@ function Database.createPlayer(identifiers, name)
     for _, identifier in ipairs(identifiers) do
         local idType, idValue = identifier:match('([^:]+):(.+)')
         if idType and idValue then
-            pcall(function()
+            local success, err = pcall(function()
                 postgres:query(
                     'INSERT INTO player_identifiers (player_id, type, value, created_at) VALUES ($1, $2, $3, NOW()) ON CONFLICT (type, value) DO NOTHING',
                     {playerId, idType, idValue}
                 )
             end)
+            
+            if not success then
+                print('[CORE] Eroare la inserarea identifier-ului ' .. identifier .. ' pentru jucătorul ' .. playerId .. ': ' .. tostring(err))
+            end
             
             table.insert(identifierList, identifier)
         end
@@ -136,12 +144,16 @@ function Database.updatePlayerIdentifiers(dbId, identifiers)
     for _, identifier in ipairs(identifiers) do
         local idType, idValue = identifier:match('([^:]+):(.+)')
         if idType and idValue then
-            pcall(function()
+            local success, err = pcall(function()
                 postgres:query(
                     'INSERT INTO player_identifiers (player_id, type, value, created_at) VALUES ($1, $2, $3, NOW()) ON CONFLICT (type, value) DO NOTHING',
                     {dbId, idType, idValue}
                 )
             end)
+            
+            if not success then
+                print('[CORE] Eroare la actualizarea identifier-ului ' .. identifier .. ' pentru jucătorul ' .. dbId .. ': ' .. tostring(err))
+            end
         end
     end
     
@@ -206,31 +218,27 @@ function Database.logActivity(dbId, eventType, command, metadata)
         end
     end
     
+    -- Construiește query-ul și parametrii în funcție de ce date avem
+    local query, params
     if metadataJson then
         if command then
-            postgres:query(
-                'INSERT INTO player_activity_log (player_id, event_type, command, metadata, created_at) VALUES ($1, $2, $3, $4::jsonb, NOW())',
-                {dbId, eventType, command, metadataJson}
-            )
+            query = 'INSERT INTO player_activity_log (player_id, event_type, command, metadata, created_at) VALUES ($1, $2, $3, $4::jsonb, NOW())'
+            params = {dbId, eventType, command, metadataJson}
         else
-            postgres:query(
-                'INSERT INTO player_activity_log (player_id, event_type, command, metadata, created_at) VALUES ($1, $2, NULL, $3::jsonb, NOW())',
-                {dbId, eventType, metadataJson}
-            )
+            query = 'INSERT INTO player_activity_log (player_id, event_type, command, metadata, created_at) VALUES ($1, $2, NULL, $3::jsonb, NOW())'
+            params = {dbId, eventType, metadataJson}
         end
     else
         if command then
-            postgres:query(
-                'INSERT INTO player_activity_log (player_id, event_type, command, created_at) VALUES ($1, $2, $3, NOW())',
-                {dbId, eventType, command}
-            )
+            query = 'INSERT INTO player_activity_log (player_id, event_type, command, created_at) VALUES ($1, $2, $3, NOW())'
+            params = {dbId, eventType, command}
         else
-            postgres:query(
-                'INSERT INTO player_activity_log (player_id, event_type, command, created_at) VALUES ($1, $2, NULL, NOW())',
-                {dbId, eventType}
-            )
+            query = 'INSERT INTO player_activity_log (player_id, event_type, command, created_at) VALUES ($1, $2, NULL, NOW())'
+            params = {dbId, eventType}
         end
     end
+    
+    postgres:query(query, params)
     
     return true
 end
@@ -248,12 +256,7 @@ function Database.getPlayerIdentifiers(dbId)
         {dbId}
     )
     
-    local identifierList = {}
-    for _, idRow in ipairs(identifiers) do
-        table.insert(identifierList, idRow.type .. ':' .. idRow.value)
-    end
-    
-    return identifierList
+    return buildIdentifierList(identifiers)
 end
 
 return Database
