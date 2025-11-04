@@ -45,81 +45,58 @@ local function getPlayerIdentifiers(source)
     return validIdentifiers
 end
 
+-- Helper pentru a adăuga identifiers noi la playerData (dacă nu există deja)
+local function mergeIdentifiers(playerData, newIdentifiers)
+    for _, newId in ipairs(newIdentifiers) do
+        local found = false
+        for _, existingId in ipairs(playerData.identifiers) do
+            if existingId == newId then
+                found = true
+                break
+            end
+        end
+        if not found then
+            table.insert(playerData.identifiers, newId)
+        end
+    end
+end
+
 -- Găsește sau creează un jucător bazat pe identifiers
 local function findOrCreatePlayer(source, identifiers, name)
     for _, identifier in ipairs(identifiers) do
         if PlayerCache.hasIdentifier(identifier) then
             local dbId = PlayerCache.getDbIdByIdentifier(identifier)
             if dbId then
-                local cachedPlayer = PlayerCache.getFromCache(source)
-                if not cachedPlayer or cachedPlayer.dbId ~= dbId then
-                    local playerData = Database.findPlayerByIdentifier(identifier)
-                    if playerData then
-                        Database.updatePlayerIdentifiers(playerData.dbId, identifiers)
-                        
-                        for _, newId in ipairs(identifiers) do
-                            local found = false
-                            for _, existingId in ipairs(playerData.identifiers) do
-                                if existingId == newId then
-                                    found = true
-                                    break
-                                end
-                            end
-                            if not found then
-                                table.insert(playerData.identifiers, newId)
-                            end
-                        end
-                        
-                        PlayerCache.setInCache(source, playerData)
-                        
-                        return playerData
+                local existingSource = PlayerCache.getSourceById(dbId)
+                if existingSource then
+                    local existingPlayer = PlayerCache.getFromCache(existingSource)
+                    if existingPlayer then
+                        mergeIdentifiers(existingPlayer, identifiers)
+                        Database.updatePlayerIdentifiers(dbId, identifiers)
+                        PlayerCache.setInCache(source, existingPlayer)
+                        return existingPlayer
                     end
-                else
-                    return cachedPlayer
+                end
+                
+                local playerData = Database.findPlayerByIdentifier(identifier)
+                if playerData then
+                    mergeIdentifiers(playerData, identifiers)
+                    Database.updatePlayerIdentifiers(playerData.dbId, identifiers)
+                    PlayerCache.setInCache(source, playerData)
+                    return playerData
                 end
             end
         end
     end
     
     for _, identifier in ipairs(identifiers) do
-        local playerData = Database.findPlayerByIdentifier(identifier)
-        if playerData then
-            Database.updatePlayerIdentifiers(playerData.dbId, identifiers)
-            
-            for _, newId in ipairs(identifiers) do
-                local found = false
-                for _, existingId in ipairs(playerData.identifiers) do
-                    if existingId == newId then
-                        found = true
-                        break
-                    end
-                end
-                if not found then
-                    table.insert(playerData.identifiers, newId)
-                end
-            end
-            
-            PlayerCache.setInCache(source, playerData)
-            return playerData
-        end
-    end
-    
-    for _, identifier in ipairs(identifiers) do
-        if PlayerCache.hasIdentifier(identifier) then
-            local dbId = PlayerCache.getDbIdByIdentifier(identifier)
-            if dbId then
-                local cachedPlayer = PlayerCache.getFromCache(source)
-                if cachedPlayer then
-                    return cachedPlayer
-                end
-                local sourceById = PlayerCache.getSourceById(dbId)
-                if sourceById then
-                    local player = PlayerCache.getFromCache(sourceById)
-                    if player then
-                        PlayerCache.setInCache(source, player)
-                        return player
-                    end
-                end
+        if not PlayerCache.hasIdentifier(identifier) then
+            local playerData = Database.findPlayerByIdentifier(identifier)
+            if playerData then
+                mergeIdentifiers(playerData, identifiers)
+                Database.updatePlayerIdentifiers(playerData.dbId, identifiers)
+                PlayerCache.setInCache(source, playerData)
+                return playerData
             end
         end
     end
@@ -127,7 +104,6 @@ local function findOrCreatePlayer(source, identifiers, name)
     local playerData = Database.createPlayer(identifiers, name)
     if playerData then
         playerData._justCreated = true
-        
         PlayerCache.setInCache(source, playerData)
         
         Database.logActivity(playerData.dbId, 'join', nil, {
@@ -155,8 +131,9 @@ AddEventHandler('playerConnecting', function(name, setKickReason, deferrals)
     local playerData = findOrCreatePlayer(source, identifiers, name)
     
     if playerData then
+        local currentTime = os.time()
         Database.updatePlayerLastSeen(playerData.dbId)
-        PlayerCache.updateInCache(source, {last_seen = os.time()})
+        PlayerCache.updateInCache(source, {last_seen = currentTime})
         
         PlaytimeTracker.startTracking(source)
         
@@ -185,8 +162,17 @@ AddEventHandler('playerJoining', function(oldId)
     local oldPlayer = PlayerCache.getFromCache(tostring(oldId))
     
     if oldPlayer then
+        -- Salvează playtime parțial înainte de mutare
+        local partialPlaytime = PlaytimeTracker.stopTracking(tostring(oldId))
+        if partialPlaytime and oldPlayer.dbId then
+            Database.updatePlayerPlaytime(oldPlayer.dbId, partialPlaytime)
+            oldPlayer.playtime = partialPlaytime
+        end
+        
         PlayerCache.setInCache(source, oldPlayer)
         PlayerCache.removeFromCache(tostring(oldId))
+        
+        PlaytimeTracker.startTracking(source)
     else
         print('[CORE] Warning: Jucătorul ' .. source .. ' nu a fost găsit în cache la playerJoining')
     end
@@ -234,7 +220,9 @@ CreateThread(function()
             
             local player = PlayerCache.getFromCache(source)
             if player then
-                PlaytimeTracker.startTracking(source)
+                if not PlaytimeTracker.isTracking(source) then
+                    PlaytimeTracker.startTracking(source)
+                end
             end
         end
     end
@@ -304,8 +292,7 @@ CreateThread(function()
             local source = tonumber(playerId)
             if source then
                 local player = PlayerCache.getFromCache(source)
-                if player and not player._eventEmitted then
-                    player._eventEmitted = true
+                if player then
                     TriggerEvent('switcore:playerLoaded', source, player.dbId, player)
                 end
             end
