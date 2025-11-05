@@ -1,5 +1,5 @@
 version '1.0.0'
-description 'SwitCore Core - Sistemul de player management (core an plm)'
+description 'Core - Sistemul de player management (core an plm)'
 author 'Switty'
 
 fx_version 'bodacious'
