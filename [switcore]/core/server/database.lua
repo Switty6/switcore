@@ -678,5 +678,346 @@ function Database.deletePermission(permissionId)
     return true
 end
 
+-- ==================== MODERARE (BAN/WARN/KICK) ====================
+
+-- Creează un ban pentru un jucător
+function Database.createBan(playerId, bannedById, reason, expiresAt, metadata)
+    if not ensurePostgres() then
+        return nil
+    end
+    
+    local postgres = getPostgres()
+    
+    local metadataJson = nil
+    if metadata then
+        if json and json.encode then
+            metadataJson = json.encode(metadata)
+        else
+            if type(metadata) == 'table' then
+                local parts = {}
+                for k, v in pairs(metadata) do
+                    local value = type(v) == 'string' and ('"' .. v .. '"') or tostring(v)
+                    table.insert(parts, '"' .. tostring(k) .. '":' .. value)
+                end
+                metadataJson = '{' .. table.concat(parts, ',') .. '}'
+            else
+                metadataJson = '"' .. tostring(metadata) .. '"'
+            end
+        end
+    end
+    
+    local query
+    local params
+    
+    if expiresAt and type(expiresAt) == 'number' then
+        query = 'INSERT INTO bans (player_id, banned_by, reason, expires_at, is_active, created_at, metadata) VALUES ($1, $2, $3, TO_TIMESTAMP($4), true, NOW(), $5::jsonb) RETURNING *'
+        params = {playerId, bannedById, reason, expiresAt, metadataJson}
+    else
+        query = 'INSERT INTO bans (player_id, banned_by, reason, expires_at, is_active, created_at, metadata) VALUES ($1, $2, $3, $4, true, NOW(), $5::jsonb) RETURNING *'
+        params = {playerId, bannedById, reason, expiresAt, metadataJson}
+    end
+    
+    local result = postgres:query(query, params)
+    
+    if not result or not result.rows or not result.rows[1] then
+        return nil
+    end
+    
+    local ban = result.rows[1]
+    return {
+        id = ban.id,
+        player_id = ban.player_id,
+        banned_by = ban.banned_by,
+        reason = ban.reason,
+        expires_at = ban.expires_at,
+        is_active = ban.is_active,
+        created_at = ban.created_at,
+        metadata = ban.metadata
+    }
+end
+
+-- Găsește ban-ul activ pentru un jucător
+function Database.getActiveBan(playerId)
+    if not ensurePostgres() then
+        return nil
+    end
+    
+    local postgres = getPostgres()
+    
+    local ban = postgres:queryOne(
+        'SELECT * FROM bans WHERE player_id = $1 AND is_active = true AND (expires_at IS NULL OR expires_at > NOW()) ORDER BY created_at DESC LIMIT 1',
+        {playerId}
+    )
+    
+    if not ban then
+        return nil
+    end
+    
+    return {
+        id = ban.id,
+        player_id = ban.player_id,
+        banned_by = ban.banned_by,
+        reason = ban.reason,
+        expires_at = ban.expires_at,
+        is_active = ban.is_active,
+        unbanned_by = ban.unbanned_by,
+        unbanned_at = ban.unbanned_at,
+        unbanned_reason = ban.unbanned_reason,
+        created_at = ban.created_at,
+        metadata = ban.metadata
+    }
+end
+
+-- Găsește ban-ul activ pentru un jucător după identifier
+function Database.getActiveBanByIdentifier(identifier)
+    if not ensurePostgres() then
+        return nil
+    end
+    
+    local player = Database.findPlayerByIdentifier(identifier)
+    if not player then
+        return nil
+    end
+    
+    return Database.getActiveBan(player.dbId)
+end
+
+-- Obține toate ban-urile unui jucător
+function Database.getPlayerBans(playerId, includeInactive)
+    if not ensurePostgres() then
+        return {}
+    end
+    
+    local postgres = getPostgres()
+    
+    local query = 'SELECT * FROM bans WHERE player_id = $1'
+    local params = {playerId}
+    
+    if not includeInactive then
+        query = query .. ' AND is_active = true'
+    end
+    
+    query = query .. ' ORDER BY created_at DESC'
+    
+    local bans = postgres:queryAll(query, params)
+    
+    local result = {}
+    for _, ban in ipairs(bans) do
+        table.insert(result, {
+            id = ban.id,
+            player_id = ban.player_id,
+            banned_by = ban.banned_by,
+            reason = ban.reason,
+            expires_at = ban.expires_at,
+            is_active = ban.is_active,
+            unbanned_by = ban.unbanned_by,
+            unbanned_at = ban.unbanned_at,
+            unbanned_reason = ban.unbanned_reason,
+            created_at = ban.created_at,
+            metadata = ban.metadata
+        })
+    end
+    
+    return result
+end
+
+-- Dezactivează un ban (unban)
+function Database.unban(banId, unbannedById, reason)
+    if not ensurePostgres() then
+        return false
+    end
+    
+    local postgres = getPostgres()
+    
+    local success, err = pcall(function()
+        postgres:query(
+            'UPDATE bans SET is_active = false, unbanned_by = $1, unbanned_at = NOW(), unbanned_reason = $2 WHERE id = $3',
+            {unbannedById, reason, banId}
+        )
+    end)
+    
+    if not success then
+        print('[CORE] Eroare la unban: ' .. tostring(err))
+        return false
+    end
+    
+    return true
+end
+
+-- Creează un warn pentru un jucător
+function Database.createWarn(playerId, warnedById, reason, metadata)
+    if not ensurePostgres() then
+        return nil
+    end
+    
+    local postgres = getPostgres()
+    
+    local metadataJson = nil
+    if metadata then
+        if json and json.encode then
+            metadataJson = json.encode(metadata)
+        else
+            if type(metadata) == 'table' then
+                local parts = {}
+                for k, v in pairs(metadata) do
+                    local value = type(v) == 'string' and ('"' .. v .. '"') or tostring(v)
+                    table.insert(parts, '"' .. tostring(k) .. '":' .. value)
+                end
+                metadataJson = '{' .. table.concat(parts, ',') .. '}'
+            else
+                metadataJson = '"' .. tostring(metadata) .. '"'
+            end
+        end
+    end
+    
+    local result = postgres:query(
+        'INSERT INTO warns (player_id, warned_by, reason, is_active, created_at, metadata) VALUES ($1, $2, $3, true, NOW(), $4::jsonb) RETURNING *',
+        {playerId, warnedById, reason, metadataJson}
+    )
+    
+    if not result or not result.rows or not result.rows[1] then
+        return nil
+    end
+    
+    local warn = result.rows[1]
+    return {
+        id = warn.id,
+        player_id = warn.player_id,
+        warned_by = warn.warned_by,
+        reason = warn.reason,
+        is_active = warn.is_active,
+        removed_by = warn.removed_by,
+        removed_at = warn.removed_at,
+        removed_reason = warn.removed_reason,
+        created_at = warn.created_at,
+        metadata = warn.metadata
+    }
+end
+
+-- Obține toate warn-urile active ale unui jucător
+function Database.getPlayerWarns(playerId, includeInactive)
+    if not ensurePostgres() then
+        return {}
+    end
+    
+    local postgres = getPostgres()
+    
+    local query = 'SELECT * FROM warns WHERE player_id = $1'
+    local params = {playerId}
+    
+    if not includeInactive then
+        query = query .. ' AND is_active = true'
+    end
+    
+    query = query .. ' ORDER BY created_at DESC'
+    
+    local warns = postgres:queryAll(query, params)
+    
+    local result = {}
+    for _, warn in ipairs(warns) do
+        table.insert(result, {
+            id = warn.id,
+            player_id = warn.player_id,
+            warned_by = warn.warned_by,
+            reason = warn.reason,
+            is_active = warn.is_active,
+            removed_by = warn.removed_by,
+            removed_at = warn.removed_at,
+            removed_reason = warn.removed_reason,
+            created_at = warn.created_at,
+            metadata = warn.metadata
+        })
+    end
+    
+    return result
+end
+
+-- Elimină un warn (remove)
+function Database.removeWarn(warnId, removedById, reason)
+    if not ensurePostgres() then
+        return false
+    end
+    
+    local postgres = getPostgres()
+    
+    local success, err = pcall(function()
+        postgres:query(
+            'UPDATE warns SET is_active = false, removed_by = $1, removed_at = NOW(), removed_reason = $2 WHERE id = $3',
+            {removedById, reason, warnId}
+        )
+    end)
+    
+    if not success then
+        print('[CORE] Eroare la eliminarea warn-ului: ' .. tostring(err))
+        return false
+    end
+    
+    return true
+end
+
+-- Loghează un kick
+function Database.logKick(playerId, kickedById, reason, metadata)
+    if not ensurePostgres() then
+        return false
+    end
+    
+    local postgres = getPostgres()
+    
+    local metadataJson = nil
+    if metadata then
+        if json and json.encode then
+            metadataJson = json.encode(metadata)
+        else
+            if type(metadata) == 'table' then
+                local parts = {}
+                for k, v in pairs(metadata) do
+                    local value = type(v) == 'string' and ('"' .. v .. '"') or tostring(v)
+                    table.insert(parts, '"' .. tostring(k) .. '":' .. value)
+                end
+                metadataJson = '{' .. table.concat(parts, ',') .. '}'
+            else
+                metadataJson = '"' .. tostring(metadata) .. '"'
+            end
+        end
+    end
+    
+    postgres:query(
+        'INSERT INTO kick_logs (player_id, kicked_by, reason, created_at, metadata) VALUES ($1, $2, $3, NOW(), $4::jsonb)',
+        {playerId, kickedById, reason, metadataJson}
+    )
+    
+    return true
+end
+
+-- Obține istoricul kick-urilor pentru un jucător
+function Database.getPlayerKickLogs(playerId, limit)
+    if not ensurePostgres() then
+        return {}
+    end
+    
+    local postgres = getPostgres()
+    
+    limit = limit or 50
+    
+    local kicks = postgres:queryAll(
+        'SELECT * FROM kick_logs WHERE player_id = $1 ORDER BY created_at DESC LIMIT $2',
+        {playerId, limit}
+    )
+    
+    local result = {}
+    for _, kick in ipairs(kicks) do
+        table.insert(result, {
+            id = kick.id,
+            player_id = kick.player_id,
+            kicked_by = kick.kicked_by,
+            reason = kick.reason,
+            created_at = kick.created_at,
+            metadata = kick.metadata
+        })
+    end
+    
+    return result
+end
+
 return Database
 

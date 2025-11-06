@@ -98,3 +98,63 @@ COMMENT ON TABLE permissions IS 'Permisiunile individuale care pot fi atribuite 
 COMMENT ON TABLE group_permissions IS 'Relație many-to-many între grupuri și permisiuni';
 COMMENT ON TABLE player_groups IS 'Grupurile atribuite jucătorilor (un jucător poate avea mai multe grupuri)';
 
+-- ==================== MODERARE (BAN/WARN/KICK) ====================
+
+-- Tabel pentru ban-uri
+CREATE TABLE IF NOT EXISTS bans (
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    player_id INTEGER NOT NULL REFERENCES players(id) ON DELETE CASCADE,
+    banned_by INTEGER REFERENCES players(id),
+    reason TEXT NOT NULL,
+    expires_at TIMESTAMP,
+    is_active BOOLEAN DEFAULT true NOT NULL,
+    unbanned_by INTEGER REFERENCES players(id),
+    unbanned_at TIMESTAMP,
+    unbanned_reason TEXT,
+    created_at TIMESTAMP DEFAULT NOW() NOT NULL,
+    metadata JSONB
+);
+
+CREATE INDEX IF NOT EXISTS idx_bans_player_id ON bans(player_id);
+CREATE INDEX IF NOT EXISTS idx_bans_banned_by ON bans(banned_by);
+CREATE INDEX IF NOT EXISTS idx_bans_is_active ON bans(is_active);
+CREATE INDEX IF NOT EXISTS idx_bans_expires_at ON bans(expires_at);
+CREATE INDEX IF NOT EXISTS idx_bans_created_at ON bans(created_at);
+
+-- Tabel pentru warn-uri
+CREATE TABLE IF NOT EXISTS warns (
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    player_id INTEGER NOT NULL REFERENCES players(id) ON DELETE CASCADE,
+    warned_by INTEGER REFERENCES players(id),
+    reason TEXT NOT NULL,
+    is_active BOOLEAN DEFAULT true NOT NULL,
+    removed_by INTEGER REFERENCES players(id),
+    removed_at TIMESTAMP,
+    removed_reason TEXT,
+    created_at TIMESTAMP DEFAULT NOW() NOT NULL,
+    metadata JSONB
+);
+
+CREATE INDEX IF NOT EXISTS idx_warns_player_id ON warns(player_id);
+CREATE INDEX IF NOT EXISTS idx_warns_warned_by ON warns(warned_by);
+CREATE INDEX IF NOT EXISTS idx_warns_is_active ON warns(is_active);
+CREATE INDEX IF NOT EXISTS idx_warns_created_at ON warns(created_at);
+
+-- Tabel pentru istoricul kick-urilor (pentru logging)
+CREATE TABLE IF NOT EXISTS kick_logs (
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    player_id INTEGER NOT NULL REFERENCES players(id) ON DELETE CASCADE,
+    kicked_by INTEGER REFERENCES players(id),
+    reason TEXT,
+    created_at TIMESTAMP DEFAULT NOW() NOT NULL,
+    metadata JSONB
+);
+
+CREATE INDEX IF NOT EXISTS idx_kick_logs_player_id ON kick_logs(player_id);
+CREATE INDEX IF NOT EXISTS idx_kick_logs_kicked_by ON kick_logs(kicked_by);
+CREATE INDEX IF NOT EXISTS idx_kick_logs_created_at ON kick_logs(created_at);
+
+COMMENT ON TABLE bans IS 'Ban-urile jucătorilor (permanente sau temporare)';
+COMMENT ON TABLE warns IS 'Avertismentele date jucătorilor';
+COMMENT ON TABLE kick_logs IS 'Istoricul kick-urilor pentru logging';
+

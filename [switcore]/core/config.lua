@@ -47,6 +47,7 @@ Config.DefaultGroupPermissions = {
         'admin.all',
         'admin.kick',
         'admin.ban',
+        'admin.warn',
         'admin.teleport',
         'admin.vehicle',
         'admin.money',
@@ -54,6 +55,8 @@ Config.DefaultGroupPermissions = {
     },
     ['moderator'] = {
         'moderator.kick',
+        'moderator.warn',
+        'moderator.ban',
         'moderator.teleport'
     },
     ['vip'] = {

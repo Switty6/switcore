@@ -128,7 +128,49 @@ AddEventHandler('playerConnecting', function(name, setKickReason, deferrals)
     
     if #identifiers == 0 then
         print('[CORE] Jucătorul ' .. name .. ' nu are identifiers valizi')
+        setKickReason('Eroare: Nu ai identifiers valizi')
+        CancelEvent()
         return
+    end
+    
+    for _, identifier in ipairs(identifiers) do
+        local ban = Database.getActiveBanByIdentifier(identifier)
+        if ban then
+            local banMessage = 'Ai fost banat'
+            if ban.reason then
+                banMessage = banMessage .. ' pentru: ' .. ban.reason
+            end
+            if ban.expires_at then
+                local year, month, day, hour, min, sec = ban.expires_at:match('(%d+)-(%d+)-(%d+) (%d+):(%d+):(%d+)')
+                if year and month and day and hour and min and sec then
+                    local expiresTime = os.time({
+                        year = tonumber(year),
+                        month = tonumber(month),
+                        day = tonumber(day),
+                        hour = tonumber(hour),
+                        min = tonumber(min),
+                        sec = tonumber(sec)
+                    })
+                    local remaining = expiresTime - os.time()
+                    if remaining > 0 then
+                        local days = math.floor(remaining / 86400)
+                        local hours = math.floor((remaining % 86400) / 3600)
+                        local minutes = math.floor((remaining % 3600) / 60)
+                        banMessage = banMessage .. ' | Expiră în: ' .. days .. 'd ' .. hours .. 'h ' .. minutes .. 'm'
+                    else
+                        Database.unban(ban.id, nil, 'Ban expirat automat')
+                        break
+                    end
+                end
+            else
+                banMessage = banMessage .. ' | Ban permanent'
+            end
+            
+            print('[CORE] Jucător banat a încercat să se conecteze: ' .. name)
+            setKickReason(banMessage)
+            CancelEvent()
+            return
+        end
     end
     
     local playerData = findOrCreatePlayer(source, identifiers, name)
@@ -157,6 +199,8 @@ AddEventHandler('playerConnecting', function(name, setKickReason, deferrals)
         print('[CORE] Jucător încărcat: ' .. name .. ' (ID: ' .. playerData.dbId .. ')')
     else
         print('[CORE] Eroare la încărcarea jucătorului: ' .. name)
+        setKickReason('Eroare la încărcarea datelor jucătorului')
+        CancelEvent()
     end
 end)
 
@@ -172,7 +216,6 @@ AddEventHandler('playerJoining', function(oldId)
     local oldPlayer = PlayerCache.getFromCache(tostring(oldId))
     
     if oldPlayer then
-        -- Salvează playtime parțial înainte de mutare
         local partialPlaytime = PlaytimeTracker.stopTracking(tostring(oldId))
         if partialPlaytime and oldPlayer.dbId then
             Database.updatePlayerPlaytime(oldPlayer.dbId, partialPlaytime)
@@ -473,6 +516,111 @@ CreateThread(function()
             end
         end
     end
+end)
+
+-- Thread pentru curățarea ban-urilor expirate
+CreateThread(function()
+    while true do
+        Wait(60000)
+        
+        if exports.postgres and exports.postgres:isReady() then
+            local postgres = exports.postgres
+            
+            local expiredBans = postgres:queryAll(
+                'SELECT id FROM bans WHERE is_active = true AND expires_at IS NOT NULL AND expires_at <= NOW()',
+                {}
+            )
+            
+            if expiredBans and #expiredBans > 0 then
+                for _, ban in ipairs(expiredBans) do
+                    Database.unban(ban.id, nil, 'Ban expirat automat')
+                end
+                print('[CORE] ' .. #expiredBans .. ' ban-uri expirate au fost dezactivate automat')
+            end
+        end
+    end
+end)
+
+-- ==================== EXPORTS MODERARE ====================
+
+-- Ban un jucător după source
+exports('banPlayerBySource', function(source, bannedBySource, reason, durationStr)
+    return Moderation.banPlayerBySource(source, bannedBySource, reason, durationStr)
+end)
+
+-- Ban un jucător după dbId
+exports('banPlayerByDbId', function(dbId, bannedBySource, reason, durationStr)
+    return Moderation.banPlayerByDbId(dbId, bannedBySource, reason, durationStr)
+end)
+
+-- Unban un jucător (compatibilitate)
+exports('unbanPlayer', function(target, unbannedBySource, reason)
+    return Moderation.unbanPlayer(target, unbannedBySource, reason)
+end)
+
+-- Unban un jucător după dbId
+exports('unbanPlayerByDbId', function(dbId, unbannedBySource, reason)
+    return Moderation.unbanPlayerByDbId(dbId, unbannedBySource, reason)
+end)
+
+-- Warn un jucător (compatibilitate)
+exports('warnPlayer', function(target, warnedBySource, reason)
+    return Moderation.warnPlayer(target, warnedBySource, reason)
+end)
+
+-- Warn un jucător după source
+exports('warnPlayerBySource', function(source, warnedBySource, reason)
+    return Moderation.warnPlayerBySource(source, warnedBySource, reason)
+end)
+
+-- Warn un jucător după dbId
+exports('warnPlayerByDbId', function(dbId, warnedBySource, reason)
+    return Moderation.warnPlayerByDbId(dbId, warnedBySource, reason)
+end)
+
+-- Remove warn
+exports('removeWarn', function(warnId, removedBySource, reason)
+    return Moderation.removeWarn(warnId, removedBySource, reason)
+end)
+
+-- Kick un jucător (compatibilitate)
+exports('kickPlayer', function(target, kickedBySource, reason)
+    return Moderation.kickPlayer(target, kickedBySource, reason)
+end)
+
+-- Kick un jucător după source
+exports('kickPlayerBySource', function(source, kickedBySource, reason)
+    return Moderation.kickPlayerBySource(source, kickedBySource, reason)
+end)
+
+-- Verifică dacă un jucător este banat (compatibilitate)
+exports('isPlayerBanned', function(target)
+    return Moderation.isPlayerBanned(target)
+end)
+
+-- Verifică dacă un jucător este banat după dbId
+exports('isPlayerBannedByDbId', function(dbId)
+    return Moderation.isPlayerBannedByDbId(dbId)
+end)
+
+-- Obține ban-urile unui jucător (compatibilitate)
+exports('getPlayerBans', function(target, includeInactive)
+    return Moderation.getPlayerBans(target, includeInactive)
+end)
+
+-- Obține ban-urile unui jucător după dbId
+exports('getPlayerBansByDbId', function(dbId, includeInactive)
+    return Moderation.getPlayerBansByDbId(dbId, includeInactive)
+end)
+
+-- Obține warn-urile unui jucător (compatibilitate)
+exports('getPlayerWarns', function(target, includeInactive)
+    return Moderation.getPlayerWarns(target, includeInactive)
+end)
+
+-- Obține warn-urile unui jucător după dbId
+exports('getPlayerWarnsByDbId', function(dbId, includeInactive)
+    return Moderation.getPlayerWarnsByDbId(dbId, includeInactive)
 end)
 
 print('[CORE] Server module încărcat')
