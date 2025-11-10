@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Character Selection</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="character-container" class="hidden">
+        <div class="character-wrapper">
+            <div class="character-header">
+                <h1 class="character-title" data-locale="select_character">Selectează Personajul</h1>
+            </div>
+            
+            <!-- Error Message -->
+            <div id="error-message" class="error-message hidden"></div>
+            
+            <!-- Character List -->
+            <div id="character-list" class="character-list hidden">
+                <div class="characters-grid" id="characters-grid"></div>
+                <button id="create-character-btn" class="create-button">
+                    <span class="button-icon">+</span>
+                    <span class="button-text" data-locale="create_character">Creează Personaj Nou</span>
+                </button>
+            </div>
+            
+            <!-- Create Character Form -->
+            <div id="create-form" class="create-form hidden">
+                <h2 class="form-title" data-locale="create_character">Creează Personaj Nou</h2>
+                
+                <div class="form-group">
+                    <label for="first-name" data-locale="first_name">Prenume</label>
+                    <input type="text" id="first-name" class="form-input" data-placeholder="enter_first_name" placeholder="Introdu prenumele" maxlength="20">
+                    <span class="form-hint" id="first-name-hint"></span>
+                </div>
+                
+                <div class="form-group">
+                    <label for="last-name" data-locale="last_name">Nume de Familie</label>
+                    <input type="text" id="last-name" class="form-input" data-placeholder="enter_last_name" placeholder="Introdu numele de familie" maxlength="20">
+                    <span class="form-hint" id="last-name-hint"></span>
+                </div>
+                
+                <div class="form-group">
+                    <label for="age" data-locale="age">Vârstă</label>
+                    <input type="number" id="age" class="form-input" data-placeholder="enter_age" placeholder="Vârsta" min="18" max="80">
+                    <span class="form-hint" id="age-hint"></span>
+                </div>
+                
+                <!-- Appearance Customization -->
+                <div class="appearance-section">
+                    <h3 class="section-title" data-locale="appearance_customization">Personalizare Aspect</h3>
+                    
+                    <!-- Head Blend (Parents) -->
+                    <div class="appearance-group">
+                        <label data-locale="parents">Părinți</label>
+                        <div class="slider-group">
+                            <label data-locale="parent1">Părinte 1</label>
+                            <input type="range" id="parent1" class="appearance-slider" min="0" max="45" value="0">
+                            <span class="slider-value" id="parent1-value">0</span>
+                        </div>
+                        <div class="slider-group">
+                            <label data-locale="parent2">Părinte 2</label>
+                            <input type="range" id="parent2" class="appearance-slider" min="0" max="45" value="0">
+                            <span class="slider-value" id="parent2-value">0</span>
+                        </div>
+                        <div class="slider-group">
+                            <label data-locale="mix">Amestec</label>
+                            <input type="range" id="parent-mix" class="appearance-slider" min="0" max="100" value="50">
+                            <span class="slider-value" id="parent-mix-value">50%</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Face Features -->
+                    <div class="appearance-group">
+                        <label data-locale="facial_features">Trăsături Faciale</label>
+                        <div class="slider-group">
+                            <label data-locale="nose">Nas</label>
+                            <input type="range" id="nose-width" class="appearance-slider" min="0" max="100" value="50">
+                            <span class="slider-value" id="nose-width-value">50</span>
+                        </div>
+                        <div class="slider-group">
+                            <label data-locale="mouth">Gură</label>
+                            <input type="range" id="mouth-width" class="appearance-slider" min="0" max="100" value="50">
+                            <span class="slider-value" id="mouth-width-value">50</span>
+                        </div>
+                        <div class="slider-group">
+                            <label data-locale="eyes">Ochi</label>
+                            <input type="range" id="eyes-size" class="appearance-slider" min="0" max="100" value="50">
+                            <span class="slider-value" id="eyes-size-value">50</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button id="cancel-create-btn" class="cancel-button" data-locale="cancel">Anulează</button>
+                    <button id="confirm-create-btn" class="confirm-button" data-locale="create">Creează</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
+

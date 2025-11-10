@@ -232,6 +232,11 @@ exports('getAvailableLocales', function()
     return LocalizationServer.getAvailableLocales()
 end)
 
+-- Preia datele locale complete pentru o limbă
+exports('getLocaleData', function(language)
+    return LocalizationServer.getLocaleData(language)
+end)
+
 return LocalizationServer
 
 
