@@ -13,6 +13,14 @@ local COORDS_UPDATE_INTERVAL = 100
 local lastScreenX = 0
 local lastScreenY = 0
 
+-- Helper pentru traducere (folosește client-side localization)
+local function Translate(key, ...)
+    if exports.core and exports.core.translate then
+        return exports.core:translate(key, ...)
+    end
+    return key
+end
+
 local function GetPlayerPed()
     local ped = PlayerPedId()
     if ped ~= PlayerPed then
@@ -309,7 +317,7 @@ local function UpdateNUI()
                     for j = 1, limit do
                         local item = groupInteractions[j]
                         table.insert(interactionsList, {
-                            label = item.data.interaction.label or "Interacțiune",
+                            label = item.data.interaction.label or Translate('proximity.interaction'),
                             distance = item.data.distance,
                             selected = item.selected,
                             originalIndex = item.index
@@ -339,7 +347,7 @@ local function UpdateNUI()
                     action = 'showInteraction',
                     screenX = screenX,
                     screenY = screenY,
-                    label = mouseEnabled and (currentInteraction.label or "Interacțiune") or "Interactioneaza",
+                    label = mouseEnabled and (currentInteraction.label or Translate('proximity.interaction')) or Translate('proximity.interact'),
                     keyName = mouseEnabled and "Click" or "ALT",
                     color = markerColor,
                     markerColor = markerColor,
@@ -517,7 +525,7 @@ end
 local function CreateInteraction(id, data)
     Config.DynamicInteractions[id] = {
         id = id,
-        label = data.label or "Interacțiune",
+        label = data.label or Translate('proximity.interaction'),
         type = data.type or "default",
         data = data.data or {},
         onInteract = data.onInteract,
@@ -634,7 +642,7 @@ end)
 
 local function AddStaticInteraction(data)
     table.insert(Config.Interactions, {
-        label = data.label or "Interacțiune",
+        label = data.label or Translate('proximity.interaction'),
         type = data.type or "default",
         data = data.data or {},
         entity = data.entity,
@@ -664,7 +672,7 @@ end)
 
 exports('AddStaticEntityInteraction', function(entity, label, interactionType, data, glowColor, markerColor)
     if not DoesEntityExist(entity) then
-        print("[PROXIMITY] Eroare: Entitatea nu există!")
+        print("[PROXIMITY] " .. Translate('proximity.error_entity_not_exists'))
         return
     end
     AddStaticInteraction({ entity = entity, label = label, type = interactionType, data = data, markerColor = markerColor })
@@ -726,4 +734,4 @@ AddEventHandler('onResourceStop', function(resourceName)
     end
 end)
 
-print('[PROXIMITY] Sistemul de proximitate și accesare a fost încărcat!')
+print('[PROXIMITY] ' .. Translate('proximity.system_loaded'))

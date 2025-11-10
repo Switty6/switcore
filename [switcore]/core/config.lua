@@ -11,6 +11,11 @@ Config.PLAYTIME_UPDATE_INTERVAL = 60
 -- Activează logging-ul comenzilor
 Config.LOG_COMMANDS = true
 
+-- ==================== LOCALIZATION ====================
+
+-- Limba implicită pentru server (ro = română, en = engleză)
+Config.DEFAULT_LANGUAGE = 'ro'
+
 -- ==================== PERMISIUNI ȘI GRUPURI ====================
 
 -- Grupuri default care vor fi create automat

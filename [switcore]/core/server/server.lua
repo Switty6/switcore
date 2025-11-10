@@ -9,15 +9,15 @@ CreateThread(function()
 end)
 
 function InitializeCore()
-    -- Setează intervalul de actualizare playtime
+    LocalizationServer.initialize()
+    
     if Config and Config.PLAYTIME_UPDATE_INTERVAL then
         PlaytimeTracker.setUpdateInterval(Config.PLAYTIME_UPDATE_INTERVAL)
     end
     
-    -- Inițializează grupurile default
     Groups.initializeDefaults()
     
-    print('[CORE] Core inițializat cu succes')
+    print('[CORE] ' .. Localize('server.core_initialized'))
 end
 
 -- Helper pentru a verifica dacă un identifier este blocat
@@ -127,8 +127,8 @@ AddEventHandler('playerConnecting', function(name, setKickReason, deferrals)
     local identifiers = getPlayerIdentifiers(source)
     
     if #identifiers == 0 then
-        print('[CORE] Jucătorul ' .. name .. ' nu are identifiers valizi')
-        setKickReason('Eroare: Nu ai identifiers valizi')
+        print('[CORE] ' .. Localize('server.player_no_valid_identifiers', name))
+        setKickReason(Localize('server.error_no_valid_identifiers'))
         CancelEvent()
         return
     end
@@ -136,9 +136,9 @@ AddEventHandler('playerConnecting', function(name, setKickReason, deferrals)
     for _, identifier in ipairs(identifiers) do
         local ban = Database.getActiveBanByIdentifier(identifier)
         if ban then
-            local banMessage = 'Ai fost banat'
+            local banMessage = Localize('server.you_were_banned')
             if ban.reason then
-                banMessage = banMessage .. ' pentru: ' .. ban.reason
+                banMessage = banMessage .. Localize('server.banned_for', ban.reason)
             end
             if ban.expires_at then
                 local year, month, day, hour, min, sec = ban.expires_at:match('(%d+)-(%d+)-(%d+) (%d+):(%d+):(%d+)')
@@ -156,17 +156,17 @@ AddEventHandler('playerConnecting', function(name, setKickReason, deferrals)
                         local days = math.floor(remaining / 86400)
                         local hours = math.floor((remaining % 86400) / 3600)
                         local minutes = math.floor((remaining % 3600) / 60)
-                        banMessage = banMessage .. ' | Expiră în: ' .. days .. 'd ' .. hours .. 'h ' .. minutes .. 'm'
+                        banMessage = banMessage .. Localize('server.expires_in', days, hours, minutes)
                     else
-                        Database.unban(ban.id, nil, 'Ban expirat automat')
+                        Database.unban(ban.id, nil, Localize('server.ban_expired_auto'))
                         break
                     end
                 end
             else
-                banMessage = banMessage .. ' | Ban permanent'
+                banMessage = banMessage .. Localize('server.ban_permanent')
             end
             
-            print('[CORE] Jucător banat a încercat să se conecteze: ' .. name)
+            print('[CORE] ' .. Localize('server.player_banned_attempt', name))
             setKickReason(banMessage)
             CancelEvent()
             return
@@ -182,10 +182,15 @@ AddEventHandler('playerConnecting', function(name, setKickReason, deferrals)
         
         local groups = Database.getPlayerGroups(playerData.dbId)
         local permissions = Database.getPlayerPermissions(playerData.dbId)
+        local playerLanguage = playerData.language or Config.DEFAULT_LANGUAGE or 'ro'
         PlayerCache.updateInCache(source, {
             groups = groups,
-            permissions = permissions
+            permissions = permissions,
+            language = playerLanguage
         })
+        
+        TriggerClientEvent('switcore:languageChanged', source, playerLanguage)
+        sendLocaleToClient(source, playerLanguage)
         
         PlaytimeTracker.startTracking(source)
         
@@ -196,10 +201,10 @@ AddEventHandler('playerConnecting', function(name, setKickReason, deferrals)
             })
         end
         
-        print('[CORE] Jucător încărcat: ' .. name .. ' (ID: ' .. playerData.dbId .. ')')
+        print('[CORE] ' .. Localize('server.player_loaded', name, playerData.dbId))
     else
-        print('[CORE] Eroare la încărcarea jucătorului: ' .. name)
-        setKickReason('Eroare la încărcarea datelor jucătorului')
+        print('[CORE] ' .. Localize('server.error_loading_player', name))
+        setKickReason(Localize('server.error_loading_player_data'))
         CancelEvent()
     end
 end)
@@ -227,7 +232,7 @@ AddEventHandler('playerJoining', function(oldId)
         
         PlaytimeTracker.startTracking(source)
     else
-        print('[CORE] Warning: Jucătorul ' .. source .. ' nu a fost găsit în cache la playerJoining')
+        print('[CORE] ' .. Localize('server.player_not_found_cache', source))
     end
 end)
 
@@ -252,7 +257,7 @@ AddEventHandler('playerDropped', function(reason)
         
         PlayerCache.removeFromCache(source)
         
-        print('[CORE] Jucător deconectat: ' .. player.name .. ' (ID: ' .. player.dbId .. ')')
+        print('[CORE] ' .. Localize('server.player_disconnected', player.name, player.dbId))
     end
 end)
 
@@ -359,7 +364,7 @@ local function addPlayerGroup(source, groupName, expiresAt, assignedBy)
     
     local group = Groups.getGroupByName(groupName)
     if not group then
-        print('[CORE] Grupul ' .. groupName .. ' nu există')
+        print('[CORE] ' .. Localize('server.group_not_exists', groupName))
         return false
     end
     
@@ -398,7 +403,7 @@ local function removePlayerGroup(source, groupName)
     
     local group = Groups.getGroupByName(groupName)
     if not group then
-        print('[CORE] Grupul ' .. groupName .. ' nu există')
+        print('[CORE] ' .. Localize('server.group_not_exists', groupName))
         return false
     end
     
@@ -477,7 +482,7 @@ exports('removePermissionFromGroup', function(groupName, permissionName)
     
     local permission = Database.findPermission(permissionName)
     if not permission then
-        print('[CORE] Permisiunea ' .. permissionName .. ' nu există')
+        print('[CORE] ' .. Localize('server.permission_not_exists', permissionName))
         return false
     end
     
@@ -493,7 +498,7 @@ end)
 exports('deletePermission', function(permissionName)
     local permission = Database.findPermission(permissionName)
     if not permission then
-        print('[CORE] Permisiunea ' .. permissionName .. ' nu există')
+        print('[CORE] ' .. Localize('server.permission_not_exists', permissionName))
         return false
     end
     
@@ -533,9 +538,9 @@ CreateThread(function()
             
             if expiredBans and #expiredBans > 0 then
                 for _, ban in ipairs(expiredBans) do
-                    Database.unban(ban.id, nil, 'Ban expirat automat')
+                    Database.unban(ban.id, nil, Localize('server.ban_expired_auto'))
                 end
-                print('[CORE] ' .. #expiredBans .. ' ban-uri expirate au fost dezactivate automat')
+                print('[CORE] ' .. Localize('server.expired_bans_deactivated', #expiredBans))
             end
         end
     end
@@ -623,5 +628,86 @@ exports('getPlayerWarnsByDbId', function(dbId, includeInactive)
     return Moderation.getPlayerWarnsByDbId(dbId, includeInactive)
 end)
 
-print('[CORE] Server module încărcat')
+-- Helper function to send locale data to client with fallback
+local function sendLocaleToClient(source, language)
+    local locale = LocalizationServer.getLocaleData(language)
+    if locale then
+        TriggerClientEvent('switcore:localeData', source, language, locale)
+    else
+        local defaultLocale = LocalizationServer.getLocaleData(Config.DEFAULT_LANGUAGE or 'ro')
+        if defaultLocale then
+            TriggerClientEvent('switcore:localeData', source, Config.DEFAULT_LANGUAGE or 'ro', defaultLocale)
+        end
+    end
+end
+
+-- ==================== EXPORTS LOCALIZARE ====================
+
+-- Setează limba jucătorului
+exports('setPlayerLanguage', function(source, language)
+    local player = PlayerCache.getFromCache(source)
+    if not player then
+        return false, 'Player not found'
+    end
+    
+    local availableLocales = LocalizationServer.getAvailableLocales()
+    local isValid = false
+    for _, lang in ipairs(availableLocales) do
+        if lang == language then
+            isValid = true
+            break
+        end
+    end
+    
+    if not isValid then
+        return false, 'Language not available: ' .. tostring(language)
+    end
+    
+    PlayerCache.updateInCache(source, {language = language})
+    Database.updatePlayerLanguage(player.dbId, language)
+    
+    return true
+end)
+
+-- Obține limba jucătorului
+exports('getPlayerLanguage', function(source)
+    local player = PlayerCache.getFromCache(source)
+    if player and player.language then
+        return player.language
+    end
+    return Config.DEFAULT_LANGUAGE or 'ro'
+end)
+
+-- Event handler pentru schimbarea limbii de la client
+RegisterNetEvent('switcore:setLanguage', function(language)
+    local source = source
+    local success, error = exports.core:setPlayerLanguage(source, language)
+    
+    if success then
+        TriggerClientEvent('switcore:languageChanged', source, language)
+        sendLocaleToClient(source, language)
+        
+        local message = Localize('language.changed', source, language)
+        TriggerClientEvent('switcore:localizedMessage', source, message)
+    else
+        TriggerClientEvent('switcore:languageError', source, error or 'Unknown error')
+    end
+end)
+
+-- Event pentru mesaje localizate de la client
+RegisterNetEvent('switcore:getLocalizedMessage', function(key, ...)
+    local source = source
+    local message = Localize(key, source, ...)
+    TriggerClientEvent('switcore:localizedMessage', source, message)
+end)
+
+-- Event pentru cererea locale-ului de la client
+RegisterNetEvent('switcore:requestLocale', function(language)
+    local source = source
+    local player = PlayerCache.getFromCache(source)
+    local playerLanguage = language or (player and player.language) or Config.DEFAULT_LANGUAGE or 'ro'
+    sendLocaleToClient(source, playerLanguage)
+end)
+
+print('[CORE] ' .. Localize('server.server_module_loaded'))
 

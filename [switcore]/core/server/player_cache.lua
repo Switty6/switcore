@@ -35,7 +35,8 @@ function PlayerCache.setInCache(source, playerData)
         playtime = playerData.playtime or 0,
         join_time = playerData.join_time or os.time(),
         groups = playerData.groups or {},
-        permissions = playerData.permissions or {}
+        permissions = playerData.permissions or {},
+        language = playerData.language or 'ro'
     }
     
     playerById[dbId] = tonumber(source)
@@ -70,6 +71,9 @@ function PlayerCache.updateInCache(source, updates)
     end
     if updates.permissions then
         player.permissions = updates.permissions
+    end
+    if updates.language then
+        player.language = updates.language
     end
     if updates.identifiers then
         if player.identifiers then

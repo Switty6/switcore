@@ -69,7 +69,8 @@ function Database.findPlayerByIdentifier(identifier)
         identifiers = buildIdentifierList(identifiers),
         last_seen = player.last_seen,
         playtime = player.playtime or 0,
-        created_at = player.created_at
+        created_at = player.created_at,
+        language = player.language or 'ro'
     }
 end
 
@@ -81,7 +82,6 @@ function Database.createPlayer(identifiers, name)
     
     local postgres = getPostgres()
     
-    -- Verifică dacă unul dintre identifiers există deja în DB (race condition check)
     for _, identifier in ipairs(identifiers) do
         local existingPlayer = Database.findPlayerByIdentifier(identifier)
         if existingPlayer then
@@ -91,8 +91,8 @@ function Database.createPlayer(identifiers, name)
     end
     
     local playerResult = postgres:query(
-        'INSERT INTO players (name, created_at, updated_at, last_seen, playtime) VALUES ($1, NOW(), NOW(), NOW(), 0) RETURNING *',
-        {name}
+        'INSERT INTO players (name, created_at, updated_at, last_seen, playtime, language) VALUES ($1, NOW(), NOW(), NOW(), 0, $2) RETURNING *',
+        {name, Config.DEFAULT_LANGUAGE or 'ro'}
     )
     
     if not playerResult or not playerResult.rows or not playerResult.rows[1] then
@@ -172,6 +172,29 @@ function Database.updatePlayerLastSeen(dbId)
         'UPDATE players SET last_seen = NOW(), updated_at = NOW() WHERE id = $1',
         {dbId}
     )
+    
+    return true
+end
+
+-- Actualizează limba jucătorului (sync live)
+function Database.updatePlayerLanguage(dbId, language)
+    if not ensurePostgres() then
+        return false
+    end
+    
+    local postgres = getPostgres()
+    
+    local success, err = pcall(function()
+        postgres:query(
+            'UPDATE players SET language = $1, updated_at = NOW() WHERE id = $2',
+            {language, dbId}
+        )
+    end)
+    
+    if not success then
+        print('[CORE] Eroare la actualizarea limbii jucătorului ' .. dbId .. ': ' .. tostring(err))
+        return false
+    end
     
     return true
 end
