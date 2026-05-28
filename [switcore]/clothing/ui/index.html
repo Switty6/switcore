@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Clothing Store</title>
+    <link rel="stylesheet" href="style.css" />
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+</head>
+<body>
+<div id="app" class="hidden">
+
+    <div id="store-panel">
+
+        <div id="store-header">
+            <div id="store-header-left">
+                <div id="store-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
+                        <line x1="3" y1="6" x2="21" y2="6"/>
+                        <path d="M16 10a4 4 0 01-8 0"/>
+                    </svg>
+                </div>
+                <div>
+                    <div id="store-title">Magazin</div>
+                    <div id="store-type-badge">casual</div>
+                </div>
+            </div>
+            <button id="btn-close" onclick="closeStore()"><i data-lucide="x"></i></button>
+        </div>
+
+        <div id="tabs">
+            <button class="tab active" data-tab="items" onclick="switchTab('items')">Articole</button>
+            <button class="tab" data-tab="equipped" onclick="switchTab('equipped')">Echipate</button>
+            <button class="tab" data-tab="outfits" onclick="switchTab('outfits')">Outfit-uri</button>
+        </div>
+
+        <div id="tab-items" class="tab-content active">
+            <div id="items-layout">
+
+                <div id="category-sidebar">
+                    <button class="cat-btn active" data-cat="all" onclick="filterCategory('all')">Toate</button>
+                    <button class="cat-btn" data-cat="component_11" onclick="filterCategory('component_11')">Jachete</button>
+                    <button class="cat-btn" data-cat="component_8"  onclick="filterCategory('component_8')">Tricouri</button>
+                    <button class="cat-btn" data-cat="component_3"  onclick="filterCategory('component_3')">Torso</button>
+                    <button class="cat-btn" data-cat="component_4"  onclick="filterCategory('component_4')">Pantaloni</button>
+                    <button class="cat-btn" data-cat="component_6"  onclick="filterCategory('component_6')">Încălțăminte</button>
+                    <button class="cat-btn" data-cat="component_5"  onclick="filterCategory('component_5')">Gențí/Rucsac</button>
+                    <button class="cat-btn" data-cat="component_7"  onclick="filterCategory('component_7')">Accesorii</button>
+                    <button class="cat-btn" data-cat="component_1"  onclick="filterCategory('component_1')">Măști</button>
+                    <button class="cat-btn" data-cat="prop_0"        onclick="filterCategory('prop_0')">Pălării</button>
+                    <button class="cat-btn" data-cat="prop_1"        onclick="filterCategory('prop_1')">Ochelari</button>
+                </div>
+
+                <div id="items-right">
+                    <div id="item-grid"></div>
+                    <div id="item-detail" class="hidden">
+                        <div id="detail-header">
+                            <div id="detail-icon-wrap">
+                                <div id="detail-icon-inner"></div>
+                            </div>
+                            <div id="detail-info">
+                                <div id="detail-label"></div>
+                                <div id="detail-price"></div>
+                                <div id="detail-bonus" class="hidden"></div>
+                            </div>
+                        </div>
+
+                        <div id="texture-section" class="hidden">
+                            <div class="section-title">Textură</div>
+                            <div id="texture-selector">
+                                <button onclick="changeTextureBy(-1)">‹</button>
+                                <span id="texture-label">1 / 1</span>
+                                <button onclick="changeTextureBy(1)">›</button>
+                            </div>
+                        </div>
+
+                        <div id="detail-actions">
+                            <button id="btn-tryon"   class="btn-secondary" onclick="tryOnSelected()">Probează</button>
+                            <button id="btn-buy"     class="btn-primary"   onclick="buySelected()">Cumpără</button>
+                            <button id="btn-equip"   class="btn-primary hidden"  onclick="equipSelected()">Echipează</button>
+                            <button id="btn-owned-badge" class="btn-owned hidden"><i data-lucide="check"></i> Deții</button>
+                        </div>
+
+                        <button id="btn-tryon-room" class="btn-secondary full-w" onclick="goToTryOnRoom()">
+                            <i data-lucide="camera"></i> Intră în cabina de probă
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-equipped" class="tab-content">
+            <div id="equipped-list"></div>
+        </div>
+
+        <div id="tab-outfits" class="tab-content">
+            <div id="outfit-save-row">
+                <input id="outfit-name-input" type="text" placeholder="Nume outfit..." maxlength="50" />
+                <button class="btn-primary" onclick="saveOutfit()">Salvează</button>
+            </div>
+            <div id="outfits-list"></div>
+        </div>
+    </div>
+
+    <div id="fitting-room" class="hidden">
+        <div id="fitting-controls">
+            <div id="fitting-title">Cabina de Probă</div>
+            <div id="view-buttons">
+                <button onclick="rotateView('left')"><i data-lucide="chevron-left"></i> Stânga</button>
+                <button id="btn-auto-rotate" onclick="toggleAutoRotate()"><i data-lucide="play"></i> 360° Auto</button>
+                <button onclick="rotateView('right')">Dreapta <i data-lucide="chevron-right"></i></button>
+            </div>
+            <button class="btn-secondary" onclick="exitTryOnRoom()" style="margin-top:8px; width:100%;">
+                <i data-lucide="x"></i> Ieși din cabină
+            </button>
+        </div>
+    </div>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

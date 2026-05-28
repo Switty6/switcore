@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SwitCore Admin - Login</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="login-page">
+
+<canvas id="bg-canvas"></canvas>
+
+<div class="login-wrap">
+    <div class="login-card">
+        <div class="login-logo">
+            <img class="hex-logo" src="logo.svg" alt="SwitCore Logo" />
+        </div>
+
+        <h1 class="login-title">SwitCore</h1>
+        <p class="login-subtitle">Admin Panel</p>
+
+        <form id="login-form" class="login-form" autocomplete="off">
+            <div class="field-group">
+                <label class="field-label">Username</label>
+                <input
+                    type="text"
+                    id="username"
+                    class="field-input"
+                    placeholder="admin"
+                    autocomplete="username"
+                    required
+                />
+            </div>
+
+            <div class="field-group">
+                <label class="field-label">Parolă</label>
+                <div class="field-password-wrap">
+                    <input
+                        type="password"
+                        id="password"
+                        class="field-input"
+                        placeholder="••••••••"
+                        autocomplete="current-password"
+                        required
+                    />
+                    <button type="button" class="toggle-pw" id="toggle-pw" tabindex="-1">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                            <circle cx="12" cy="12" r="3"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="login-error" id="login-error" hidden></div>
+
+            <button type="submit" class="btn-primary" id="login-btn">
+                <span class="btn-text">Autentificare</span>
+                <svg class="btn-spinner hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+                </svg>
+            </button>
+        </form>
+
+        <p class="login-footer">SwitCore Framework &copy; 2026</p>
+    </div>
+</div>
+
+<script>
+(function () {
+    // Redirecționează dacă deja autentificat
+    if (localStorage.getItem('sc_token')) {
+        window.location.href = '/dashboard';
+    }
+
+    // Toggle password visibility
+    document.getElementById('toggle-pw').addEventListener('click', () => {
+        const pw = document.getElementById('password');
+        pw.type = pw.type === 'password' ? 'text' : 'password';
+    });
+
+    // Form submit
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const btn      = document.getElementById('login-btn');
+        const errEl    = document.getElementById('login-error');
+        const spinner  = btn.querySelector('.btn-spinner');
+        const btnText  = btn.querySelector('.btn-text');
+
+        btn.disabled   = true;
+        spinner.classList.remove('hidden');
+        btnText.textContent = 'Se verifică...';
+        errEl.hidden   = true;
+
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value;
+
+        try {
+            const res  = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+            const data = await res.json();
+
+            if (!res.ok) {
+                throw new Error(data.error || 'Eroare la autentificare');
+            }
+
+            localStorage.setItem('sc_token',    data.token);
+            localStorage.setItem('sc_username', data.username);
+            localStorage.setItem('sc_role',     data.role || 'staff');
+            window.location.href = '/dashboard';
+
+        } catch (err) {
+            errEl.textContent = err.message;
+            errEl.hidden      = false;
+            btn.disabled      = false;
+            spinner.classList.add('hidden');
+            btnText.textContent = 'Autentificare';
+        }
+    });
+
+    // Canvas particles
+    const canvas = document.getElementById('bg-canvas');
+    const ctx    = canvas.getContext('2d');
+    let W = canvas.width  = window.innerWidth;
+    let H = canvas.height = window.innerHeight;
+    window.addEventListener('resize', () => {
+        W = canvas.width  = window.innerWidth;
+        H = canvas.height = window.innerHeight;
+    });
+
+    const pts = Array.from({ length: 60 }, () => ({
+        x: Math.random() * W, y: Math.random() * H,
+        vx: (Math.random() - .5) * .4, vy: (Math.random() - .5) * .4,
+        r: Math.random() * 1.5 + .5
+    }));
+
+    function draw() {
+        ctx.clearRect(0, 0, W, H);
+        for (const p of pts) {
+            p.x += p.vx; p.y += p.vy;
+            if (p.x < 0) p.x = W; if (p.x > W) p.x = 0;
+            if (p.y < 0) p.y = H; if (p.y > H) p.y = 0;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(0,180,255,.18)';
+            ctx.fill();
+        }
+        for (let i = 0; i < pts.length; i++) {
+            for (let j = i + 1; j < pts.length; j++) {
+                const dx = pts[i].x - pts[j].x, dy = pts[i].y - pts[j].y;
+                const d  = Math.sqrt(dx * dx + dy * dy);
+                if (d < 120) {
+                    ctx.beginPath();
+                    ctx.moveTo(pts[i].x, pts[i].y);
+                    ctx.lineTo(pts[j].x, pts[j].y);
+                    ctx.strokeStyle = `rgba(0,180,255,${.06 * (1 - d / 120)})`;
+                    ctx.lineWidth   = .5;
+                    ctx.stroke();
+                }
+            }
+        }
+        requestAnimationFrame(draw);
+    }
+    draw();
+})();
+</script>
+</body>
+</html>

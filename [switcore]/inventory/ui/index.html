@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SwitCore Inventory</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div id="inventory-container" class="hidden">
+        <div class="scanline"></div>
+
+        <div class="inventory-panel player-side" id="player-inventory">
+
+            <div class="clothing-toggles">
+                <div class="cloth-btn" data-type="hat" title="Pălărie/Șapcă"><i class="fas fa-hat-cowboy"></i></div>
+                <div class="cloth-btn" data-type="mask" title="Mască"><i class="fas fa-mask"></i></div>
+                <div class="cloth-btn" data-type="glasses" title="Ochelari"><i class="fas fa-glasses"></i></div>
+                <div class="cloth-btn" data-type="torso" title="Tricou/Geacă"><i class="fas fa-tshirt"></i></div>
+                <div class="cloth-btn" data-type="armor" title="Vestă/Armură"><i class="fas fa-shield-alt"></i></div>
+                <div class="cloth-btn" data-type="pants" title="Pantaloni"><i class="fa fa-socks"></i></div>
+                <div class="cloth-btn" data-type="shoes" title="Pantofi"><i class="fas fa-shoe-prints"></i></div>
+            </div>
+
+            <div class="panel-header">
+                <div class="header-title">
+                    <i class="fas fa-user"></i> <span>Inventar</span>
+                </div>
+                <div class="header-right">
+                    <div class="cash-bar" id="cash-bar">
+                        <i class="fas fa-wallet"></i>
+                        <span class="cash-label">CASH</span>
+                        <span id="cash-display" class="cash-value">$0</span>
+                    </div>
+                    <div class="weight-bar-container">
+                        <div class="weight-fill" id="player-weight-fill"></div>
+                        <span class="weight-text" id="player-weight-text">0.0 / 30.0 kg</span>
+                    </div>
+                </div>
+            </div>
+            <div class="inventory-grid" id="player-grid">
+            </div>
+
+            <div class="keys-section" id="keys-section">
+                <div class="keys-header">
+                    <i class="fas fa-key"></i> <span>Chei</span>
+                    <span class="keys-count" id="keys-count">0</span>
+                </div>
+                <div class="keys-grid" id="keys-grid">
+                    <div class="keys-empty" id="keys-empty">Nicio cheie</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="inventory-panel secondary-side hidden" id="secondary-inventory">
+            <div class="panel-header">
+                <div class="header-title">
+                    <i class="fas fa-box-open"></i> <span id="secondary-title">Portbagaj</span>
+                </div>
+                <div class="weight-bar-container">
+                    <div class="weight-fill" id="secondary-weight-fill"></div>
+                    <span class="weight-text" id="secondary-weight-text">0.0 / 100.0 kg</span>
+                </div>
+            </div>
+            <div class="inventory-grid" id="secondary-grid">
+            </div>
+        </div>
+
+        <div id="context-menu" class="context-menu hidden">
+            <div class="context-item" id="ctx-use">
+                <i class="fas fa-hand-pointer"></i> Folosește
+            </div>
+            <div class="context-item" id="ctx-give">
+                <i class="fas fa-hand-holding-heart"></i> Oferă
+            </div>
+            <div class="context-item" id="ctx-split">
+                <i class="fas fa-columns"></i> Împarte (Split)
+            </div>
+            <div class="context-item text-red" id="ctx-drop">
+                <i class="fas fa-trash-alt"></i> Aruncă
+            </div>
+        </div>
+
+        <div id="split-dialog" class="dialog-box hidden">
+            <div class="dialog-content">
+                <h3>Cantitate</h3>
+                <input type="number" id="split-amount" min="1" value="1">
+                <div class="dialog-actions">
+                    <button id="split-cancel" class="btn-cancel">Anulează</button>
+                    <button id="split-confirm" class="btn-confirm">Confirmă</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="ghost-drag" class="hidden"></div>
+        <div id="item-tooltip" class="item-tooltip hidden"></div>
+    </div>
+
+    <div id="notifications-layer"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>

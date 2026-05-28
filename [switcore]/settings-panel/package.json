@@ -1,0 +1,18 @@
+{
+  "name": "switcore-settings-panel",
+  "version": "1.0.0",
+  "description": "SwitCore Admin Panel - interfață web pentru gestionarea setărilor din baza de date",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.11.3"
+  }
+}

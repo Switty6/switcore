@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MDT SwitCore</title>
+    <link rel="stylesheet" href="style.css" />
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+</head>
+<body>
+
+<!-- ==================== MDT PANEL ==================== -->
+<div id="mdt-panel" class="hidden">
+    <div class="mdt-header">
+        <div class="mdt-header-left">
+            <span class="mdt-badge" id="mdt-badge">POL</span>
+            <span class="mdt-title" id="mdt-title">MDT - Politie</span>
+        </div>
+        <button class="mdt-close" onclick="postNUI('closeMDT')"><i data-lucide="x"></i></button>
+    </div>
+
+    <div class="mdt-tabs" id="mdt-tabs"></div>
+
+    <div class="tab-body" id="tab-body"></div>
+</div>
+
+<!-- ==================== MODALS ==================== -->
+
+<!-- Warrant Modal -->
+<div id="warrant-modal" class="modal hidden">
+    <div class="modal-box">
+        <div class="modal-header">
+            <span>Emite Mandat</span>
+            <button onclick="hideModal('warrant-modal')"><i data-lucide="x"></i></button>
+        </div>
+        <div class="modal-body">
+            <label>Cautare Suspect</label>
+            <input type="text" id="warrant-search" placeholder="Prenume sau Nume..." oninput="onModalSearch('warrant')" />
+            <div id="warrant-search-results" class="compact-results"></div>
+            <input type="hidden" id="warrant-char-id" />
+            <div id="warrant-char-display" class="selected-char hidden"></div>
+            <label>Acuzatii</label>
+            <textarea id="warrant-charges" rows="3" placeholder="Acuzatii..."></textarea>
+            <label>Cautiune ($)</label>
+            <input type="number" id="warrant-bail" value="0" min="0" />
+        </div>
+        <div class="modal-footer">
+            <button class="btn-secondary" onclick="hideModal('warrant-modal')">Anuleaza</button>
+            <button class="btn-primary" onclick="submitWarrant()">Emite</button>
+        </div>
+    </div>
+</div>
+
+<!-- Citation Modal -->
+<div id="citation-modal" class="modal hidden">
+    <div class="modal-box">
+        <div class="modal-header">
+            <span>Emite Citatie</span>
+            <button onclick="hideModal('citation-modal')"><i data-lucide="x"></i></button>
+        </div>
+        <div class="modal-body">
+            <label>Cautare Suspect</label>
+            <input type="text" id="citation-search" placeholder="Prenume sau Nume..." oninput="onModalSearch('citation')" />
+            <div id="citation-search-results" class="compact-results"></div>
+            <input type="hidden" id="citation-char-id" />
+            <div id="citation-char-display" class="selected-char hidden"></div>
+            <label>Infractiune</label>
+            <input type="text" id="citation-offense" placeholder="Ex: Depasire viteza..." />
+            <label>Amenda ($)</label>
+            <input type="number" id="citation-fine" value="500" min="0" />
+        </div>
+        <div class="modal-footer">
+            <button class="btn-secondary" onclick="hideModal('citation-modal')">Anuleaza</button>
+            <button class="btn-primary" onclick="submitCitation()">Emite</button>
+        </div>
+    </div>
+</div>
+
+<!-- BOLO Modal -->
+<div id="bolo-modal" class="modal hidden">
+    <div class="modal-box">
+        <div class="modal-header">
+            <span>Emite BOLO</span>
+            <button onclick="hideModal('bolo-modal')"><i data-lucide="x"></i></button>
+        </div>
+        <div class="modal-body">
+            <label>Subiect / Nume Suspect</label>
+            <input type="text" id="bolo-subject" placeholder="Nume sau Neidentificat..." />
+            <label>Descriere</label>
+            <textarea id="bolo-description" rows="3" placeholder="Descriere suspect, comportament..."></textarea>
+            <label>Informatii Vehicul (optional)</label>
+            <input type="text" id="bolo-vehicle" placeholder="Marca, model, culoare, numar..." />
+        </div>
+        <div class="modal-footer">
+            <button class="btn-secondary" onclick="hideModal('bolo-modal')">Anuleaza</button>
+            <button class="btn-primary" onclick="submitBOLO()">Emite</button>
+        </div>
+    </div>
+</div>
+
+<!-- Incident Modal -->
+<div id="incident-modal" class="modal hidden">
+    <div class="modal-box modal-box-wide">
+        <div class="modal-header">
+            <span>Raport Incident</span>
+            <button onclick="hideModal('incident-modal')"><i data-lucide="x"></i></button>
+        </div>
+        <div class="modal-body">
+            <label>Titlu</label>
+            <input type="text" id="incident-title" placeholder="Titlu incident..." />
+            <label>Descriere</label>
+            <textarea id="incident-desc" rows="4" placeholder="Descriere detaliata..."></textarea>
+            <label>Persoane implicate (ID-uri separate prin virgula)</label>
+            <input type="text" id="incident-involved" placeholder="Ex: 12, 45, 78" />
+        </div>
+        <div class="modal-footer">
+            <button class="btn-secondary" onclick="hideModal('incident-modal')">Anuleaza</button>
+            <button class="btn-primary" onclick="submitIncident()">Salveaza</button>
+        </div>
+    </div>
+</div>
+
+<!-- Impound Modal -->
+<div id="impound-modal" class="modal hidden">
+    <div class="modal-box">
+        <div class="modal-header">
+            <span>Sechestru Vehicul</span>
+            <button onclick="hideModal('impound-modal')"><i data-lucide="x"></i></button>
+        </div>
+        <div class="modal-body">
+            <label>Numar Inmatriculare</label>
+            <input type="text" id="impound-plate" placeholder="Ex: AB12 CDE" style="text-transform:uppercase" />
+            <label>Model Vehicul</label>
+            <input type="text" id="impound-model" placeholder="Ex: Adder, Sultan..." />
+            <label>Motiv Sechestru</label>
+            <textarea id="impound-reason" rows="2" placeholder="Motivul sechestrului..."></textarea>
+            <label>Taxa Recuperare ($)</label>
+            <input type="number" id="impound-fee" value="2500" min="0" />
+        </div>
+        <div class="modal-footer">
+            <button class="btn-secondary" onclick="hideModal('impound-modal')">Anuleaza</button>
+            <button class="btn-primary" onclick="submitImpound()">Sechestru</button>
+        </div>
+    </div>
+</div>
+
+<script src="script.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        if (window.lucide) lucide.createIcons();
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <title>SwitCore Shops</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+</head>
+<body>
+    <div id="shop-overlay" class="hidden">
+        <div id="shop-container">
+            <div id="shop-header">
+                <div id="shop-title">
+                    <span id="shop-icon"><i data-lucide="shopping-cart"></i></span>
+                    <span id="shop-name">Magazin</span>
+                </div>
+                <button id="btn-close" onclick="closeShop()"><i data-lucide="x"></i></button>
+            </div>
+
+            <div id="shop-body">
+                <div id="items-panel">
+                    <div id="items-grid"></div>
+                </div>
+
+                <div id="purchase-panel">
+                    <div id="purchase-empty">
+                        <p>Selectează un produs</p>
+                    </div>
+                    <div id="purchase-form" class="hidden">
+                        <div id="item-preview">
+                            <div id="item-preview-img"></div>
+                            <div id="item-preview-info">
+                                <div id="item-preview-label"></div>
+                                <div id="item-preview-price"></div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Cantitate</label>
+                            <div id="qty-control">
+                                <button onclick="changeQty(-1)">−</button>
+                                <input id="qty-input" type="number" value="1" min="1" max="99">
+                                <button onclick="changeQty(1)">+</button>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Metodă de plată</label>
+                            <select id="payment-select">
+                                <option value="cash">Cash</option>
+                            </select>
+                        </div>
+
+                        <div id="balance-display">
+                            <span id="balance-label">Sold disponibil:</span>
+                            <span id="balance-value">$0.00</span>
+                        </div>
+
+                        <div id="total-display">
+                            Total: <span id="total-value">$0.00</span>
+                        </div>
+
+                        <button id="btn-buy" onclick="confirmBuy()">Cumpără</button>
+                        <div id="buy-error" class="hidden"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.lucide) lucide.createIcons();
+        });
+    </script>
+</body>
+</html>

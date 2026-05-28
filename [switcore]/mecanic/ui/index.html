@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Service Auto</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+</head>
+<body>
+    <div id="app" class="hidden">
+        <div class="panel">
+
+            <div class="panel-header">
+                <div class="header-left">
+                    <svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+                    </svg>
+                    <span>Service Auto</span>
+                </div>
+                <button class="close-btn" onclick="closeUI()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="tabs">
+                <button class="tab active" data-tab="dashboard" onclick="switchTab('dashboard', this)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+                        <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+                    </svg>
+                    Dashboard
+                </button>
+                <button class="tab" data-tab="workshop" onclick="switchTab('workshop', this)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="3"/>
+                        <path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/>
+                    </svg>
+                    Servicii
+                </button>
+                <button class="tab" data-tab="calls" onclick="switchTab('calls', this)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.64 3.35 2 2 0 0 1 3.62 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.15a16 16 0 0 0 6.23 6.23l.82-.86a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+                    </svg>
+                    Cereri
+                    <span class="badge zero" id="callsBadge">0</span>
+                </button>
+                <button class="tab" data-tab="log" onclick="switchTab('log', this)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <line x1="16" y1="13" x2="8" y2="13"/>
+                        <line x1="16" y1="17" x2="8" y2="17"/>
+                    </svg>
+                    Istoric
+                </button>
+            </div>
+
+            <div class="tab-content">
+
+                <div id="tab-dashboard" class="tab-pane active">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value" id="statToday">0</div>
+                            <div class="stat-label">Servicii azi</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value green" id="statBonus">0 RON</div>
+                            <div class="stat-label">Bonus total</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value accent" id="statTotal">0</div>
+                            <div class="stat-label">Total servicii</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value orange" id="statRevenue">0 RON</div>
+                            <div class="stat-label">Venituri firma</div>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <div class="section-title">Preturi servicii</div>
+                        <div class="price-list" id="priceList"></div>
+                    </div>
+                </div>
+
+                <div id="tab-workshop" class="tab-pane">
+                    <div id="workshopEmpty" class="empty-state">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+                        </svg>
+                        <p>Apropie-te de un vehicul la atelier<br>pentru a vedea serviciile disponibile.</p>
+                    </div>
+
+                    <div id="workshopPanel" class="hidden">
+                        <div class="vehicle-header">
+                            <div class="vehicle-info">
+                                <div class="vehicle-plate" id="vehPlate">-</div>
+                                <div class="vehicle-model" id="vehModel">-</div>
+                            </div>
+                            <div class="vehicle-mileage" id="vehMileage">0 km</div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-title">Sanatate vehicul</div>
+                            <div class="health-bars">
+                                <div class="health-row">
+                                    <span class="health-label">Motor</span>
+                                    <div class="health-bar-wrap">
+                                        <div class="health-bar" id="engineBar"></div>
+                                    </div>
+                                    <span class="health-pct" id="enginePct">-</span>
+                                </div>
+                                <div class="health-row">
+                                    <span class="health-label">Caroserie</span>
+                                    <div class="health-bar-wrap">
+                                        <div class="health-bar" id="bodyBar"></div>
+                                    </div>
+                                    <span class="health-pct" id="bodyPct">-</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-title">Componente</div>
+                            <div class="components-grid" id="componentsGrid"></div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-title">Servicii disponibile</div>
+                            <div class="services-list" id="servicesList"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="tab-calls" class="tab-pane">
+                    <div class="calls-toolbar">
+                        <span class="section-title" style="margin-bottom:0">Cereri active</span>
+                        <button class="btn btn-ghost btn-sm" onclick="refreshCalls()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="23 4 23 10 17 10"/>
+                                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                            </svg>
+                            Actualizeaza
+                        </button>
+                    </div>
+                    <div id="callsList" class="calls-list">
+                        <div class="empty-state">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07"/>
+                                <path d="M1.64 3.35 A2 2 0 0 1 3.62 1h3"/>
+                            </svg>
+                            <p>Nicio cerere activa momentan.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="tab-log" class="tab-pane">
+                    <div class="log-list" id="logList">
+                        <div class="empty-state">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            </svg>
+                            <p>Niciun serviciu in istoric.</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div id="mg-overlay" class="mg-overlay hidden">
+        <div class="mg-panel">
+            <div class="mg-header">
+                <div class="mg-label" id="mg-label">Serviciu activ...</div>
+                <div class="mg-rounds-wrap" id="mg-rounds-wrap"></div>
+            </div>
+
+            <div id="mg-timing" class="mg-game hidden">
+                <div class="mg-timing-track" id="mg-timing-track">
+                    <div class="mg-timing-zone" id="mg-zone"></div>
+                    <div class="mg-timing-needle" id="mg-needle"></div>
+                </div>
+                <div class="mg-strikes" id="mg-strikes"></div>
+                <div class="mg-hint">Apasa <kbd>SPACE</kbd> sau click cand esti in zona verde</div>
+            </div>
+
+            <div id="mg-sequence" class="mg-game hidden">
+                <div class="mg-seq-keys" id="mg-seq-keys"></div>
+                <div class="mg-seq-timer-wrap">
+                    <div class="mg-seq-timer-bar" id="mg-seq-timer-bar"></div>
+                </div>
+                <div class="mg-hint">Apasa tastele in ordinea indicata</div>
+            </div>
+
+            <div id="mg-hammering" class="mg-game hidden">
+                <div class="mg-hammer-bar-wrap" id="mg-hammer-bar-wrap">
+                    <div class="mg-hammer-bar" id="mg-hammer-bar"></div>
+                    <div class="mg-hammer-pct" id="mg-hammer-pct">0%</div>
+                </div>
+                <div class="mg-hammer-timer-wrap">
+                    <div class="mg-hammer-timer" id="mg-hammer-timer"></div>
+                </div>
+                <div class="mg-hint">Apasa <kbd>E</kbd> sau click cat mai rapid!</div>
+            </div>
+
+            <div id="mg-result" class="mg-result hidden">
+                <div class="mg-result-icon" id="mg-result-icon"></div>
+                <div class="mg-result-text" id="mg-result-text"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

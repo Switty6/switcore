@@ -1,0 +1,1 @@
+-- MDT moved to mdt/client/main.lua

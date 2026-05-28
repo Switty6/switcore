@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SwitCore Admin</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+</head>
+<body>
+<div id="app" class="hidden">
+    <div class="scrim" id="scrim"></div>
+
+    <div class="panel" role="dialog" aria-modal="true">
+        <header class="header">
+            <div class="brand">
+                <img class="brand-mark" src="logo.svg" alt="SwitCore">
+                <span class="brand-text">SwitCore Admin</span>
+            </div>
+            <div class="header-right">
+                <span class="status-pill" id="statusPill"><span class="status-dot"></span><span id="statusText">connected</span></span>
+                <button class="icon-btn" id="closeBtn" title="Închide (ESC)"><i data-lucide="x"></i></button>
+            </div>
+        </header>
+
+        <div class="body">
+            <nav class="sidebar">
+                <button class="nav-btn" data-tab="players">
+                    <span class="nav-icon"><i data-lucide="users"></i></span>
+                    <span class="nav-label">Jucători</span>
+                    <span class="nav-count" id="navPlayerCount">0</span>
+                </button>
+                <button class="nav-btn" data-tab="self">
+                    <span class="nav-icon"><i data-lucide="wrench"></i></span>
+                    <span class="nav-label">Personal</span>
+                </button>
+                <button class="nav-btn" data-tab="vehicle">
+                    <span class="nav-icon"><i data-lucide="car"></i></span>
+                    <span class="nav-label">Vehicule</span>
+                </button>
+                <button class="nav-btn" data-tab="world">
+                    <span class="nav-icon"><i data-lucide="globe"></i></span>
+                    <span class="nav-label">Lume</span>
+                </button>
+                <button class="nav-btn" data-tab="items">
+                    <span class="nav-icon"><i data-lucide="package"></i></span>
+                    <span class="nav-label">Iteme</span>
+                </button>
+
+                <div class="sidebar-foot">
+                    <div class="status-toggles">
+                        <div class="status-toggle" id="statNoclip"><span>Noclip</span><span class="status-off">OFF</span></div>
+                        <div class="status-toggle" id="statGod"><span>God</span><span class="status-off">OFF</span></div>
+                        <div class="status-toggle" id="statInvis"><span>Invis</span><span class="status-off">OFF</span></div>
+                        <div class="status-toggle" id="statESP"><span>ESP</span><span class="status-off">OFF</span></div>
+                    </div>
+                </div>
+            </nav>
+
+            <main class="content">
+
+                <section class="tab" id="tab-players">
+                    <div class="tab-head">
+                        <h2>Jucători online <span class="muted" id="playerCount">(0)</span></h2>
+                        <div class="tab-head-actions">
+                            <div class="search">
+                                <span class="search-icon"><i data-lucide="search"></i></span>
+                                <input type="text" id="playerSearch" placeholder="Caută după ID sau nume...">
+                            </div>
+                            <button class="btn ghost" id="refreshPlayers" title="Refresh">↻</button>
+                        </div>
+                    </div>
+
+                    <div class="player-list" id="playerList">
+                        <div class="empty">Niciun jucător online.</div>
+                    </div>
+                </section>
+
+                <section class="tab" id="tab-self">
+                    <h2>Unelte personale</h2>
+
+                    <div class="card-row">
+                        <button class="toggle-card" data-perm="admin.self.noclip" id="btn-noclip">
+                            <span class="tc-icon"><i data-lucide="rocket"></i></span>
+                            <div class="tc-body"><div class="tc-title">Noclip</div><div class="tc-state">off</div></div>
+                            <span class="tc-led"></span>
+                        </button>
+                        <button class="toggle-card" data-perm="admin.self.godmode" id="btn-godmode">
+                            <span class="tc-icon"><i data-lucide="heart"></i></span>
+                            <div class="tc-body"><div class="tc-title">Godmode</div><div class="tc-state">off</div></div>
+                            <span class="tc-led"></span>
+                        </button>
+                        <button class="toggle-card" data-perm="admin.self.invisible" id="btn-invisible">
+                            <span class="tc-icon"><i data-lucide="eye"></i></span>
+                            <div class="tc-body"><div class="tc-title">Invisible</div><div class="tc-state">off</div></div>
+                            <span class="tc-led"></span>
+                        </button>
+                        <button class="toggle-card" data-perm="admin.self.overlay" id="btn-overlay">
+                            <span class="tc-icon"><i data-lucide="radar"></i></span>
+                            <div class="tc-body"><div class="tc-title">Entity ESP</div><div class="tc-state">off</div></div>
+                            <span class="tc-led"></span>
+                        </button>
+                    </div>
+
+                    <div class="card-row" data-perm="admin.self.heal">
+                        <button class="action-card" id="btn-heal">
+                            <span class="ac-icon"><i data-lucide="heart"></i></span><span>Heal</span>
+                        </button>
+                        <button class="action-card" id="btn-armor">
+                            <span class="ac-icon"><i data-lucide="shield"></i></span><span>Armor</span>
+                        </button>
+                        <button class="action-card" id="btn-revive">
+                            <span class="ac-icon"><i data-lucide="zap"></i></span><span>Revive</span>
+                        </button>
+                        <button class="action-card" id="btn-tp-waypoint" data-perm="admin.self.teleport">
+                            <span class="ac-icon"><i data-lucide="map-pin"></i></span><span>TP Waypoint</span>
+                        </button>
+                    </div>
+
+                    <div class="card" data-perm="admin.self.teleport">
+                        <div class="card-head"><h3>Teleport coordonate</h3></div>
+                        <div class="row">
+                            <input type="number" id="tpX" placeholder="X" class="input small">
+                            <input type="number" id="tpY" placeholder="Y" class="input small">
+                            <input type="number" id="tpZ" placeholder="Z" class="input small">
+                            <button class="btn primary" id="btn-tp-coords">Teleport</button>
+                            <button class="btn ghost" id="btn-my-coords" title="Folosește coordonatele actuale"><i data-lucide="map-pin"></i> Here</button>
+                        </div>
+                    </div>
+
+                    <div class="card" data-perm="admin.self.weapons">
+                        <div class="card-head"><h3>Armă</h3></div>
+                        <div class="row">
+                            <input type="text" id="weaponName" placeholder="PISTOL, ASSAULTRIFLE, SMG..." class="input flex">
+                            <input type="number" id="weaponAmmo" placeholder="250" min="1" max="9999" class="input w-90">
+                            <button class="btn warn" id="btn-give-weapon">Give</button>
+                            <button class="btn danger ghost" id="btn-remove-weapons">Remove All</button>
+                        </div>
+                        <div class="chips" id="weaponPresets"></div>
+                    </div>
+
+                    <div class="card" data-perm="admin.self.cash">
+                        <div class="card-head"><h3>Cash personal</h3></div>
+                        <div class="row">
+                            <select class="input w-130" id="selfCurrency"></select>
+                            <select class="input w-100" id="selfCashTarget">
+                                <option value="cash">Cash</option>
+                                <option value="bank">Bancă</option>
+                            </select>
+                            <input type="number" id="selfCashAmount" placeholder="Sumă" class="input flex" min="1">
+                            <button class="btn success" id="btn-self-cash">Give</button>
+                        </div>
+                    </div>
+
+                    <div class="card" data-perm="admin.self.model">
+                        <div class="card-head"><h3>Schimbă model (ped)</h3></div>
+                        <div class="row">
+                            <input type="text" id="pedModel" placeholder="mp_m_freemode_01, a_m_y_business_01..." class="input flex">
+                            <button class="btn warn" id="btn-set-model">Apply</button>
+                        </div>
+                    </div>
+
+                    <div class="card collapsible" data-perm="admin.self.overlay" id="espCard">
+                        <div class="card-head clickable" id="espToggle">
+                            <h3><i data-lucide="radar"></i> Entity ESP - configurare</h3>
+                            <div>
+                                <button class="btn primary small" id="btn-save-overlay"><i data-lucide="save"></i> Save</button>
+                                <span class="chevron">▾</span>
+                            </div>
+                        </div>
+                        <div class="card-collapse" id="espBody">
+                            <div class="esp-section">
+                                <label class="range-label">
+                                    Distanță max
+                                    <input type="range" id="ov-maxDist" min="20" max="200" step="5" value="80">
+                                    <span class="range-val" id="ov-maxDist-val">80m</span>
+                                </label>
+                                <div class="checks">
+                                    <label><input type="checkbox" id="ov-showVeh" checked> <i data-lucide="car"></i> Vehicule</label>
+                                    <label><input type="checkbox" id="ov-showPed" checked> <i data-lucide="user"></i> Peds / Players</label>
+                                    <label><input type="checkbox" id="ov-showObj"> <i data-lucide="package"></i> Obiecte</label>
+                                    <label><input type="checkbox" id="ov-showSelf" checked> <i data-lucide="map-pin"></i> Self HUD</label>
+                                </div>
+                            </div>
+
+                            <div class="esp-section">
+                                <div class="esp-title"><i data-lucide="car"></i> Vehicule - câmpuri</div>
+                                <div class="checks compact">
+                                    <label><input type="checkbox" id="ov-veh-model" checked> Model</label>
+                                    <label><input type="checkbox" id="ov-veh-plate" checked> Plate</label>
+                                    <label><input type="checkbox" id="ov-veh-netId" checked> NetID</label>
+                                    <label><input type="checkbox" id="ov-veh-handle" checked> Handle</label>
+                                    <label><input type="checkbox" id="ov-veh-dist" checked> Distanță</label>
+                                    <label><input type="checkbox" id="ov-veh-speed" checked> Speed</label>
+                                    <label><input type="checkbox" id="ov-veh-bodyHp" checked> Body HP</label>
+                                    <label><input type="checkbox" id="ov-veh-engineHp" checked> Engine HP</label>
+                                    <label><input type="checkbox" id="ov-veh-coords"> Coordonate</label>
+                                    <label><input type="checkbox" id="ov-veh-heading"> Heading</label>
+                                    <label><input type="checkbox" id="ov-veh-occupants" checked> Driver / Pass</label>
+                                    <label><input type="checkbox" id="ov-veh-networked"> Networked</label>
+                                </div>
+                            </div>
+
+                            <div class="esp-section">
+                                <div class="esp-title"><i data-lucide="user"></i> Peds / Players - câmpuri</div>
+                                <div class="checks compact">
+                                    <label><input type="checkbox" id="ov-ped-label" checked> Tip</label>
+                                    <label><input type="checkbox" id="ov-ped-model" checked> Model/Nume</label>
+                                    <label><input type="checkbox" id="ov-ped-netId" checked> NetID</label>
+                                    <label><input type="checkbox" id="ov-ped-handle" checked> Handle</label>
+                                    <label><input type="checkbox" id="ov-ped-serverId" checked> Server ID</label>
+                                    <label><input type="checkbox" id="ov-ped-dist" checked> Distanță</label>
+                                    <label><input type="checkbox" id="ov-ped-hp" checked> HP</label>
+                                    <label><input type="checkbox" id="ov-ped-armour" checked> Armură</label>
+                                    <label><input type="checkbox" id="ov-ped-heading"> Heading</label>
+                                    <label><input type="checkbox" id="ov-ped-weapon" checked> Armă</label>
+                                    <label><input type="checkbox" id="ov-ped-isDead" checked> Dead</label>
+                                    <label><input type="checkbox" id="ov-ped-coords"> Coordonate</label>
+                                </div>
+                            </div>
+
+                            <div class="esp-section">
+                                <div class="esp-title"><i data-lucide="package"></i> Obiecte - câmpuri</div>
+                                <div class="checks compact">
+                                    <label><input type="checkbox" id="ov-obj-model" checked> Model Hash</label>
+                                    <label><input type="checkbox" id="ov-obj-netId" checked> NetID</label>
+                                    <label><input type="checkbox" id="ov-obj-handle" checked> Handle</label>
+                                    <label><input type="checkbox" id="ov-obj-dist" checked> Distanță</label>
+                                    <label><input type="checkbox" id="ov-obj-coords"> Coordonate</label>
+                                    <label><input type="checkbox" id="ov-obj-networked"> Networked</label>
+                                </div>
+                            </div>
+
+                            <div class="esp-section">
+                                <div class="esp-title"><i data-lucide="map-pin"></i> Self HUD - câmpuri</div>
+                                <div class="checks compact">
+                                    <label><input type="checkbox" id="ov-self-coords" checked> Coordonate</label>
+                                    <label><input type="checkbox" id="ov-self-heading" checked> Heading</label>
+                                    <label><input type="checkbox" id="ov-self-speed" checked> Speed</label>
+                                    <label><input type="checkbox" id="ov-self-street" checked> Stradă</label>
+                                    <label><input type="checkbox" id="ov-self-zone" checked> Zonă</label>
+                                    <label><input type="checkbox" id="ov-self-fps" checked> FPS</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="tab" id="tab-vehicle">
+                    <h2>Unelte vehicule</h2>
+
+                    <div class="card" data-perm="admin.vehicle.spawn">
+                        <div class="card-head"><h3>Spawn vehicul</h3></div>
+                        <div class="row">
+                            <input type="text" id="spawnModel" placeholder="adder, zentorno, sultan..." class="input flex">
+                            <label class="check-inline"><input type="checkbox" id="spawnEnter" checked> Intră direct</label>
+                            <button class="btn success" id="btn-spawn">Spawn</button>
+                        </div>
+                        <div class="chips" id="vehPresets"></div>
+                    </div>
+
+                    <div class="card-row" data-perm="admin.vehicle.delete">
+                        <button class="action-card" id="btn-del-veh">
+                            <span class="ac-icon"><i data-lucide="trash-2"></i></span><span>Delete</span>
+                        </button>
+                        <button class="action-card danger" id="btn-del-nearby">
+                            <span class="ac-icon"><i data-lucide="bomb"></i></span><span>Delete Nearby</span>
+                        </button>
+                    </div>
+
+                    <div class="card-row" data-perm="admin.vehicle.modify">
+                        <button class="action-card" id="btn-repair">
+                            <span class="ac-icon"><i data-lucide="wrench"></i></span><span>Repair</span>
+                        </button>
+                        <button class="action-card" id="btn-refuel">
+                            <span class="ac-icon"><i data-lucide="fuel"></i></span><span>Refuel</span>
+                        </button>
+                        <button class="action-card" id="btn-flip">
+                            <span class="ac-icon"><i data-lucide="refresh-cw"></i></span><span>Flip</span>
+                        </button>
+                        <button class="action-card" id="btn-engine">
+                            <span class="ac-icon"><i data-lucide="key"></i></span><span>Engine</span>
+                        </button>
+                        <button class="action-card" id="btn-lock">
+                            <span class="ac-icon"><i data-lucide="lock"></i></span><span>Lock</span>
+                        </button>
+                    </div>
+
+                    <div class="card" data-perm="admin.vehicle.modify">
+                        <div class="card-head"><h3>Înmatriculare</h3></div>
+                        <div class="row">
+                            <input type="text" id="plateInput" placeholder="ABC123" maxlength="8" class="input flex">
+                            <button class="btn warn" id="btn-set-plate">Set Plate</button>
+                        </div>
+                    </div>
+
+                    <div class="card" data-perm="admin.vehicle.modify">
+                        <div class="card-head">
+                            <h3>Culoare</h3>
+                            <div class="muted small">Click = primar · Ctrl+click = secundar</div>
+                        </div>
+                        <div class="color-grid" id="colorGrid"></div>
+                        <div class="row tight">
+                            <span class="muted small">Primar: <span id="colorPrimary">0</span></span>
+                            <span class="muted small">Secundar: <span id="colorSecondary">0</span></span>
+                            <button class="btn warn small" id="btn-set-color">Apply</button>
+                        </div>
+                    </div>
+
+                    <div class="card" data-perm="admin.vehicle.modify">
+                        <div class="card-head"><h3>Livery & Geamuri</h3></div>
+                        <div class="row">
+                            <label class="check-inline">Livery <input type="number" id="liveryInput" value="0" min="0" max="20" class="input w-70"></label>
+                            <button class="btn warn small" id="btn-set-livery">Apply</button>
+                            <label class="check-inline">Tint <input type="number" id="tintInput" value="0" min="0" max="6" class="input w-70"></label>
+                            <button class="btn warn small" id="btn-set-tint">Apply</button>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="tab" id="tab-world">
+                    <h2>Lume / Server</h2>
+
+                    <div class="card" data-perm="admin.world.time">
+                        <div class="card-head"><h3>Timp</h3></div>
+                        <div class="row">
+                            <label class="check-inline">Oră <input type="number" id="timeHour" value="12" min="0" max="23" class="input w-70"></label>
+                            <label class="check-inline">Min <input type="number" id="timeMinute" value="0" min="0" max="59" class="input w-70"></label>
+                            <label class="check-inline"><input type="checkbox" id="freezeTime"> Freeze</label>
+                            <button class="btn warn" id="btn-set-time">Set</button>
+                        </div>
+                        <div class="chips" id="timePresets"></div>
+                    </div>
+
+                    <div class="card" data-perm="admin.world.weather">
+                        <div class="card-head"><h3>Vreme</h3></div>
+                        <div class="weather-grid" id="weatherGrid"></div>
+                    </div>
+
+                    <div class="card" data-perm="admin.world.announce">
+                        <div class="card-head"><h3>Anunț server</h3></div>
+                        <div class="row">
+                            <input type="text" id="announceInput" placeholder="Mesaj global pentru toți jucătorii..." class="input flex" maxlength="200">
+                            <button class="btn warn" id="btn-announce">Send</button>
+                        </div>
+                    </div>
+
+                    <div class="card" data-perm="admin.world.resources">
+                        <div class="card-head">
+                            <h3>Resurse</h3>
+                            <button class="btn ghost small" id="btn-refresh-resources">↻</button>
+                        </div>
+                        <div class="row">
+                            <input type="text" id="resSearch" placeholder="Filtru..." class="input flex">
+                        </div>
+                        <div class="resource-list" id="resourceList"></div>
+                    </div>
+                </section>
+
+                <section class="tab" id="tab-items">
+                    <div class="tab-head">
+                        <h2>Catalog iteme</h2>
+                        <div class="tab-head-actions">
+                            <div class="search">
+                                <span class="search-icon"><i data-lucide="search"></i></span>
+                                <input type="text" id="itemSearch" placeholder="Caută după nume, label sau tip...">
+                            </div>
+                            <button class="btn ghost" id="btn-reload-items" title="Reload">↻</button>
+                        </div>
+                    </div>
+
+                    <div class="card" data-perm="admin.items.manage">
+                        <div class="card-head">
+                            <h3 id="itemFormTitle">Adaugă item</h3>
+                            <button class="btn ghost small" id="btn-item-reset" title="Resetează formular">New</button>
+                        </div>
+                        <div class="row">
+                            <input type="text" id="itemName" placeholder="nume (a-z, 0-9, _)" maxlength="50" class="input flex">
+                            <input type="text" id="itemLabel" placeholder="Label vizibil" maxlength="100" class="input flex">
+                        </div>
+                        <div class="row">
+                            <select class="input w-130" id="itemType">
+                                <option value="misc">misc</option>
+                                <option value="consumable">consumable</option>
+                                <option value="medical">medical</option>
+                                <option value="weapon">weapon</option>
+                                <option value="ammo">ammo</option>
+                                <option value="money">money</option>
+                                <option value="key">key</option>
+                                <option value="tool">tool</option>
+                            </select>
+                            <input type="number" id="itemWeight" placeholder="Greutate (kg)" min="0" max="999.99" step="0.01" class="input w-130">
+                            <label class="check-inline"><input type="checkbox" id="itemUsable"> Usable</label>
+                            <label class="check-inline"><input type="checkbox" id="itemStackable" checked> Stackable</label>
+                        </div>
+                        <div class="row">
+                            <input type="text" id="itemDescription" placeholder="Descriere (opțional)" maxlength="500" class="input flex">
+                        </div>
+                        <div class="row">
+                            <input type="text" id="itemImageUrl" placeholder="URL imagine (opțional)" maxlength="500" class="input flex">
+                            <div id="itemImagePreview" class="item-img-preview" title="Preview imagine"></div>
+                        </div>
+                        <div class="row">
+                            <input type="text" id="itemDropProp" placeholder="Drop prop model (ex: prop_paper_bag_01)" maxlength="100" class="input flex">
+                            <input type="text" id="itemDropAnimDict" placeholder="Anim dict (ex: pickup_object)" maxlength="100" class="input flex">
+                            <input type="text" id="itemDropAnimName" placeholder="Anim name (ex: putdown_low)" maxlength="100" class="input flex">
+                        </div>
+                        <div class="row">
+                            <div class="flex"></div>
+                            <button class="btn success" id="btn-item-save">Save</button>
+                        </div>
+                    </div>
+
+                    <div class="muted small" id="itemsSummary">0 iteme</div>
+                    <div class="items-list" id="itemsList">
+                        <div class="empty">Se încarcă itemele...</div>
+                    </div>
+                </section>
+
+            </main>
+        </div>
+    </div>
+
+    <div class="modal hidden" id="playerModal">
+        <div class="modal-card">
+            <div class="modal-head">
+                <div>
+                    <div class="modal-title" id="modalTitle">Jucător</div>
+                    <div class="modal-sub muted" id="modalSub"></div>
+                </div>
+                <button class="icon-btn" id="modalClose"><i data-lucide="x"></i></button>
+            </div>
+
+            <div class="modal-tabs">
+                <button class="m-tab active" data-mtab="actions">Acțiuni</button>
+                <button class="m-tab" data-mtab="cash" data-perm="admin.players.cash">Cash</button>
+                <button class="m-tab" data-mtab="inventory" data-perm="admin.players.inventory">Inventar</button>
+                <button class="m-tab" data-mtab="needs" data-perm="admin.players.needs">Needs</button>
+                <button class="m-tab" data-mtab="character" data-perm="admin.players.character">Personaj</button>
+                <button class="m-tab" data-mtab="vehicles" data-perm="admin.players.vehicles">Vehicule</button>
+                <button class="m-tab" data-mtab="job" data-perm="admin.players.jobs">Job</button>
+                <button class="m-tab" data-mtab="groups" data-perm="admin.players.groups">Grupuri</button>
+                <button class="m-tab" data-mtab="info" data-perm="admin.players.view">Info</button>
+            </div>
+
+            <div class="modal-body">
+                <div class="m-panel active" id="mp-actions">
+                    <div class="action-grid">
+                        <button class="ma-btn" id="ma-goto" data-perm="admin.players.teleport">→ Goto</button>
+                        <button class="ma-btn" id="ma-bring" data-perm="admin.players.teleport">← Bring</button>
+                        <button class="ma-btn" id="ma-spectate" data-perm="admin.players.spectate"><i data-lucide="eye"></i> Spectate</button>
+                        <button class="ma-btn" id="ma-freeze" data-perm="admin.players.freeze"><i data-lucide="snowflake"></i> Freeze</button>
+                        <button class="ma-btn" id="ma-unfreeze" data-perm="admin.players.freeze">▶ Unfreeze</button>
+                        <button class="ma-btn warn" id="ma-warn" data-perm="admin.players.moderate"><i data-lucide="alert-triangle"></i> Warn</button>
+                        <button class="ma-btn danger" id="ma-kick" data-perm="admin.players.moderate"><i data-lucide="log-out"></i> Kick</button>
+                        <button class="ma-btn danger" id="ma-ban" data-perm="admin.players.moderate"><i data-lucide="ban"></i> Ban</button>
+                    </div>
+
+                    <div class="modal-section" data-perm="admin.players.bucket">
+                        <div class="section-title">Routing Bucket</div>
+                        <div class="row">
+                            <input type="number" id="bucketInput" value="0" min="0" class="input w-90">
+                            <button class="btn warn small" id="ma-bucket">Set Bucket</button>
+                            <span class="muted small">Curent: <span id="bucketCurrent">0</span></span>
+                        </div>
+                    </div>
+
+                    <div class="reason-box hidden" id="reasonBox">
+                        <input type="text" id="reasonInput" placeholder="Motiv obligatoriu..." class="input flex">
+                        <input type="text" id="durationInput" placeholder="Durată ban (1d, 12h, 30m, permanent)" class="input flex hidden">
+                        <div class="row">
+                            <button class="btn ghost" id="reasonCancel">Cancel</button>
+                            <button class="btn danger" id="reasonConfirm">Confirm</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="m-panel" id="mp-cash" data-perm="admin.players.cash">
+                    <div class="row">
+                        <select class="input w-130" id="playerCurrency"></select>
+                        <select class="input w-100" id="playerCashTarget">
+                            <option value="cash">Cash</option>
+                            <option value="bank">Bancă</option>
+                        </select>
+                        <input type="number" id="playerCashAmount" placeholder="Sumă (poate fi negativă)" class="input flex">
+                        <button class="btn success" id="ma-give-cash">Give</button>
+                    </div>
+                    <div class="hint muted"><i data-lucide="lightbulb"></i> Suma negativă scoate bani. Banca funcționează doar dacă personajul are cont deschis.</div>
+                </div>
+
+                <div class="m-panel" id="mp-inventory" data-perm="admin.players.inventory">
+                    <div class="row">
+                        <input type="text" id="invItemSearch" placeholder="Caută item după nume sau label..." class="input flex" list="invItemDatalist">
+                        <datalist id="invItemDatalist"></datalist>
+                        <input type="number" id="invItemQty" value="1" min="1" class="input w-90">
+                        <button class="btn success small" id="ma-give-item">Add</button>
+                        <button class="icon-btn ghost small" id="ma-refresh-inv" title="Reîncarcă"><i data-lucide="refresh-cw"></i></button>
+                    </div>
+                    <div class="muted small" id="invSummary">-</div>
+                    <div class="inv-table" id="invTable">
+                        <div class="empty">Se încarcă inventarul...</div>
+                    </div>
+                </div>
+
+                <div class="m-panel" id="mp-needs" data-perm="admin.players.needs">
+                    <div class="needs-row">
+                        <label class="ik">Foame</label>
+                        <input type="range" id="needHunger" min="0" max="100" value="100" class="slider">
+                        <span class="needs-val" id="needHungerVal">100</span>
+                        <button class="btn small" id="ma-set-hunger">Set</button>
+                    </div>
+                    <div class="needs-row">
+                        <label class="ik">Sete</label>
+                        <input type="range" id="needThirst" min="0" max="100" value="100" class="slider">
+                        <span class="needs-val" id="needThirstVal">100</span>
+                        <button class="btn small" id="ma-set-thirst">Set</button>
+                    </div>
+                    <div class="row">
+                        <button class="btn success small" id="ma-heal-target"><i data-lucide="heart-pulse"></i> Heal full</button>
+                        <button class="btn warn small" id="ma-revive-target"><i data-lucide="activity"></i> Revive</button>
+                        <button class="icon-btn ghost small" id="ma-refresh-needs" title="Reîncarcă"><i data-lucide="refresh-cw"></i></button>
+                    </div>
+                </div>
+
+                <div class="m-panel" id="mp-character" data-perm="admin.players.character">
+                    <div class="char-card" id="charCard">Se încarcă...</div>
+                    <div class="section-title">Toate personajele jucătorului</div>
+                    <div class="char-list" id="charList"><span class="muted small">-</span></div>
+                    <div class="section-title">Teleportează personaj la coords</div>
+                    <div class="row">
+                        <input type="number" id="charTpX" placeholder="X" class="input w-90" step="0.01">
+                        <input type="number" id="charTpY" placeholder="Y" class="input w-90" step="0.01">
+                        <input type="number" id="charTpZ" placeholder="Z" class="input w-90" step="0.01">
+                        <button class="btn small" id="ma-tp-target">Teleport</button>
+                    </div>
+                </div>
+
+                <div class="m-panel" id="mp-vehicles" data-perm="admin.players.vehicles">
+                    <div class="row">
+                        <span class="muted small" id="vehSummary">-</span>
+                        <button class="icon-btn ghost small" id="ma-refresh-veh" title="Reîncarcă"><i data-lucide="refresh-cw"></i></button>
+                    </div>
+                    <div class="veh-list" id="vehList">
+                        <div class="empty">Se încarcă vehiculele...</div>
+                    </div>
+                </div>
+
+                <div class="m-panel" id="mp-job" data-perm="admin.players.jobs">
+                    <div class="job-card" id="jobCard">Se încarcă...</div>
+                    <div class="section-title">Setează job</div>
+                    <div class="row">
+                        <select class="input flex" id="jobSelect"></select>
+                        <select class="input w-130" id="jobGradeSelect"></select>
+                        <button class="btn small" id="ma-set-job">Set</button>
+                        <button class="btn danger small" id="ma-fire">Fire</button>
+                    </div>
+                </div>
+
+                <div class="m-panel" id="mp-groups" data-perm="admin.players.groups">
+                    <div class="row">
+                        <select class="input flex" id="groupSelect"></select>
+                        <button class="btn success small" id="ma-add-group">Add</button>
+                        <button class="btn danger small" id="ma-remove-group">Remove</button>
+                    </div>
+                    <div class="muted small">Grupuri curente:</div>
+                    <div class="current-groups" id="currentGroups"></div>
+                </div>
+
+                <div class="m-panel" id="mp-info">
+                    <div class="info-block" id="infoBlock">Se încarcă...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="esp-overlay" class="hidden" aria-hidden="true">
+    <div id="esp-self" class="esp-self hidden"></div>
+    <div id="esp-labels"></div>
+</div>
+
+<script src="script.js"></script>
+<script>document.addEventListener('DOMContentLoaded', () => lucide.createIcons());</script>
+</body>
+</html>

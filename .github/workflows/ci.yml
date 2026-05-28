@@ -1,0 +1,160 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  manifest-validation:
+    name: Validare fxmanifest
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verificare dependencies si lua54
+        shell: python
+        run: |
+          import os, re, sys
+
+          MODULES_DIR = '[switcore]'
+          fail = False
+          modules = set()
+
+          for entry in os.listdir(MODULES_DIR):
+              fx = os.path.join(MODULES_DIR, entry, 'fxmanifest.lua')
+              if os.path.isfile(fx):
+                  modules.add(entry)
+
+          # Resurse externe acceptate (Cfx.re, gameplay, etc.)
+          EXTERNAL = {'chat', 'baseevents', 'sessionmanager', 'hardcap', 'mapmanager',
+                      'spawnmanager', 'playernames', 'yarn', 'webpack', 'rconlog'}
+
+          for module in sorted(modules):
+              fx_path = os.path.join(MODULES_DIR, module, 'fxmanifest.lua')
+              content = open(fx_path, encoding='utf-8', errors='ignore').read()
+
+              # Verifica lua54
+              if not re.search(r"lua54\s+'yes'", content):
+                  print(f"::warning file={fx_path}::Lipseste 'lua54 yes'")
+
+              # Verifica dependentele
+              m = re.search(r'dependencies\s*\{([^}]*)\}', content, re.DOTALL)
+              if not m:
+                  continue
+              deps = re.findall(r"'([a-z0-9_-]+)'", m.group(1))
+              for dep in deps:
+                  if dep in EXTERNAL or dep in modules:
+                      continue
+                  print(f"::error file={fx_path}::Modulul '{module}' declara dependenta '{dep}' care nu exista sub [switcore]/ si nu e o resursa externa cunoscuta")
+                  fail = True
+
+          if fail:
+              sys.exit(1)
+          print(f"OK - {len(modules)} module verificate, toate dependentele sunt valide")
+
+  required-files:
+    name: Verificare fisiere obligatorii
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verifica fisiere root
+        run: |
+          required=("README.md" "LICENSE" "CONTRIBUTING.md" "SECURITY.md" "CHANGELOG.md" ".gitignore" "server.cfg.example")
+          fail=0
+          for f in "${required[@]}"; do
+            if [ ! -f "$f" ]; then
+              echo "::error::Lipseste fisierul obligatoriu: $f"
+              fail=1
+            fi
+          done
+          [ $fail -eq 0 ] && echo "Toate fisierele obligatorii sunt prezente"
+          exit $fail
+
+  sql-syntax:
+    name: Validare scheme SQL (PostgreSQL 14)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci
+          POSTGRES_DB: switcore_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instalare client psql
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y postgresql-client
+
+      - name: Calculeaza ordinea topologica si aplica schemele
+        env:
+          PGPASSWORD: ci
+        shell: python
+        run: |
+          import os, re, subprocess, sys
+
+          MODULES_DIR = '[switcore]'
+          modules = {}
+
+          for entry in os.listdir(MODULES_DIR):
+              fx = os.path.join(MODULES_DIR, entry, 'fxmanifest.lua')
+              if not os.path.isfile(fx):
+                  continue
+              content = open(fx, encoding='utf-8', errors='ignore').read()
+              m = re.search(r'dependencies\s*\{([^}]*)\}', content, re.DOTALL)
+              deps = []
+              if m:
+                  deps = re.findall(r"'([a-z0-9_-]+)'", m.group(1))
+              modules[entry] = deps
+
+          # Sort topologic (DFS post-order)
+          visited = set()
+          order = []
+          def visit(m):
+              if m in visited:
+                  return
+              visited.add(m)
+              for d in modules.get(m, []):
+                  if d in modules:
+                      visit(d)
+              order.append(m)
+
+          for m in sorted(modules):
+              visit(m)
+
+          print(f"Ordine topologica calculata pentru {len(order)} module")
+
+          # Aplica fiecare schema in ordine
+          fail = False
+          applied = 0
+          for module in order:
+              schema_path = os.path.join(MODULES_DIR, module, 'schema.sql')
+              if not os.path.isfile(schema_path):
+                  continue
+              print(f"::group::Aplicare {schema_path}")
+              result = subprocess.run([
+                  'psql', '-h', 'localhost', '-U', 'ci', '-d', 'switcore_ci',
+                  '-v', 'ON_ERROR_STOP=1', '-f', schema_path
+              ], capture_output=True, text=True)
+              if result.returncode != 0:
+                  print(f"::error file={schema_path}::SQL invalid: {result.stderr.strip()}")
+                  fail = True
+              else:
+                  applied += 1
+                  print(f"OK ({result.stdout.strip().split(chr(10))[-1] if result.stdout else 'aplicat'})")
+              print("::endgroup::")
+
+          if fail:
+              sys.exit(1)
+          print(f"Toate cele {applied} scheme SQL trec validarea PostgreSQL 14")

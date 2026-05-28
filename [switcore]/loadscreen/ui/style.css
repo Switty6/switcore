@@ -1,0 +1,342 @@
+/* ==================== SWITCORE LOADSCREEN ==================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+    --blue:   #00b4ff;
+    --green:  #00c97a;
+    --dark:   #04080f;
+    --text:   #e8f4ff;
+    --muted:  rgba(232,244,255,0.4);
+}
+
+html, body {
+    width: 100%; height: 100%; overflow: hidden;
+    background: var(--dark);
+    font-family: 'Inter', 'Segoe UI', -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    color: var(--text);
+}
+
+/* ==================== VIDEO BACKGROUND ==================== */
+
+#bg-video {
+    position: fixed;
+    inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    z-index: 0;
+    opacity: 0;
+    transition: opacity 1.8s ease;
+}
+#bg-video.loaded {
+    opacity: 1;
+}
+
+/* Gradient overlay peste video - menține lizibilitatea */
+.bg-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    background:
+        linear-gradient(to bottom, rgba(4,8,15,0.72) 0%, rgba(4,8,15,0.45) 40%, rgba(4,8,15,0.72) 100%),
+        radial-gradient(ellipse at 50% 50%, transparent 30%, rgba(4,8,15,0.55) 100%);
+    pointer-events: none;
+}
+
+/* ==================== CANVAS PARTICLES ==================== */
+
+#particles {
+    position: fixed;
+    inset: 0;
+    z-index: 2;
+    transition: opacity 1.5s ease;
+    background: radial-gradient(ellipse at 25% 45%, rgba(0,30,80,0.55) 0%, transparent 55%),
+                radial-gradient(ellipse at 75% 15%, rgba(0,50,120,0.35) 0%, transparent 50%),
+                var(--dark);
+}
+/* Când video-ul e activ, particles devin subtile */
+#particles.video-active {
+    opacity: 0.25;
+    background: transparent;
+}
+
+/* ==================== SCAN LINE ==================== */
+
+.scanline {
+    position: fixed;
+    inset: 0;
+    z-index: 3;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 3px,
+        rgba(0, 0, 0, 0.04) 3px,
+        rgba(0, 0, 0, 0.04) 4px
+    );
+}
+
+/* ==================== FADE-TO-BLACK EXIT ==================== */
+
+.screen-fade {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    background: #000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.6s ease;
+}
+.screen-fade.active {
+    opacity: 1;
+    pointer-events: all;
+}
+
+/* ==================== CENTER CONTENT ==================== */
+
+.content {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 36px;
+    z-index: 10;
+    animation: riseIn 1s cubic-bezier(.22,1,.36,1) forwards;
+    opacity: 0;
+}
+
+@keyframes riseIn {
+    from { opacity: 0; transform: translate(-50%, calc(-50% + 24px)); }
+    to   { opacity: 1; transform: translate(-50%, -50%); }
+}
+
+/* ==================== LOGO ==================== */
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 26px;
+}
+
+.logo-hex {
+    width: 82px;
+    height: 82px;
+    color: var(--blue);
+    filter: drop-shadow(0 0 22px rgba(0,180,255,0.6));
+    animation: hexPulse 3s ease-in-out infinite;
+    flex-shrink: 0;
+}
+
+.hex-svg { width: 100%; height: 100%; }
+
+.ring-outer {
+    transform-origin: 40px 40px;
+    animation: rotCW 20s linear infinite;
+}
+.ring-mid {
+    transform-origin: 40px 40px;
+    animation: rotCCW 14s linear infinite;
+}
+.hex-core {
+    animation: corePulse 3s ease-in-out infinite;
+}
+
+@keyframes rotCW  { from { transform: rotate(0deg);    } to { transform: rotate(360deg);  } }
+@keyframes rotCCW { from { transform: rotate(0deg);    } to { transform: rotate(-360deg); } }
+@keyframes corePulse {
+    0%, 100% { opacity: 0.85; }
+    50%      { opacity: 1;    }
+}
+@keyframes hexPulse {
+    0%, 100% { filter: drop-shadow(0 0 18px rgba(0,180,255,0.5));  }
+    50%      { filter: drop-shadow(0 0 36px rgba(0,180,255,0.9)); }
+}
+
+.logo-text {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.logo-text h1 {
+    font-size: 44px;
+    font-weight: 900;
+    letter-spacing: 8px;
+    color: var(--text);
+    line-height: 1;
+    text-shadow: 0 0 60px rgba(0,180,255,0.22);
+}
+
+.logo-subtitle {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 6px;
+    color: var(--blue);
+    opacity: 0.65;
+    margin-top: 2px;
+}
+
+.logo-tagline {
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+    margin-top: 6px;
+    background: linear-gradient(90deg, var(--muted), rgba(0,180,255,0.7), var(--muted));
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: shimmer 4s linear infinite;
+}
+
+@keyframes shimmer {
+    from { background-position: 200% center; }
+    to   { background-position: -200% center; }
+}
+
+/* Separator */
+.sep {
+    width: 300px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(0,180,255,0.35), transparent);
+}
+
+/* ==================== TIPS ==================== */
+
+.tips-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    max-width: 520px;
+    min-height: 48px;
+}
+
+.tip-icon-wrap {
+    width: 30px;
+    height: 30px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,180,255,0.08);
+    border: 1px solid rgba(0,180,255,0.18);
+    border-radius: 8px;
+    margin-top: 1px;
+    color: var(--blue);
+    transition: border-color 0.3s, background 0.3s;
+}
+.tip-icon-wrap svg {
+    width: 15px;
+    height: 15px;
+    opacity: 0.85;
+}
+
+.tip-text {
+    font-size: 14px;
+    color: rgba(232,244,255,0.65);
+    line-height: 1.65;
+    font-weight: 400;
+    min-height: 24px;
+    padding-top: 4px;
+}
+.tip-text::after {
+    content: '|';
+    animation: blink 0.8s step-end infinite;
+    color: var(--blue);
+    opacity: 0.7;
+    margin-left: 1px;
+}
+@keyframes blink { 0%,100%{opacity:0.7} 50%{opacity:0} }
+
+/* ==================== PROGRESS SECTION ==================== */
+
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateX(-50%) translateY(14px); }
+    to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+.progress-section {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    width: min(700px, calc(100vw - 80px));
+    padding: 0 0 36px;
+    z-index: 10;
+    animation: fadeUp 1s 0.25s cubic-bezier(.22,1,.36,1) forwards;
+    opacity: 0;
+}
+
+.progress-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+.prog-status {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: 0.4px;
+    opacity: 0.8;
+}
+.prog-pct {
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--blue);
+    letter-spacing: 1px;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Segmented bar */
+.segments {
+    display: flex;
+    gap: 3px;
+    width: 100%;
+    height: 5px;
+}
+.seg {
+    flex: 1;
+    height: 100%;
+    background: rgba(255,255,255,0.05);
+    border-radius: 2px;
+    transition: background 0.25s ease, box-shadow 0.25s ease;
+}
+.seg.active {
+    background: linear-gradient(90deg, var(--blue), var(--green));
+    box-shadow: 0 0 6px rgba(0,180,255,0.4);
+}
+/* Segmentul de vârf - pulsează mai puternic */
+.seg.leading {
+    background: #fff;
+    box-shadow: 0 0 14px rgba(0,180,255,0.9), 0 0 4px rgba(255,255,255,0.8);
+    animation: leadPulse 1s ease-in-out infinite;
+}
+@keyframes leadPulse {
+    0%, 100% { box-shadow: 0 0 10px rgba(0,180,255,0.8), 0 0 3px rgba(255,255,255,0.6); }
+    50%      { box-shadow: 0 0 20px rgba(0,180,255,1),   0 0 8px rgba(255,255,255,0.9); }
+}
+.seg.fresh {
+    animation: segFlash 0.4s ease-out forwards;
+}
+@keyframes segFlash {
+    0%   { background: #ffffff; box-shadow: 0 0 16px rgba(255,255,255,0.9); }
+    100% { background: linear-gradient(90deg, var(--blue), var(--green)); box-shadow: 0 0 6px rgba(0,180,255,0.4); }
+}
+
+.resource-line {
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 10px;
+    letter-spacing: 0.3px;
+    font-weight: 300;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

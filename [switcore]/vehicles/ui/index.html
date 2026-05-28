@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fuel Station</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+</head>
+<body>
+
+<div id="fillHud" class="hidden">
+    <div class="hud-frame">
+        <div class="hud-header">
+            <div class="terminal-logo">
+                <img src="logo.svg" alt="SwitCore" class="brand-logo">
+                <span>SwitCore Fuel</span>
+            </div>
+            <div class="terminal-pump-id">POMPA <span id="hudPumpId">01</span></div>
+        </div>
+
+        <div class="terminal-gauge-wrap">
+            <svg class="gauge-svg" viewBox="0 0 200 120">
+                <path d="M20 110 A90 90 0 0 1 180 110" fill="none" stroke="#1a2535" stroke-width="14" stroke-linecap="round"/>
+                <path id="gaugeFill" d="M20 110 A90 90 0 0 1 180 110" fill="none" stroke="#00b4ff" stroke-width="14" stroke-linecap="round"
+                      stroke-dasharray="283" stroke-dashoffset="283"/>
+                <line id="gaugeNeedle" x1="100" y1="110" x2="100" y2="30" stroke="#ff6b35" stroke-width="2.5" stroke-linecap="round"
+                      transform-origin="100 110" transform="rotate(0)"/>
+                <circle cx="100" cy="110" r="5" fill="#ff6b35"/>
+            </svg>
+            <div class="gauge-labels"><span>E</span><span>F</span></div>
+            <div class="gauge-pct" id="gaugePct">-%</div>
+        </div>
+
+        <div class="terminal-info-row">
+            <div class="info-cell">
+                <div class="info-label">PREȚ / LITRU</div>
+                <div class="info-value" id="pricePerLitre">-</div>
+            </div>
+            <div class="info-cell">
+                <div class="info-label">CASH</div>
+                <div class="info-value" id="playerCash">-</div>
+            </div>
+            <div class="info-cell">
+                <div class="info-label">BANCĂ</div>
+                <div class="info-value" id="playerBank">-</div>
+            </div>
+        </div>
+        <div class="terminal-total-row">
+            <span class="total-label">TOTAL DISPONIBIL</span>
+            <span class="total-value" id="playerBalance">-</span>
+        </div>
+
+        <div class="terminal-divider"></div>
+
+        <div class="hold-indicator" id="holdIndicator">
+            <div class="hold-ring hold-ring-1"></div>
+            <div class="hold-ring hold-ring-2"></div>
+            <div class="hold-ring hold-ring-3"></div>
+            <div class="hold-core">
+                <span class="hold-key">E</span>
+            </div>
+        </div>
+        <div class="hold-caption" id="holdCaption">ȚINE APĂSAT PENTRU A ALIMENTA</div>
+        <div class="hud-status" id="hudStatus">ÎN AȘTEPTARE</div>
+
+        <div class="hud-progress-wrap">
+            <div class="hud-progress-bg">
+                <div id="hudProgressBar" class="hud-progress-fill" style="width:0%"></div>
+                <div class="hud-progress-shine"></div>
+            </div>
+        </div>
+
+        <div class="hud-stats">
+            <div class="hud-stat">
+                <div class="hud-stat-label">LITRI</div>
+                <div class="hud-stat-value" id="hudLitres">0.00L</div>
+            </div>
+            <div class="hud-stat">
+                <div class="hud-stat-label">COST</div>
+                <div class="hud-stat-value" id="hudCost">-</div>
+            </div>
+            <div class="hud-stat">
+                <div class="hud-stat-label">REZERVOR</div>
+                <div class="hud-stat-value" id="hudTankLevel">-%</div>
+            </div>
+        </div>
+
+        <div id="hudFundsWarn" class="hud-funds-warn hidden">
+            <i data-lucide="alert-triangle"></i> Fonduri insuficiente - alimentare oprită
+        </div>
+
+        <div class="cable-wrap">
+            <div class="cable-label">FURTUN</div>
+            <div class="cable-bar-bg">
+                <div id="cableBar" class="cable-bar-fill" style="width:0%"></div>
+            </div>
+            <div class="cable-status" id="cableStatus">OK</div>
+        </div>
+    </div>
+</div>
+
+<div id="cableSnap" class="hidden">
+    <div class="snap-icon"><i data-lucide="zap"></i></div>
+    <div class="snap-text">FURTUN RUPT!</div>
+</div>
+
+<div id="paymentModal" class="hidden">
+    <div class="pay-frame">
+        <div class="pay-header">
+            <img src="logo.svg" alt="SwitCore" class="brand-logo brand-logo-lg">
+            <span>METODĂ DE PLATĂ</span>
+        </div>
+
+        <div class="pay-summary">
+            <div class="pay-summary-row">
+                <span class="pay-summary-label">Alimentat</span>
+                <span class="pay-summary-value" id="paySummaryLitres">- L</span>
+            </div>
+            <div class="pay-summary-row pay-summary-total">
+                <span class="pay-summary-label">DE PLATĂ</span>
+                <span class="pay-summary-value" id="paySummaryCost">-</span>
+            </div>
+        </div>
+
+        <div id="payError" class="pay-error hidden">-</div>
+
+        <div class="pay-methods">
+            <button id="payCashBtn" class="pay-btn pay-btn-cash">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="2" y="6" width="20" height="12" rx="2"/>
+                    <circle cx="12" cy="12" r="2"/>
+                </svg>
+                <div class="pay-btn-body">
+                    <div class="pay-btn-title">CASH</div>
+                    <div class="pay-btn-balance" id="payCashBalance">-</div>
+                </div>
+            </button>
+            <button id="payCardBtn" class="pay-btn pay-btn-card">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="2" y="5" width="20" height="14" rx="2"/>
+                    <path d="M2 10h20"/>
+                    <path d="M6 16h4"/>
+                </svg>
+                <div class="pay-btn-body">
+                    <div class="pay-btn-title">CARD</div>
+                    <div class="pay-btn-balance" id="payCardBalance">-</div>
+                </div>
+            </button>
+        </div>
+
+        <div class="pay-footer">Apasă pe metoda dorită pentru a finaliza plata</div>
+    </div>
+</div>
+
+<script src="script.js"></script>
+<script>document.addEventListener('DOMContentLoaded', () => { if (window.lucide) lucide.createIcons(); });</script>
+</body>
+</html>

@@ -1,0 +1,36 @@
+// EXEMPLU - copiaza in config.local.js daca vrei sa scrii peste config.js fara
+// a folosi convars/env vars. Recomandat: foloseste convars in server.cfg in loc
+// de hardcode.
+//
+// In server.cfg:
+//   set switcore_panel_jwt_secret "<random long string 64+ chars>"
+//   set switcore_panel_admin_username "admin"
+//   set switcore_panel_admin_password "<strong password>"
+//   set switcore_panel_db_host     "localhost"
+//   set switcore_panel_db_port     "5432"
+//   set switcore_panel_db_name     "switcore"
+//   set switcore_panel_db_user     "switcore_user"
+//   set switcore_panel_db_password "<db password>"
+//   set switcore_panel_cors_origins "http://localhost:8080,https://yourdomain.com"
+
+module.exports = {
+    port:      8080,
+    jwtSecret: 'CHANGE_ME_use_a_long_random_string_here',
+    jwtExpiry: '24h',
+
+    admin: {
+        username: 'admin',
+        password: 'CHANGE_ME_strong_password_here'
+    },
+
+    database: {
+        host:     'localhost',
+        port:     5432,
+        database: 'switcore',
+        user:     'switcore_user',
+        password: 'CHANGE_ME_db_password_here'
+    },
+
+    // Lista origins acceptate. Niciun wildcard '*' in productie.
+    corsOrigins: ['http://localhost:8080']
+};

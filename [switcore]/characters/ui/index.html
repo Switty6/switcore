@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Character Selection</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+</head>
+<body>
+  <div id="character-container" class="hidden">
+    <div class="character-wrapper">
+
+      <div class="character-header">
+        <div class="header-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+        </div>
+        <div>
+          <div class="character-title" data-locale="select_character">Selectează Personajul</div>
+          <div class="character-subtitle">SwitCore Roleplay Server</div>
+        </div>
+      </div>
+
+      <div id="error-message" class="error-message hidden"></div>
+
+      <div id="character-list" class="character-list hidden">
+        <div class="characters-grid" id="characters-grid"></div>
+        <button id="create-character-btn" class="create-button">
+          <span class="button-icon">+</span>
+          <span class="button-text" data-locale="create_character">Creează Personaj Nou</span>
+        </button>
+      </div>
+
+      <div id="create-form" class="create-form hidden">
+
+        <div class="step-indicator" id="step-indicator">
+          <div class="step-dot active" id="step-dot-1">
+            <div class="step-num">1</div>
+            <span>Date personale</span>
+          </div>
+          <div class="step-line"></div>
+          <div class="step-dot" id="step-dot-2">
+            <div class="step-num">2</div>
+            <span>Genetică</span>
+          </div>
+        </div>
+
+        <div id="step-1" class="form-step active-step">
+
+          <div class="form-group">
+            <label for="first-name" data-locale="first_name">Prenume</label>
+            <input type="text" id="first-name" class="form-input"
+                   placeholder="Ex: Alexandru" maxlength="20" autocomplete="off" />
+            <span class="form-hint" id="first-name-hint"></span>
+          </div>
+
+          <div class="form-group">
+            <label for="last-name" data-locale="last_name">Nume de Familie</label>
+            <input type="text" id="last-name" class="form-input"
+                   placeholder="Ex: Popescu" maxlength="20" autocomplete="off" />
+            <span class="form-hint" id="last-name-hint"></span>
+          </div>
+
+          <div class="form-group">
+            <label for="age" data-locale="age">Vârstă</label>
+            <input type="number" id="age" class="form-input"
+                   placeholder="18 – 80" min="18" max="80" />
+            <span class="form-hint" id="age-hint"></span>
+          </div>
+
+          <div class="form-group">
+            <label data-locale="gender">Sex</label>
+            <div class="gender-selector">
+              <button class="gender-btn active" data-gender="0" id="gender-male">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="8" r="4"/>
+                  <path d="M12 12v9M9 18h6"/>
+                </svg>
+                <span data-locale="male">Bărbat</span>
+              </button>
+              <button class="gender-btn" data-gender="1" id="gender-female">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="8" r="4"/>
+                  <path d="M12 12v4m-3 3h6"/>
+                  <line x1="9" y1="15" x2="15" y2="15"/>
+                </svg>
+                <span data-locale="female">Femeie</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button id="cancel-create-btn" class="cancel-button" data-locale="cancel">Anulează</button>
+            <button id="next-step-btn"     class="confirm-button" data-locale="continue">Continuă →</button>
+          </div>
+        </div>
+
+        <div id="step-2" class="form-step hidden">
+          <div class="section-desc" data-locale="genetic_desc">
+            Alege părinții pentru a determina trăsăturile feței personajului.
+          </div>
+
+          <div class="appearance-group">
+            <div class="parent-selector">
+              <label data-locale="father">Tată</label>
+              <div class="selector-controls">
+                <button class="arrow-btn" id="prev-father">‹</button>
+                <span class="parent-name" id="father-name">Benjamin</span>
+                <button class="arrow-btn" id="next-father">›</button>
+              </div>
+            </div>
+
+            <div class="parent-selector">
+              <label data-locale="mother">Mamă</label>
+              <div class="selector-controls">
+                <button class="arrow-btn" id="prev-mother">‹</button>
+                <span class="parent-name" id="mother-name">Hannah</span>
+                <button class="arrow-btn" id="next-mother">›</button>
+              </div>
+            </div>
+
+            <div class="mix-slider-group">
+              <div class="mix-labels-inline">
+                <span data-locale="more_mother">Mamă</span>
+                <input type="range" id="parent-mix" class="appearance-slider" min="0" max="100" value="50" />
+                <span data-locale="more_father">Tată</span>
+              </div>
+              <div class="slider-value-container">
+                <span class="slider-value" id="parent-mix-value">Echilibrat</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-actions spread">
+            <button id="prev-step-btn"    class="cancel-button"  data-locale="back">← Înapoi</button>
+            <button id="confirm-create-btn" class="confirm-button" data-locale="create">Creează personaj</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div id="delete-modal" class="modal-overlay hidden">
+    <div class="modal-box">
+      <div class="modal-icon"><i data-lucide="alert-triangle"></i></div>
+      <div class="modal-title" id="delete-modal-title">Ștergi personajul?</div>
+      <div class="modal-body" id="delete-modal-body">Această acțiune este ireversibilă. Toate datele personajului vor fi șterse permanent.</div>
+      <div class="modal-actions">
+        <button id="modal-cancel-btn" class="cancel-button">Anulează</button>
+        <button id="modal-confirm-btn" class="delete-confirm-button">Șterge</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

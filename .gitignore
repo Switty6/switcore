@@ -1,0 +1,75 @@
+# ============================================================================
+# SwitCore - .gitignore
+# ============================================================================
+
+# Dependențe Node.js (regenerate cu `npm install`)
+node_modules/
+**/node_modules/
+
+# Lock-uri de pachete - generate local, regenerate la npm install
+# (NU le commit-uim ca să nu pinăm versiuni minore pentru toți utilizatorii)
+package-lock.json
+yarn.lock
+**/package-lock.json
+**/yarn.lock
+
+# Markeri interni FXServer (yarn auto-install)
+.yarn.installed
+**/.yarn.installed
+
+# ============================================================================
+# Fișiere de configurare sensibile - NU URCĂ PE GIT
+# ============================================================================
+
+# Postgres - credențiale DB locale
+[switcore]/postgres/.env
+[switcore]/postgres/.env.local
+[switcore]/postgres/.env.*.local
+[switcore]/postgres/config.local.js
+
+# Settings panel - JWT secret generat random, override-uri locale
+[switcore]/settings-panel/.jwt-secret
+[switcore]/settings-panel/config.local.js
+
+# Generic
+config.local.js
+.env
+.env.local
+.env.*.local
+
+# ============================================================================
+# Foldere ignorate (gameplay e per-server, builders e build output)
+# ============================================================================
+[builders]
+[gameplay]/*
+
+# ============================================================================
+# Log-uri
+# ============================================================================
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+
+# ============================================================================
+# Temp & sistem
+# ============================================================================
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db
+
+# ============================================================================
+# Editor / IDE
+# ============================================================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ============================================================================
+# Fisiere tooling intern (nu intra in repo public)
+# ============================================================================
+.claude/
+CLAUDE.md

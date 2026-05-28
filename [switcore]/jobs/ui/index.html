@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jobs</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app" class="hidden">
+        <div class="panel">
+
+            <!-- Header -->
+            <div class="panel-header">
+                <div class="header-left">
+                    <svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="2" y="7" width="20" height="14" rx="2"/>
+                        <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
+                        <line x1="12" y1="12" x2="12" y2="16"/>
+                        <line x1="10" y1="14" x2="14" y2="14"/>
+                    </svg>
+                    <span id="headerTitle">Job</span>
+                </div>
+                <button class="close-btn" id="closeBtn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Tabs -->
+            <div class="tabs">
+                <button class="tab active" data-tab="myJob">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                    Jobul Meu
+                </button>
+                <button class="tab" data-tab="roster" id="tabRoster">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                        <circle cx="9" cy="7" r="4"/>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                    Membri
+                    <span class="badge zero" id="rosterBadge">0</span>
+                </button>
+            </div>
+
+            <!-- Tab content -->
+            <div class="tab-content">
+
+                <!-- My Job tab -->
+                <div id="tab-myJob" class="tab-pane active">
+
+                    <!-- Job info card -->
+                    <div class="info-card">
+                        <div class="info-row">
+                            <span class="info-label">Job</span>
+                            <span class="info-value" id="jobLabel">-</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Grad</span>
+                            <span class="info-value" id="gradeLabel">-</span>
+                        </div>
+                        <div class="info-row" id="salaryRow">
+                            <span class="info-label">Salariu</span>
+                            <span class="info-value green" id="salaryLabel">$0</span>
+                        </div>
+                        <div class="info-row" id="typeRow">
+                            <span class="info-label">Tip</span>
+                            <span class="type-badge" id="typeBadge">-</span>
+                        </div>
+                    </div>
+
+                    <!-- Duty toggle (hidden for illegal) -->
+                    <div id="dutySection">
+                        <div class="duty-row">
+                            <div class="duty-info">
+                                <div class="duty-label">Tură de serviciu</div>
+                                <div class="duty-sublabel" id="dutyStatus">Inactiv</div>
+                            </div>
+                            <button class="duty-btn off" id="dutyBtn" onclick="toggleDuty()">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <path d="M12 6v6l4 2"/>
+                                </svg>
+                                Intră în tură
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Permissions -->
+                    <div id="permsSection" class="section">
+                        <div class="section-title">Permisiuni</div>
+                        <div id="permsList" class="perms-list">
+                            <span class="empty-inline">Nicio permisiune specială</span>
+                        </div>
+                    </div>
+
+                    <!-- Coworkers online -->
+                    <div class="section">
+                        <div class="section-title">Colegi online</div>
+                        <div id="coworkersList" class="coworkers-list">
+                            <div class="empty-state-sm">Niciun coleg activ</div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Roster tab -->
+                <div id="tab-roster" class="tab-pane">
+                    <div class="roster-toolbar">
+                        <button class="btn btn-ghost btn-sm" onclick="refreshRoster()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="23 4 23 10 17 10"/>
+                                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                            </svg>
+                            Actualizează
+                        </button>
+                        <span class="roster-count" id="rosterCount">0 membri</span>
+                    </div>
+                    <div id="rosterList" class="roster-list">
+                        <div class="empty-state">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                                <circle cx="9" cy="7" r="4"/>
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                            </svg>
+                            <p>Apasă Actualizează pentru a vedea membrii</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

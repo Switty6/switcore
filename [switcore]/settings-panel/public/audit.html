@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SwitCore Admin - Audit Log</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+</head>
+<body class="dashboard-page">
+
+<aside class="sidebar">
+    <div class="sidebar-header">
+        <img class="hex-logo hex-logo--sm" src="logo.svg" alt="SwitCore Logo" />
+        <div>
+            <div class="sidebar-title">SwitCore</div>
+            <div class="sidebar-subtitle">Admin Panel</div>
+        </div>
+    </div>
+
+    <nav class="sidebar-nav">
+        <div class="nav-section-label">Panou</div>
+        <ul class="group-list" style="margin-bottom:12px">
+            <li>
+                <a href="dashboard.html" class="group-btn" style="text-decoration:none">
+                    <span class="group-icon"><i data-lucide="settings"></i></span>
+                    <span class="group-name">Setări</span>
+                </a>
+            </li>
+            <li>
+                <a href="players.html" class="group-btn" style="text-decoration:none">
+                    <span class="group-icon"><i data-lucide="users"></i></span>
+                    <span class="group-name">Jucători</span>
+                </a>
+            </li>
+            <li>
+                <a href="users.html" class="group-btn" style="text-decoration:none">
+                    <span class="group-icon"><i data-lucide="key"></i></span>
+                    <span class="group-name">Utilizatori Panel</span>
+                </a>
+            </li>
+            <li>
+                <a href="audit.html" class="group-btn active" style="text-decoration:none">
+                    <span class="group-icon"><i data-lucide="clipboard-list"></i></span>
+                    <span class="group-name">Audit Log</span>
+                </a>
+            </li>
+            <li>
+                <a href="jobs.html" class="group-btn" style="text-decoration:none">
+                    <span class="group-icon"><i data-lucide="briefcase"></i></span>
+                    <span class="group-name">Joburi</span>
+                </a>
+            </li>
+            <li>
+                <a href="docs.html" class="group-btn" style="text-decoration:none">
+                    <span class="group-icon"><i data-lucide="book"></i></span>
+                    <span class="group-name">Documentație</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <div class="sidebar-footer">
+        <div class="user-info">
+            <div class="user-avatar" id="user-avatar">A</div>
+            <div class="user-details">
+                <div class="user-name" id="user-name">Admin</div>
+                <div class="user-role" id="user-role-label">Administrator</div>
+            </div>
+        </div>
+        <button class="btn-logout" id="btn-logout" title="Deconectare">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                <polyline points="16 17 21 12 16 7"/>
+                <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+        </button>
+    </div>
+</aside>
+
+<main class="main">
+
+    <header class="main-header">
+        <div class="breadcrumb">
+            <span class="breadcrumb-root">Management</span>
+            <span class="breadcrumb-sep">›</span>
+            <span class="breadcrumb-current">Audit Log</span>
+        </div>
+        <div class="header-actions">
+            <button class="btn-reload" id="btn-reload" title="Reîncarcă">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="23 4 23 10 17 10"/>
+                    <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                </svg>
+            </button>
+        </div>
+    </header>
+
+    <div class="stats-bar">
+        <div class="stat-item">
+            <span class="stat-value" id="stat-total">-</span>
+            <span class="stat-label">intrări total</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+            <span class="stat-value" id="stat-page-info">1</span>
+            <span class="stat-label">pagina curentă</span>
+        </div>
+    </div>
+
+    <div class="filter-bar filter-bar--inputs">
+        <div class="search-wrap" style="flex:1; max-width:200px">
+            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <input type="text" id="filter-user" class="search-input" placeholder="Filtrează admin…" style="width:100%">
+        </div>
+        <select class="field-input" id="filter-action" style="width:200px; padding:7px 12px; height:36px">
+            <option value="">Toate acțiunile</option>
+        </select>
+        <button class="btn-secondary" id="btn-clear-filters">Resetează filtre</button>
+    </div>
+
+    <div class="role-info-bar" id="no-access-msg" style="display:none">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        Audit Log necesită rolul de <strong>Admin</strong> sau superior.
+    </div>
+
+    <div class="table-wrap">
+        <table class="settings-table">
+            <thead>
+                <tr>
+                    <th style="width:16%">Timestamp</th>
+                    <th style="width:12%">Admin</th>
+                    <th style="width:14%">Acțiune</th>
+                    <th style="width:22%">Target</th>
+                    <th style="width:17%">Valoare veche</th>
+                    <th style="width:19%">Valoare nouă</th>
+                </tr>
+            </thead>
+            <tbody id="audit-tbody">
+                <tr class="loading-row">
+                    <td colspan="6">
+                        <div class="loading-state">
+                            <svg class="spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+                            </svg>
+                            Se încarcă logurile…
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="pagination" id="pagination">
+        <button class="btn-secondary btn-pg" id="pg-prev" disabled>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                <polyline points="15 18 9 12 15 6"/>
+            </svg>
+            Anterior
+        </button>
+        <span class="pg-info" id="pg-info">Pagina 1</span>
+        <button class="btn-secondary btn-pg" id="pg-next">
+            Următor
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                <polyline points="9 18 15 12 9 6"/>
+            </svg>
+        </button>
+    </div>
+
+    <div class="empty-state hidden" id="empty-state">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>
+        </svg>
+        <p>Nicio intrare în audit log</p>
+    </div>
+</main>
+
+<div class="toast-container" id="toast-container"></div>
+
+<script src="audit.js"></script>
+<script>document.addEventListener('DOMContentLoaded', () => { if (window.lucide) lucide.createIcons(); });</script>
+</body>
+</html>

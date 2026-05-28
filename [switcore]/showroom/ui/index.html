@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Showroom</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="app" class="hidden">
+
+        <aside class="panel panel-left">
+            <div class="panel-header">
+                <span class="panel-title">Catalog</span>
+                <span class="dealer-name" id="dealerName"></span>
+            </div>
+
+            <div class="categories" id="categoryList"></div>
+
+            <div class="vehicle-list" id="vehicleList"></div>
+        </aside>
+
+        <div class="center-area">
+            <div class="vehicle-overlay" id="vehicleOverlay">
+                <div class="vehicle-overlay-name" id="overlayName">-</div>
+                <div class="vehicle-overlay-cat"  id="overlayCat">-</div>
+            </div>
+
+            <button class="close-btn" id="closeBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+
+            <div class="td-banner hidden" id="tdBanner">
+                <span class="td-label">TEST DRIVE</span>
+                <span class="td-vehicle" id="tdVehicle"></span>
+                <span class="td-timer" id="tdTimer">05:00</span>
+                <button class="td-return" id="tdReturn">Returnează</button>
+            </div>
+        </div>
+
+        <aside class="panel panel-right" id="rightPanel">
+
+            <div class="price-header">
+                <div class="price-label">Preț de listă</div>
+                <div class="price-value" id="priceDisplay">-</div>
+            </div>
+
+            <section class="config-section">
+                <div class="section-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>
+                    Vopsea
+                </div>
+                <div class="color-swatches" id="colorSwatches"></div>
+                <div class="selected-color-info" id="selectedColorInfo">
+                    <span class="color-dot" id="selectedColorDot"></span>
+                    <span id="selectedColorName">Alb Arctic</span>
+                </div>
+            </section>
+
+            <section class="config-section">
+                <div class="section-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="10" rx="2"/><path d="M6 11h.01M10 11h4M18 11h.01"/></svg>
+                    Număr de înmatriculare
+                </div>
+                <div class="plate-preview">
+                    <div class="plate-frame">
+                        <div class="plate-country">RO</div>
+                        <input class="plate-input" id="plateInput" maxlength="8" placeholder="SWC-00001" spellcheck="false" autocomplete="off">
+                    </div>
+                    <span class="plate-hint" id="plateHint"></span>
+                </div>
+            </section>
+
+            <section class="config-section">
+                <div class="section-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                    Plată
+                </div>
+
+                <div class="payment-tabs">
+                    <button class="pay-tab active" data-method="cash">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg>
+                        Cash
+                    </button>
+                    <button class="pay-tab" data-method="bank">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                        Card / Cont
+                    </button>
+                    <button class="pay-tab" data-method="finance">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                        Rate
+                    </button>
+                </div>
+
+                <div class="pay-body" id="payBody-cash">
+                    <div class="pay-row">
+                        <span>Total de plătit</span>
+                        <span class="pay-total" id="cashTotal">-</span>
+                    </div>
+                    <div class="pay-note">Suma se deduce imediat din numerarul tău.</div>
+                </div>
+
+                <div class="pay-body hidden" id="payBody-bank">
+                    <div class="pay-row">
+                        <span>Total de plătit</span>
+                        <span class="pay-total" id="bankTotal">-</span>
+                    </div>
+                    <div class="pay-note">Suma se deduce din soldul contului tău bancar.</div>
+                </div>
+
+                <div class="pay-body hidden" id="payBody-finance">
+                    <div class="finance-unavail hidden" id="financeUnavail">
+                        Acest vehicul nu este eligibil pentru finanțare.
+                    </div>
+                    <div id="financeBody">
+                        <div class="pay-row">
+                            <span>Valoare finanțată</span>
+                            <span class="pay-total" id="financeTotal">-</span>
+                        </div>
+                        <div class="slider-row">
+                            <label>Perioadă: <strong id="termLabel">24 luni</strong></label>
+                            <input type="range" class="slider" id="termSlider" min="6" max="60" step="6" value="24">
+                            <div class="slider-ticks">
+                                <span>6</span><span>12</span><span>24</span><span>36</span><span>48</span><span>60</span>
+                            </div>
+                        </div>
+                        <div class="pay-row highlight">
+                            <span>Rată lunară</span>
+                            <span id="monthlyRate">-</span>
+                        </div>
+                        <div class="pay-row small">
+                            <span>Total rambursabil</span>
+                            <span id="totalRepay">-</span>
+                        </div>
+                        <div class="pay-row small">
+                            <span>Dobândă anuală</span>
+                            <span id="interestLabel">8%</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="actions">
+                <button class="btn btn-ghost" id="testDriveBtn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+                    Test Drive
+                </button>
+                <button class="btn btn-primary" id="buyBtn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
+                    Cumpără
+                </button>
+            </div>
+        </aside>
+
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

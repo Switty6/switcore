@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Banking</title>
+    <link rel="stylesheet" href="atm/style.css">
+    <link rel="stylesheet" href="bank/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        @keyframes rotCW   { from { transform: rotate(0deg);   } to { transform: rotate(360deg);  } }
+        @keyframes rotCCW  { from { transform: rotate(0deg);   } to { transform: rotate(-360deg); } }
+        @keyframes corePulse {
+            0%, 100% { opacity: 0.85; }
+            50%      { opacity: 1;    }
+        }
+        @keyframes hexPulse {
+            0%, 100% { filter: drop-shadow(0 0 10px rgba(0,180,255,0.5));  }
+            50%      { filter: drop-shadow(0 0 22px rgba(0,180,255,0.95)); }
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: transparent;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+        }
+        .banking-wrapper {
+            display: none;
+            width: 100%;
+            height: 100%;
+            justify-content: center;
+            align-items: center;
+        }
+        .banking-wrapper.active {
+            display: flex;
+        }
+        .bank-nav-icon svg, .bank-nav-icon i svg { width: 16px; height: 16px; stroke-width: 1.75; }
+        .bank-stat-icon svg, .bank-stat-icon i svg { width: 20px; height: 20px; stroke-width: 1.75; }
+        .atm-btn-icon svg, .atm-btn-icon i svg { width: 18px; height: 18px; stroke-width: 1.75; }
+        .bank-btn svg, .bank-btn i svg { width: 14px; height: 14px; stroke-width: 2; vertical-align: middle; margin-right: 5px; }
+        .bank-modal-close svg { width: 14px; height: 14px; stroke-width: 2; }
+        .bank-close-btn svg { width: 14px; height: 14px; stroke-width: 2; }
+    </style>
+</head>
+<body>
+    <div id="atm-wrapper" class="banking-wrapper">
+        <div class="atm-container">
+            <div class="atm-header">
+                <div class="atm-logo">
+                    <div class="atm-logo-icon">
+                        <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:30px;height:30px;filter:drop-shadow(0 0 10px rgba(0,180,255,0.55));animation:hexPulse 3s ease-in-out infinite">
+                            <g style="transform-origin:40px 40px;animation:rotCW 20s linear infinite">
+                                <polygon points="40,3 73,21 73,59 40,77 7,59 7,21" stroke="#00b4ff" stroke-width="0.8" fill="none" opacity="0.25"/>
+                                <circle cx="40" cy="3" r="2" fill="#00b4ff" opacity="0.6"/>
+                                <circle cx="73" cy="21" r="2" fill="#00b4ff" opacity="0.6"/>
+                                <circle cx="73" cy="59" r="2" fill="#00b4ff" opacity="0.6"/>
+                                <circle cx="40" cy="77" r="2" fill="#00b4ff" opacity="0.6"/>
+                                <circle cx="7" cy="59" r="2" fill="#00b4ff" opacity="0.6"/>
+                                <circle cx="7" cy="21" r="2" fill="#00b4ff" opacity="0.6"/>
+                            </g>
+                            <g style="transform-origin:40px 40px;animation:rotCCW 14s linear infinite">
+                                <polygon points="40,12 65,26 65,54 40,68 15,54 15,26" stroke="#00b4ff" stroke-width="0.6" fill="none" opacity="0.15"/>
+                            </g>
+                            <polygon style="animation:corePulse 3s ease-in-out infinite" points="40,20 58,30 58,50 40,60 22,50 22,30" fill="#00b4ff" opacity="0.85"/>
+                            <polygon points="40,27 53,34 53,46 40,53 27,46 27,34" fill="none" stroke="rgba(4,8,15,0.6)" stroke-width="1.5"/>
+                        </svg>
+                    </div>
+                    <div class="atm-logo-text">
+                        <h1>ATM</h1>
+                        <p>Bancomat</p>
+                    </div>
+                </div>
+                <button class="atm-close-btn" onclick="closeUI()"><i data-lucide="x"></i></button>
+            </div>
+
+            <div class="atm-screen">
+                <div id="atm-view-balance" class="atm-view active">
+                    <div class="atm-welcome">
+                        <h2>Bine ai venit!</h2>
+                        <p>Selectează o operațiune</p>
+                    </div>
+                    <div class="atm-cash-display">
+                        <span class="atm-cash-label">Cash disponibil</span>
+                        <span class="atm-cash-amount" id="atm-cash">$0.00</span>
+                    </div>
+                    <div class="atm-accounts-list" id="atm-accounts-list"></div>
+                    <div class="atm-actions">
+                        <button class="atm-btn atm-btn-primary" onclick="atmShowView('withdraw')">
+                            <span class="atm-btn-icon"><i data-lucide="arrow-up-from-line"></i></span>
+                            Retragere
+                        </button>
+                        <button class="atm-btn atm-btn-success" onclick="atmShowView('deposit')">
+                            <span class="atm-btn-icon"><i data-lucide="arrow-down-to-line"></i></span>
+                            Depunere
+                        </button>
+                        <button class="atm-btn atm-btn-info" onclick="atmShowView('transfer')">
+                            <span class="atm-btn-icon"><i data-lucide="repeat-2"></i></span>
+                            Transfer
+                        </button>
+                    </div>
+                </div>
+
+                <div id="atm-view-withdraw" class="atm-view">
+                    <div class="atm-view-header">
+                        <button class="atm-back-btn" onclick="atmShowView('balance')">← Înapoi</button>
+                        <h3>Retragere</h3>
+                    </div>
+                    <div class="atm-form">
+                        <div class="atm-form-group">
+                            <label>Selectează contul</label>
+                            <select id="atm-withdraw-account" class="atm-select"></select>
+                        </div>
+                        <div class="atm-form-group">
+                            <label>Suma ($)</label>
+                            <input type="number" id="atm-withdraw-amount" class="atm-input" placeholder="0.00" min="0.01" step="0.01">
+                        </div>
+                        <div class="atm-quick-amounts">
+                            <button class="atm-quick-btn" onclick="setAmount('atm-withdraw-amount', 50)">$50</button>
+                            <button class="atm-quick-btn" onclick="setAmount('atm-withdraw-amount', 100)">$100</button>
+                            <button class="atm-quick-btn" onclick="setAmount('atm-withdraw-amount', 500)">$500</button>
+                            <button class="atm-quick-btn" onclick="setAmount('atm-withdraw-amount', 1000)">$1000</button>
+                            <button class="atm-quick-btn" onclick="setAmount('atm-withdraw-amount', 5000)">$5000</button>
+                        </div>
+                        <button class="atm-btn atm-btn-primary atm-btn-full" onclick="atmWithdraw()">Retrage</button>
+                    </div>
+                </div>
+
+                <div id="atm-view-deposit" class="atm-view">
+                    <div class="atm-view-header">
+                        <button class="atm-back-btn" onclick="atmShowView('balance')">← Înapoi</button>
+                        <h3>Depunere</h3>
+                    </div>
+                    <div class="atm-form">
+                        <div class="atm-form-group">
+                            <label>Selectează contul</label>
+                            <select id="atm-deposit-account" class="atm-select"></select>
+                        </div>
+                        <div class="atm-form-group">
+                            <label>Suma ($)</label>
+                            <input type="number" id="atm-deposit-amount" class="atm-input" placeholder="0.00" min="0.01" step="0.01">
+                        </div>
+                        <div class="atm-quick-amounts">
+                            <button class="atm-quick-btn" onclick="setAmount('atm-deposit-amount', 50)">$50</button>
+                            <button class="atm-quick-btn" onclick="setAmount('atm-deposit-amount', 100)">$100</button>
+                            <button class="atm-quick-btn" onclick="setAmount('atm-deposit-amount', 500)">$500</button>
+                            <button class="atm-quick-btn" onclick="setAmount('atm-deposit-amount', 1000)">$1000</button>
+                            <button class="atm-quick-btn" onclick="setAmount('atm-deposit-amount', 5000)">$5000</button>
+                        </div>
+                        <button class="atm-btn atm-btn-success atm-btn-full" onclick="atmDeposit()">Depune</button>
+                    </div>
+                </div>
+
+                <div id="atm-view-transfer" class="atm-view">
+                    <div class="atm-view-header">
+                        <button class="atm-back-btn" onclick="atmShowView('balance')">← Înapoi</button>
+                        <h3>Transfer</h3>
+                    </div>
+                    <div class="atm-form">
+                        <div class="atm-form-group">
+                            <label>Din contul</label>
+                            <select id="atm-transfer-from" class="atm-select"></select>
+                        </div>
+                        <div class="atm-form-group">
+                            <label>Către cont (nr. cont)</label>
+                            <input type="text" id="atm-transfer-to" class="atm-input" placeholder="MAZE-0001-0000-0001">
+                        </div>
+                        <div class="atm-form-group">
+                            <label>Suma ($)</label>
+                            <input type="number" id="atm-transfer-amount" class="atm-input" placeholder="0.00" min="0.01" step="0.01">
+                        </div>
+                        <button class="atm-btn atm-btn-info atm-btn-full" onclick="atmTransfer()">Transferă</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="atm-status" class="atm-status"></div>
+        </div>
+    </div>
+
+    <div id="bank-wrapper" class="banking-wrapper">
+        <div class="bank-container">
+            <div class="bank-sidebar">
+                <div class="bank-logo">
+                    <div class="bank-logo-icon">
+                        <i data-lucide="landmark"></i>
+                    </div>
+                    <div class="bank-logo-text">
+                        <h2 id="bank-name">Maze Bank</h2>
+                        <p>Servicii Bancare</p>
+                    </div>
+                </div>
+                <nav class="bank-nav">
+                    <button class="bank-nav-item active" data-view="dashboard" onclick="bankShowView('dashboard')">
+                        <span class="bank-nav-icon"><i data-lucide="layout-dashboard"></i></span>
+                        <span>Dashboard</span>
+                    </button>
+                    <button class="bank-nav-item" data-view="accounts" onclick="bankShowView('accounts')">
+                        <span class="bank-nav-icon"><i data-lucide="credit-card"></i></span>
+                        <span>Conturi</span>
+                    </button>
+                    <button class="bank-nav-item" data-view="operations" onclick="bankShowView('operations')">
+                        <span class="bank-nav-icon"><i data-lucide="arrow-left-right"></i></span>
+                        <span>Operațiuni</span>
+                    </button>
+                    <button class="bank-nav-item" data-view="transactions" onclick="bankShowView('transactions')">
+                        <span class="bank-nav-icon"><i data-lucide="history"></i></span>
+                        <span>Istoric</span>
+                    </button>
+                    <button class="bank-nav-item" data-view="loans" onclick="bankShowView('loans')">
+                        <span class="bank-nav-icon"><i data-lucide="landmark"></i></span>
+                        <span>Credite</span>
+                    </button>
+                    <button class="bank-nav-item" data-view="exchange" onclick="bankShowView('exchange')">
+                        <span class="bank-nav-icon"><i data-lucide="refresh-cw"></i></span>
+                        <span>Schimb Valutar</span>
+                    </button>
+                </nav>
+                <div class="bank-sidebar-footer">
+                    <button class="bank-close-btn" onclick="closeUI()">
+                        <i data-lucide="x"></i>
+                        Închide
+                    </button>
+                </div>
+            </div>
+
+            <div class="bank-content">
+                <div id="bank-view-dashboard" class="bank-view active">
+                    <div class="bank-view-title">
+                        <h2>Dashboard</h2>
+                        <p>Prezentare generală</p>
+                    </div>
+                    <div class="bank-stats">
+                        <div class="bank-stat-card">
+                            <div class="bank-stat-icon"><i data-lucide="wallet"></i></div>
+                            <div class="bank-stat-info">
+                                <span class="bank-stat-label">Cash</span>
+                                <span class="bank-stat-value" id="bank-cash">$0.00</span>
+                            </div>
+                        </div>
+                        <div class="bank-stat-card">
+                            <div class="bank-stat-icon"><i data-lucide="building-2"></i></div>
+                            <div class="bank-stat-info">
+                                <span class="bank-stat-label">Total în conturi</span>
+                                <span class="bank-stat-value" id="bank-total-balance">$0.00</span>
+                            </div>
+                        </div>
+                        <div class="bank-stat-card">
+                            <div class="bank-stat-icon"><i data-lucide="layers"></i></div>
+                            <div class="bank-stat-info">
+                                <span class="bank-stat-label">Conturi active</span>
+                                <span class="bank-stat-value" id="bank-account-count">0</span>
+                            </div>
+                        </div>
+                        <div class="bank-stat-card">
+                            <div class="bank-stat-icon"><i data-lucide="trending-down"></i></div>
+                            <div class="bank-stat-info">
+                                <span class="bank-stat-label">Datorii</span>
+                                <span class="bank-stat-value" id="bank-total-debt">$0.00</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bank-section">
+                        <h3>Conturi</h3>
+                        <div class="bank-dashboard-accounts" id="bank-dashboard-accounts"></div>
+                    </div>
+                    <div class="bank-section">
+                        <h3>Ultimele Tranzacții</h3>
+                        <div class="bank-dashboard-transactions" id="bank-dashboard-transactions"></div>
+                    </div>
+                </div>
+
+                <div id="bank-view-accounts" class="bank-view">
+                    <div class="bank-view-title">
+                        <h2>Conturi Bancare</h2>
+                        <button class="bank-btn bank-btn-primary" onclick="showCreateAccountModal()">+ Cont Nou</button>
+                    </div>
+                    <div class="bank-accounts-grid" id="bank-accounts-grid"></div>
+                </div>
+
+                <div id="bank-view-operations" class="bank-view">
+                    <div class="bank-view-title">
+                        <h2>Operațiuni</h2>
+                        <p>Depunere, Retragere, Transfer</p>
+                    </div>
+                    <div class="bank-operations-tabs">
+                        <button class="bank-op-tab active" onclick="bankOpTab('bank-op-deposit', this)">Depunere</button>
+                        <button class="bank-op-tab" onclick="bankOpTab('bank-op-withdraw', this)">Retragere</button>
+                        <button class="bank-op-tab" onclick="bankOpTab('bank-op-transfer', this)">Transfer</button>
+                    </div>
+                    <div class="bank-operations-content">
+                        <div id="bank-op-deposit" class="bank-op-panel active">
+                            <div class="bank-form">
+                                <div class="bank-form-group">
+                                    <label>Cont destinație</label>
+                                    <select id="bank-dep-account" class="bank-select"></select>
+                                </div>
+                                <div class="bank-form-group">
+                                    <label>Suma ($)</label>
+                                    <input type="number" id="bank-dep-amount" class="bank-input" placeholder="0.00" min="0.01" step="0.01">
+                                </div>
+                                <div class="bank-form-info">
+                                    <span>Cash disponibil: <strong id="bank-dep-cash">$0.00</strong></span>
+                                </div>
+                                <button class="bank-btn bank-btn-success bank-btn-full" onclick="bankDeposit()">Depune</button>
+                            </div>
+                        </div>
+                        <div id="bank-op-withdraw" class="bank-op-panel">
+                            <div class="bank-form">
+                                <div class="bank-form-group">
+                                    <label>Din contul</label>
+                                    <select id="bank-wit-account" class="bank-select"></select>
+                                </div>
+                                <div class="bank-form-group">
+                                    <label>Suma ($)</label>
+                                    <input type="number" id="bank-wit-amount" class="bank-input" placeholder="0.00" min="0.01" step="0.01">
+                                </div>
+                                <button class="bank-btn bank-btn-primary bank-btn-full" onclick="bankWithdraw()">Retrage</button>
+                            </div>
+                        </div>
+                        <div id="bank-op-transfer" class="bank-op-panel">
+                            <div class="bank-form">
+                                <div class="bank-form-group">
+                                    <label>Din contul</label>
+                                    <select id="bank-tr-from" class="bank-select"></select>
+                                </div>
+                                <div class="bank-form-group">
+                                    <label>Către cont (nr. cont)</label>
+                                    <input type="text" id="bank-tr-to" class="bank-input" placeholder="MAZE-0001-0000-0001">
+                                </div>
+                                <div class="bank-form-group">
+                                    <label>Suma ($)</label>
+                                    <input type="number" id="bank-tr-amount" class="bank-input" placeholder="0.00" min="0.01" step="0.01">
+                                </div>
+                                <button class="bank-btn bank-btn-info bank-btn-full" onclick="bankTransfer()">Transferă</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="bank-view-transactions" class="bank-view">
+                    <div class="bank-view-title">
+                        <h2>Istoric Tranzacții</h2>
+                        <button class="bank-btn bank-btn-secondary" onclick="refreshTransactions()"><i data-lucide="refresh-cw"></i>Refresh</button>
+                    </div>
+                    <div class="bank-transactions-list" id="bank-transactions-list"></div>
+                </div>
+
+                <div id="bank-view-loans" class="bank-view">
+                    <div class="bank-view-title">
+                        <h2>Credite</h2>
+                        <button class="bank-btn bank-btn-primary" onclick="showCreateLoanModal()">+ Credit Nou</button>
+                    </div>
+                    <div class="bank-loans-summary">
+                        <div class="bank-stat-card">
+                            <div class="bank-stat-icon"><i data-lucide="trending-down"></i></div>
+                            <div class="bank-stat-info">
+                                <span class="bank-stat-label">Datorie totală</span>
+                                <span class="bank-stat-value" id="bank-loans-total-debt">$0.00</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bank-loans-list" id="bank-loans-list"></div>
+                </div>
+
+                <div id="bank-view-exchange" class="bank-view">
+                    <div class="bank-view-title">
+                        <h2>Schimb Valutar</h2>
+                        <p>Schimbă între valute</p>
+                    </div>
+                    <div class="bank-form">
+                        <div class="bank-form-group">
+                            <label>Cont</label>
+                            <select id="bank-ex-account" class="bank-select"></select>
+                        </div>
+                        <div class="bank-form-row">
+                            <div class="bank-form-group">
+                                <label>Din valuta</label>
+                                <select id="bank-ex-from" class="bank-select"></select>
+                            </div>
+                            <div class="bank-form-group">
+                                <label>În valuta</label>
+                                <select id="bank-ex-to" class="bank-select"></select>
+                            </div>
+                        </div>
+                        <div class="bank-form-group">
+                            <label>Suma</label>
+                            <input type="number" id="bank-ex-amount" class="bank-input" placeholder="0.00" min="0.01" step="0.01">
+                        </div>
+                        <button class="bank-btn bank-btn-primary bank-btn-full" onclick="bankExchange()">Schimbă</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="create-account-modal" class="bank-modal">
+            <div class="bank-modal-content">
+                <div class="bank-modal-header">
+                    <h3>Cont Nou</h3>
+                    <button class="bank-modal-close" onclick="closeModal('create-account-modal')"><i data-lucide="x"></i></button>
+                </div>
+                <div class="bank-form">
+                    <div class="bank-form-group">
+                        <label>Bancă</label>
+                        <select id="modal-bank" class="bank-select"></select>
+                    </div>
+                    <div class="bank-form-group">
+                        <label>Tip cont</label>
+                        <select id="modal-account-type" class="bank-select">
+                            <option value="current">Cont Curent</option>
+                            <option value="savings">Cont de Economii</option>
+                            <option value="deposit">Depozit</option>
+                        </select>
+                    </div>
+                    <button class="bank-btn bank-btn-primary bank-btn-full" onclick="createAccount()">Creează Cont</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="create-loan-modal" class="bank-modal">
+            <div class="bank-modal-content">
+                <div class="bank-modal-header">
+                    <h3>Credit Nou</h3>
+                    <button class="bank-modal-close" onclick="closeModal('create-loan-modal')"><i data-lucide="x"></i></button>
+                </div>
+                <div class="bank-form">
+                    <div class="bank-form-group">
+                        <label>Bancă</label>
+                        <select id="modal-loan-bank" class="bank-select"></select>
+                    </div>
+                    <div class="bank-form-group">
+                        <label>Tip credit</label>
+                        <select id="modal-loan-type" class="bank-select">
+                            <option value="personal">Personal (12%/an)</option>
+                            <option value="mortgage">Ipotecar (6%/an)</option>
+                            <option value="business">Business (8%/an)</option>
+                        </select>
+                    </div>
+                    <div class="bank-form-group">
+                        <label>Suma ($)</label>
+                        <input type="number" id="modal-loan-amount" class="bank-input" placeholder="10000" min="100" step="100">
+                    </div>
+                    <div class="bank-form-group">
+                        <label>Termen (luni)</label>
+                        <input type="number" id="modal-loan-term" class="bank-input" placeholder="12" min="6" max="60" value="12">
+                    </div>
+                    <button class="bank-btn bank-btn-primary bank-btn-full" onclick="createLoan()">Solicită Credit</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="pay-loan-modal" class="bank-modal">
+            <div class="bank-modal-content">
+                <div class="bank-modal-header">
+                    <h3>Plătește Rată</h3>
+                    <button class="bank-modal-close" onclick="closeModal('pay-loan-modal')"><i data-lucide="x"></i></button>
+                </div>
+                <div class="bank-form">
+                    <input type="hidden" id="modal-pay-loan-id">
+                    <div class="bank-form-group">
+                        <label>Suma ($)</label>
+                        <input type="number" id="modal-pay-loan-amount" class="bank-input" placeholder="0.00" min="0.01" step="0.01">
+                    </div>
+                    <button class="bank-btn bank-btn-success bank-btn-full" onclick="payLoan()">Plătește</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="global-toast" class="global-toast"></div>
+
+    <script src="atm/script.js"></script>
+    <script src="bank/script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => lucide.createIcons());
+    </script>
+    <script>
+        let currentUIMode = null;
+
+        window.addEventListener('message', function(event) {
+            const data = event.data;
+            if (!data || !data.action) return;
+
+            switch(data.action) {
+                case 'open':
+                    openUI(data.mode, data.bankCode);
+                    break;
+                case 'close':
+                    hideAllUI();
+                    break;
+                case 'accountsData':
+                    handleAccountsData(data.data);
+                    break;
+                case 'cashData':
+                    handleCashData(data.data);
+                    break;
+                case 'depositResult':
+                    handleOperationResult(data.data, 'Depunere');
+                    break;
+                case 'withdrawResult':
+                    handleOperationResult(data.data, 'Retragere');
+                    break;
+                case 'transferResult':
+                    handleOperationResult(data.data, 'Transfer');
+                    break;
+                case 'transactionsData':
+                    handleTransactionsData(data.data);
+                    break;
+                case 'banksData':
+                    handleBanksData(data.data);
+                    break;
+                case 'currenciesData':
+                    handleCurrenciesData(data.data);
+                    break;
+                case 'createAccountResult':
+                    handleOperationResult(data.data, 'Creare cont');
+                    closeModal('create-account-modal');
+                    break;
+                case 'loansData':
+                    handleLoansData(data.data);
+                    break;
+                case 'createLoanResult':
+                    handleOperationResult(data.data, 'Solicitare credit');
+                    closeModal('create-loan-modal');
+                    break;
+                case 'payLoanResult':
+                    handleOperationResult(data.data, 'Plată rată');
+                    closeModal('pay-loan-modal');
+                    break;
+                case 'exchangeResult':
+                    handleOperationResult(data.data, 'Schimb valutar');
+                    break;
+            }
+        });
+
+        function openUI(mode, bankCode) {
+            hideAllUI();
+            currentUIMode = mode;
+
+            if (mode === 'atm') {
+                document.getElementById('atm-wrapper').classList.add('active');
+                atmShowView('balance');
+            } else if (mode === 'bank') {
+                document.getElementById('bank-wrapper').classList.add('active');
+                if (bankCode) {
+                    const nameMap = { 'MAZE': 'Maze Bank', 'FLEC': 'Fleeca Bank' };
+                    document.getElementById('bank-name').textContent = nameMap[bankCode] || bankCode;
+                }
+                bankShowView('dashboard');
+            }
+        }
+
+        function hideAllUI() {
+            document.getElementById('atm-wrapper').classList.remove('active');
+            document.getElementById('bank-wrapper').classList.remove('active');
+            currentUIMode = null;
+        }
+
+        function closeUI() {
+            hideAllUI();
+            fetch('https://banking/close', { method: 'POST', body: JSON.stringify({}) });
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && currentUIMode) {
+                closeUI();
+            }
+        });
+
+        function showToast(message, type) {
+            const toast = document.getElementById('global-toast');
+            toast.textContent = message;
+            toast.className = 'global-toast ' + (type || 'info') + ' show';
+            setTimeout(() => { toast.classList.remove('show'); }, 3000);
+        }
+
+        function handleOperationResult(data, operationName) {
+            if (data.success) {
+                showToast(operationName + ' reușit(ă)!', 'success');
+            } else {
+                showToast(operationName + ' eșuat(ă): ' + (data.error || 'Eroare necunoscută'), 'error');
+            }
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+        }
+
+        function formatMoney(amount) {
+            return '$' + (parseFloat(amount) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        // Mock data harness: deschide cu ?mock=true&mode=atm|bank (testare UI fara client FiveM)
+        window.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('mock') === 'true') {
+                const mode = urlParams.get('mode') || 'bank';
+
+                window.postMessage({ action: 'open', mode: mode, bankCode: 'MAZE' }, '*');
+
+                window.postMessage({ action: 'cashData', data: { success: true, cash: 15420.50 } }, '*');
+
+                window.postMessage({ action: 'accountsData', data: { success: true, accounts: [
+                    { id: 1, bankName: 'Maze Bank', accountType: 'current', accountNumber: 'MAZE-1234-5678', balance: 50000.00 },
+                    { id: 2, bankName: 'Maze Bank', accountType: 'savings', accountNumber: 'MAZE-9876-5432', balance: 125000.75 },
+                    { id: 3, bankName: 'Fleeca Bank', accountType: 'current', accountNumber: 'FLEC-1111-2222', balance: 3500.00 }
+                ] } }, '*');
+
+                window.postMessage({ action: 'transactionsData', data: { success: true, transactions: [
+                    { id: 1, transaction_type: 'deposit', amount: 5000, description: 'Depunere Cash', created_at: new Date(Date.now() - 3600000).toISOString() },
+                    { id: 2, transaction_type: 'withdrawal', amount: 1500, description: 'Retragere ATM', created_at: new Date(Date.now() - 86400000).toISOString() },
+                    { id: 3, transaction_type: 'transfer', amount: -600, description: 'Transfer către jucător', created_at: new Date(Date.now() - 172800000).toISOString() }
+                ] } }, '*');
+
+                window.postMessage({ action: 'banksData', data: { success: true, banks: [
+                    { code: 'MAZE', name: 'Maze Bank' }, { code: 'FLEC', name: 'Fleeca Bank' }, { code: 'CITY', name: 'City Bank' }
+                ] } }, '*');
+
+                window.postMessage({ action: 'currenciesData', data: { success: true, currencies: [
+                    { id: 1, name: 'Dolar', code: 'USD' }, { id: 2, name: 'Euro', code: 'EUR' }, { id: 3, name: 'Aur', code: 'GLD' }
+                ] } }, '*');
+
+                window.postMessage({ action: 'loansData', data: { success: true, totalDebt: 45000, loans: [
+                    { id: 1, loan_type: 'personal', principal_amount: 50000, remaining_amount: 45000, interest_rate: 12, term_months: 24 }
+                ] } }, '*');
+            }
+        });
+    </script>
+</body>
+</html>

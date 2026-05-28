@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SwitCore</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Video background (opțional - plasează background.mp4 în /ui/video/) -->
+    <video id="bg-video" autoplay muted loop playsinline>
+        <source src="video/background.mp4" type="video/mp4">
+    </video>
+
+    <!-- Overlay gradient peste video (menține lizibilitatea) -->
+    <div class="bg-overlay"></div>
+
+    <canvas id="particles"></canvas>
+    <div class="scanline"></div>
+
+    <!-- Overlay fade-to-black pentru ieșire -->
+    <div class="screen-fade" id="screen-fade"></div>
+
+    <div class="content">
+        <div class="logo">
+            <div class="logo-hex">
+                <img src="logo.svg" class="hex-svg" alt="SwitCore Logo" />
+            </div>
+            <div class="logo-text">
+                <h1>SWITCORE</h1>
+                <p class="logo-subtitle">ROLEPLAY SERVER</p>
+                <p class="logo-tagline">Roleplay. Libertate. Comunitate.</p>
+            </div>
+        </div>
+
+        <div class="sep"></div>
+
+        <div class="tips-row">
+            <div class="tip-icon-wrap" id="tip-icon">
+                <!-- icon injectat dinamic -->
+            </div>
+            <p class="tip-text" id="tip-text"></p>
+        </div>
+    </div>
+
+    <div class="progress-section">
+        <div class="progress-meta">
+            <span class="prog-status" id="prog-status">Se inițializează...</span>
+            <span class="prog-pct"    id="prog-pct">0%</span>
+        </div>
+        <div class="segments" id="segments"></div>
+        <p class="resource-line" id="resource-line">&nbsp;</p>
+    </div>
+
+    <!-- Muzică ambientală -->
+    <audio id="ambient" src="audio/intro.wav" loop></audio>
+
+    <script src="script.js"></script>
+</body>
+</html>

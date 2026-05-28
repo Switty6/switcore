@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <title>SwitCore HUD</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="hud-root" class="hidden">
+
+        <div id="stat-cluster">
+            <div class="stat-row" id="stat-health">
+                <svg class="stat-icon" viewBox="0 0 14 14" fill="none">
+                    <path d="M7 12S1.5 8 1.5 4.5A3 3 0 017 3.2 3 3 0 0112.5 4.5C12.5 8 7 12 7 12Z" fill="currentColor"/>
+                </svg>
+                <div class="bar-track">
+                    <div class="bar-fill" id="bar-health"></div>
+                </div>
+            </div>
+
+            <div class="stat-row" id="stat-armor">
+                <svg class="stat-icon" viewBox="0 0 14 14" fill="none">
+                    <path d="M7 1.5L12 3.5V7C12 10 7 12.5 7 12.5S2 10 2 7V3.5L7 1.5Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
+                    <path d="M4.5 7l2 2 3-3" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <div class="bar-track">
+                    <div class="bar-fill" id="bar-armor"></div>
+                </div>
+            </div>
+
+            <div class="stat-row" id="stat-hunger">
+                <svg class="stat-icon" viewBox="0 0 14 14" fill="none">
+                    <circle cx="5" cy="4" r="3" fill="currentColor" opacity="0.9"/>
+                    <path d="M7.2 6.2L11 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    <circle cx="11.5" cy="11" r="1.5" fill="currentColor" opacity="0.7"/>
+                </svg>
+                <div class="bar-track">
+                    <div class="bar-fill" id="bar-hunger"></div>
+                </div>
+            </div>
+
+            <div class="stat-row" id="stat-thirst">
+                <svg class="stat-icon" viewBox="0 0 14 14" fill="none">
+                    <path d="M7 1.5C7 1.5 2.5 7 2.5 9.5a4.5 4.5 0 009 0C11.5 7 7 1.5 7 1.5Z" fill="currentColor" opacity="0.8"/>
+                </svg>
+                <div class="bar-track">
+                    <div class="bar-fill" id="bar-thirst"></div>
+                </div>
+            </div>
+
+            <!-- Auto-hide cand stamina = 100 -->
+            <div class="stat-row" id="stat-stamina">
+                <svg class="stat-icon" viewBox="0 0 14 14" fill="none">
+                    <path d="M9.5 4a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM4.5 11.5l1-3.5 2.5-.5.5 2.5m1.5-6L8 5.5l-3 1.5-2 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <div class="bar-track">
+                    <div class="bar-fill" id="bar-stamina"></div>
+                </div>
+            </div>
+
+            <!-- Auto-hide cand oxygen = 100 -->
+            <div class="stat-row" id="stat-oxygen">
+                <svg class="stat-icon" viewBox="0 0 14 14" fill="none">
+                    <path d="M7 11.5a4.5 4.5 0 100-9 4.5 4.5 0 000 9z" stroke="currentColor" stroke-width="1.2"/>
+                    <circle cx="5.5" cy="6.5" r="0.8" fill="currentColor"/>
+                    <circle cx="8.5" cy="7.5" r="0.6" fill="currentColor"/>
+                </svg>
+                <div class="bar-track">
+                    <div class="bar-fill" id="bar-oxygen"></div>
+                </div>
+            </div>
+        </div>
+
+    <div id="job-badge" class="job-badge hidden">
+        <span id="job-duty-dot" class="job-duty-dot"></span>
+        <span id="job-badge-text">-</span>
+    </div>
+
+        <div id="time-display">
+            <span id="time-value">00:00</span>
+        </div>
+
+        <div id="speedometer" class="speed-hidden">
+            <div id="speed-dial">
+                <canvas id="speed-canvas" width="160" height="150"></canvas>
+                <div id="speed-center">
+                    <span id="speed-value">0</span>
+                    <span id="speed-unit">KM/H</span>
+                </div>
+            </div>
+            <div id="vehicle-side">
+                <div id="gear-display">
+                    <span id="speed-gear">N</span>
+                    <span class="gear-label">GEAR</span>
+                </div>
+                <div class="veh-divider"></div>
+                <div id="fuel-section">
+                    <div id="fuel-header">
+                        <svg class="fuel-icon" viewBox="0 0 14 14" fill="none">
+                            <path d="M2 12V3h7v9H2z" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/>
+                            <path d="M9 5h1.5a1 1 0 011 1v3a.5.5 0 001 0V5.5L11 4" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M4 7h3" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+                        </svg>
+                        <span class="fuel-label">Fuel</span>
+                        <span id="fuel-pct">100%</span>
+                    </div>
+                    <div class="fuel-track"><div id="bar-fuel"></div></div>
+                </div>
+                <div class="veh-divider"></div>
+                <div id="odo-section">
+                    <span class="odo-label">ODO</span>
+                    <span id="odo-value">- km</span>
+                </div>
+                <div class="veh-divider"></div>
+                <div id="veh-indicators">
+                    <svg id="sig-left" class="sig" viewBox="0 0 12 10" fill="currentColor">
+                        <path d="M5 1L1 5l4 4V7h6V3H5V1z"/>
+                    </svg>
+                    <svg id="headlight" class="headlight" viewBox="0 0 14 14" fill="none">
+                        <circle cx="4.5" cy="7" r="2" stroke="currentColor" stroke-width="1.1"/>
+                        <path d="M7 4.5l2.5-1.5M7 7h3.5M7 9.5l2.5 1.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+                    </svg>
+                    <svg id="highbeam" class="highbeam" viewBox="0 0 14 14" fill="none">
+                        <circle cx="4.5" cy="7" r="2" stroke="currentColor" stroke-width="1.1"/>
+                        <path d="M7 5h4.5M7 7h4.5M7 9h4.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+                    </svg>
+                    <svg id="sig-right" class="sig" viewBox="0 0 12 10" fill="currentColor">
+                        <path d="M7 1l4 4-4 4V7H1V3h6V1z"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

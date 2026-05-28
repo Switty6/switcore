@@ -1,0 +1,1 @@
+-- Setarile sunt in baza de date (tabelul settings), nu aici.

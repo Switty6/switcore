@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MDT Politie</title>
+    <link rel="stylesheet" href="style.css" />
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+</head>
+<body>
+
+<div id="jail-hud" class="hidden">
+    <div class="jail-icon"><i data-lucide="lock"></i></div>
+    <div class="jail-info">
+        <span class="jail-label">Inchisoare</span>
+        <span id="jail-timer" class="jail-timer">00:00</span>
+    </div>
+    <button class="jail-bail-btn hidden" id="bail-btn" onclick="payBail()">Plateste Cautiune</button>
+</div>
+
+<div id="cuff-hud" class="hidden">
+    <span>Incatusat</span>
+</div>
+
+<div id="mdt-panel" class="hidden">
+    <div class="mdt-header">
+        <span class="mdt-title">MDT - Politie</span>
+        <button class="mdt-close" onclick="postNUI('closeMDT')"><i data-lucide="x"></i></button>
+    </div>
+
+    <div class="mdt-tabs">
+        <button class="tab-btn active" data-tab="warrants"   onclick="switchTab('warrants')">Mandate</button>
+        <button class="tab-btn"        data-tab="search"     onclick="switchTab('search')">Cautare</button>
+        <button class="tab-btn"        data-tab="officers"   onclick="switchTab('officers')">Ofițeri Activi</button>
+        <button class="tab-btn hidden"  data-tab="management" id="tab-management-btn" onclick="switchTab('management')">Management</button>
+    </div>
+
+    <div id="tab-warrants" class="tab-content active">
+        <div class="tab-toolbar">
+            <button class="btn-primary" onclick="showWarrantForm()">+ Emite Mandat</button>
+        </div>
+        <table class="data-table" id="warrants-table">
+            <thead>
+                <tr>
+                    <th>Nume</th>
+                    <th>Acuzatii</th>
+                    <th>Cautiune</th>
+                    <th>Data</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody id="warrants-body"></tbody>
+        </table>
+    </div>
+
+    <div id="tab-search" class="tab-content hidden">
+        <div class="search-bar">
+            <input type="text" id="search-input" placeholder="Cauta dupa nume..." oninput="onSearchInput()" />
+        </div>
+        <div id="search-results"></div>
+    </div>
+
+    <div id="tab-officers" class="tab-content hidden">
+        <div class="tab-toolbar">
+            <button class="btn-secondary" onclick="postNUI('getOnDutyOfficers')">↻ Actualizeaza</button>
+        </div>
+        <div id="officers-list"></div>
+    </div>
+
+    <div id="tab-management" class="tab-content hidden">
+        <div class="sub-tabs">
+            <button class="sub-tab-btn active" data-stab="budget"   onclick="switchSubTab('budget')">Buget</button>
+            <button class="sub-tab-btn"        data-stab="mgmt-fleet"  onclick="switchSubTab('mgmt-fleet')">Flota</button>
+            <button class="sub-tab-btn"        data-stab="mgmt-armory" onclick="switchSubTab('mgmt-armory')">Armament</button>
+        </div>
+
+        <div id="stab-budget" class="sub-tab-content">
+            <div class="budget-header">
+                <div class="budget-balance-chip">
+                    <span class="budget-label">Buget disponibil</span>
+                    <span id="budget-balance" class="budget-amount">$0</span>
+                </div>
+            </div>
+            <table class="data-table" id="budget-tx-table">
+                <thead>
+                    <tr>
+                        <th>Tip</th>
+                        <th>Suma</th>
+                        <th>Descriere</th>
+                        <th>Data</th>
+                    </tr>
+                </thead>
+                <tbody id="budget-tx-body"></tbody>
+            </table>
+        </div>
+
+        <div id="stab-mgmt-fleet" class="sub-tab-content hidden">
+            <div class="mgmt-section">
+                <h3 class="mgmt-section-title">Flota Curenta</h3>
+                <div id="mgmt-fleet-list"></div>
+            </div>
+            <div class="mgmt-section">
+                <h3 class="mgmt-section-title">Achizitioneaza Vehicul</h3>
+                <div id="mgmt-models-list"></div>
+            </div>
+        </div>
+
+        <div id="stab-mgmt-armory" class="sub-tab-content hidden">
+            <div class="mgmt-section">
+                <h3 class="mgmt-section-title">Arme Configurate</h3>
+                <div id="mgmt-armory-weapons"></div>
+                <div class="mgmt-add-form" id="mgmt-add-weapon-form">
+                    <h4>Adauga Arma</h4>
+                    <input type="text" id="new-weapon-item"   placeholder="itemName (ex: weapon_pistol)" />
+                    <input type="text" id="new-weapon-label"  placeholder="Nume afisat" />
+                    <input type="text" id="new-weapon-ammo"   placeholder="Ammo item (optional)" />
+                    <input type="number" id="new-weapon-ammo-amount" placeholder="Cantitate ammo" value="0" min="0" />
+                    <button class="btn-primary" onclick="submitAddWeapon()">Adauga</button>
+                </div>
+            </div>
+            <div class="mgmt-section">
+                <h3 class="mgmt-section-title">Echipamente Configurate</h3>
+                <div id="mgmt-armory-equipment"></div>
+                <div class="mgmt-add-form" id="mgmt-add-equip-form">
+                    <h4>Adauga Echipament</h4>
+                    <input type="text"   id="new-equip-item"   placeholder="itemName (ex: handcuffs)" />
+                    <input type="text"   id="new-equip-label"  placeholder="Nume afisat" />
+                    <input type="number" id="new-equip-amount" placeholder="Cantitate" value="1" min="1" />
+                    <button class="btn-primary" onclick="submitAddEquipment()">Adauga</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="warrant-modal" class="modal hidden">
+    <div class="modal-box">
+        <div class="modal-header">
+            <span>Emite Mandat</span>
+            <button onclick="hideWarrantForm()"><i data-lucide="x"></i></button>
+        </div>
+        <div class="modal-body">
+            <label>Cautare Suspect</label>
+            <div class="search-bar">
+                <input type="text" id="warrant-search" placeholder="Prenume sau Nume..." oninput="onWarrantSearch()" />
+            </div>
+            <div id="warrant-search-results" class="compact-results"></div>
+            <input type="hidden" id="warrant-char-id" />
+            <div id="warrant-char-display" class="selected-char hidden"></div>
+            <label>Acuzatii</label>
+            <textarea id="warrant-charges" rows="3" placeholder="Acuzatii..."></textarea>
+            <label>Cautiune ($)</label>
+            <input type="number" id="warrant-bail" value="0" min="0" />
+        </div>
+        <div class="modal-footer">
+            <button class="btn-secondary" onclick="hideWarrantForm()">Anuleaza</button>
+            <button class="btn-primary" onclick="submitWarrant()">Emite</button>
+        </div>
+    </div>
+</div>
+
+<div id="arrest-modal" class="modal hidden">
+    <div class="modal-box">
+        <div class="modal-header">
+            <span>Trimite la Inchisoare</span>
+            <button onclick="postNUI('cancelArrest')"><i data-lucide="x"></i></button>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="arrest-target-src" />
+            <label>Motiv</label>
+            <textarea id="arrest-reason" rows="3" placeholder="Motivul arestului..."></textarea>
+            <label>Durata (minute, max 720)</label>
+            <input type="number" id="arrest-minutes" value="10" min="1" max="720" />
+            <label>Cautiune ($, 0 = fara)</label>
+            <input type="number" id="arrest-bail" value="0" min="0" />
+        </div>
+        <div class="modal-footer">
+            <button class="btn-secondary" onclick="postNUI('cancelArrest')">Anuleaza</button>
+            <button class="btn-primary" onclick="submitArrest()">Confirma</button>
+        </div>
+    </div>
+</div>
+
+<div id="armory-panel" class="hidden">
+    <div class="mdt-header">
+        <span class="mdt-title">Armament</span>
+        <button class="mdt-close" onclick="postNUI('closeArmory')"><i data-lucide="x"></i></button>
+    </div>
+    <div class="armory-body">
+        <div class="armory-section">
+            <h3>Arme</h3>
+            <div id="armory-weapons"></div>
+        </div>
+        <div class="armory-section">
+            <h3>Echipament</h3>
+            <div id="armory-equipment"></div>
+        </div>
+    </div>
+</div>
+
+<div id="garage-panel" class="hidden">
+    <div class="mdt-header">
+        <span class="mdt-title">Garaj Politie</span>
+        <button class="mdt-close" onclick="postNUI('closeGarage')"><i data-lucide="x"></i></button>
+    </div>
+    <div id="active-vehicle-bar" class="hidden">
+        <div class="active-veh-info">
+            <span class="active-veh-label" id="active-veh-label"></span>
+            <span class="active-veh-plate" id="active-veh-plate"></span>
+            <span class="active-veh-mileage" id="active-veh-mileage"></span>
+        </div>
+        <button class="btn-danger-sm" onclick="postNUI('returnVehicle')">Returneaza</button>
+    </div>
+    <div class="garage-body">
+        <div class="garage-fleet-header">
+            <span class="garage-section-title">Flota Disponibila</span>
+        </div>
+        <div id="fleet-list"></div>
+    </div>
+</div>
+
+<div id="mileage-hud" class="hidden">
+    <span class="mileage-icon"><i data-lucide="car"></i></span>
+    <span id="mileage-display">0.0 km</span>
+</div>
+
+<div id="cloakroom-panel" class="hidden">
+    <div class="mdt-header">
+        <span class="mdt-title">Vestiar</span>
+        <button class="mdt-close" onclick="postNUI('closeCloakroom')"><i data-lucide="x"></i></button>
+    </div>
+    <div class="cloakroom-body">
+        <button class="outfit-btn" onclick="postNUI('wearUniform')">
+            <span class="outfit-icon"><i data-lucide="shield"></i></span>
+            <span>Uniforma Politie</span>
+        </button>
+        <button class="outfit-btn civilian" onclick="postNUI('wearCivilian')">
+            <span class="outfit-icon"><i data-lucide="shirt"></i></span>
+            <span>Tinuta Civila</span>
+        </button>
+    </div>
+</div>
+
+<script src="script.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        if (window.lucide) lucide.createIcons();
+    });
+</script>
+</body>
+</html>

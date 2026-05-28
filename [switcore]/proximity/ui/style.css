@@ -1,0 +1,370 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    overflow: hidden;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+}
+
+#interaction-container:not(.hidden) .interaction-wrapper {
+    pointer-events: auto;
+}
+
+#interaction-container:not(.hidden) .interaction-wrapper * {
+    pointer-events: auto;
+}
+
+#interaction-container.hidden {
+    pointer-events: none !important;
+}
+
+.hidden {
+    display: none !important;
+}
+
+#interaction-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 1000;
+    transition: left 0.08s ease-out, top 0.08s ease-out, opacity 0.15s ease-out;
+    will-change: left, top, transform;
+}
+
+.interaction-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    animation: slideIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.compact-marker {
+    position: relative;
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.marker-dot {
+    position: absolute;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #00ff00;
+    box-shadow: 
+        0 0 8px rgba(0, 255, 0, 1),
+        0 0 16px rgba(0, 255, 0, 0.8),
+        0 0 24px rgba(0, 255, 0, 0.6);
+    z-index: 3;
+    animation: dotPulse 1.2s ease-in-out infinite;
+}
+
+.marker-ring {
+    position: absolute;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(0, 255, 0, 0.8);
+    border-top-color: rgba(0, 255, 0, 1);
+    border-right-color: rgba(0, 255, 0, 0.6);
+    animation: ringRotate 1.5s linear infinite;
+    z-index: 2;
+}
+
+.marker-pulse {
+    position: absolute;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(0, 255, 0, 0.4);
+    animation: pulseExpand 2s ease-out infinite;
+    z-index: 1;
+}
+
+.compact-text {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    line-height: 1;
+}
+
+.key-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 24px;
+    height: 24px;
+    padding: 0 6px;
+    background: rgba(0, 255, 0, 0.15);
+    border: 1.5px solid rgba(0, 255, 0, 0.6);
+    border-radius: 4px;
+    color: #00ff00;
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    box-shadow: 
+        0 0 8px rgba(0, 255, 0, 0.4),
+        inset 0 0 8px rgba(0, 255, 0, 0.1);
+    animation: badgePulse 2s ease-in-out infinite;
+}
+
+.label-text {
+    color: rgba(255, 255, 255, 0.95);
+    font-weight: 500;
+    font-size: 12px;
+    text-shadow: 
+        0 0 8px rgba(255, 255, 255, 0.5),
+        0 2px 4px rgba(0, 0, 0, 0.8);
+    letter-spacing: 0.3px;
+    animation: textShimmer 3s ease-in-out infinite;
+}
+
+.distance-display {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 6px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    text-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+    letter-spacing: 0.5px;
+    font-weight: 500;
+}
+
+.distance-display.visible {
+    opacity: 1;
+}
+
+.interaction-counter {
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.6);
+    margin-top: 4px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.interaction-counter.visible {
+    opacity: 1;
+}
+
+.interaction-counter.counter-simple {
+    font-size: 11px;
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    justify-content: center;
+}
+
+.interaction-counter.counter-simple .counter-number {
+    font-size: 14px;
+    font-weight: 700;
+    color: #00ff00;
+    text-shadow: 0 0 8px rgba(0, 255, 0, 0.6);
+    line-height: 1;
+}
+
+.interaction-counter.counter-simple .counter-text {
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.7);
+    text-shadow: 0 0 4px rgba(255, 255, 255, 0.3);
+}
+
+.interactions-list {
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    margin-top: 6px;
+    max-height: 150px;
+    overflow-y: auto;
+    padding: 5px;
+    width: auto;
+    min-width: 180px;
+}
+
+.interactions-list.visible {
+    display: flex;
+}
+
+.interactions-list.multi-column {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 5px;
+    max-height: 200px;
+    width: auto;
+}
+
+.interactions-list.multi-column.visible {
+    display: grid;
+}
+
+.interactions-list.columns-2 {
+    grid-template-columns: repeat(2, 1fr);
+    max-width: 360px;
+}
+
+.interactions-list.columns-3 {
+    grid-template-columns: repeat(3, 1fr);
+    max-width: 540px;
+}
+
+.interaction-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 5px;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.8);
+    transition: all 0.2s ease;
+    cursor: default;
+    pointer-events: auto;
+    min-height: 28px;
+}
+
+.mouse-enabled .interaction-item {
+    cursor: pointer;
+}
+
+.interaction-item:hover {
+    background: rgba(0, 255, 0, 0.15);
+    border-color: rgba(0, 255, 0, 0.4);
+    transform: translateX(5px);
+    color: rgba(255, 255, 255, 0.95);
+}
+
+.interaction-item.selected {
+    background: rgba(0, 255, 0, 0.2);
+    border-color: rgba(0, 255, 0, 0.6);
+    color: rgba(255, 255, 255, 1);
+    transform: scale(1.03);
+    font-weight: 500;
+}
+
+.interaction-item.selected:hover {
+    background: rgba(0, 255, 0, 0.2);
+    border-color: rgba(0, 255, 0, 0.6);
+}
+
+.interaction-item-label {
+    flex: 1;
+}
+
+@keyframes slideIn {
+    0% {
+        opacity: 0;
+        transform: translateY(10px) scale(0.9);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes dotPulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+        box-shadow: 
+            0 0 10px rgba(0, 255, 0, 1),
+            0 0 20px rgba(0, 255, 0, 0.8),
+            0 0 30px rgba(0, 255, 0, 0.6);
+    }
+    50% {
+        transform: scale(1.15);
+        opacity: 0.9;
+        box-shadow: 
+            0 0 15px rgba(0, 255, 0, 1),
+            0 0 30px rgba(0, 255, 0, 0.9),
+            0 0 45px rgba(0, 255, 0, 0.7);
+    }
+}
+
+@keyframes ringRotate {
+    0% {
+        transform: rotate(0deg);
+        border-top-color: rgba(0, 255, 0, 1);
+        border-right-color: rgba(0, 255, 0, 0.6);
+    }
+    25% {
+        border-top-color: rgba(0, 255, 0, 0.6);
+        border-right-color: rgba(0, 255, 0, 1);
+    }
+    50% {
+        border-top-color: rgba(0, 255, 0, 0.6);
+        border-right-color: rgba(0, 255, 0, 0.8);
+    }
+    75% {
+        border-top-color: rgba(0, 255, 0, 1);
+        border-right-color: rgba(0, 255, 0, 0.6);
+    }
+    100% {
+        transform: rotate(360deg);
+        border-top-color: rgba(0, 255, 0, 1);
+        border-right-color: rgba(0, 255, 0, 0.6);
+    }
+}
+
+@keyframes pulseExpand {
+    0% {
+        transform: scale(1);
+        opacity: 0.6;
+    }
+    50% {
+        transform: scale(1.5);
+        opacity: 0;
+    }
+    100% {
+        transform: scale(1.5);
+        opacity: 0;
+    }
+}
+
+@keyframes badgePulse {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 
+            0 0 8px rgba(0, 255, 0, 0.4),
+            inset 0 0 8px rgba(0, 255, 0, 0.1);
+    }
+    50% {
+        transform: scale(1.05);
+        box-shadow: 
+            0 0 12px rgba(0, 255, 0, 0.6),
+            inset 0 0 10px rgba(0, 255, 0, 0.15);
+    }
+}
+
+@keyframes textShimmer {
+    0%, 100% {
+        opacity: 0.95;
+        text-shadow: 
+            0 0 8px rgba(255, 255, 255, 0.5),
+            0 2px 4px rgba(0, 0, 0, 0.8);
+    }
+    50% {
+        opacity: 1;
+        text-shadow: 
+            0 0 12px rgba(255, 255, 255, 0.7),
+            0 2px 6px rgba(0, 0, 0, 0.8);
+    }
+}
+
+.compact-marker.active .marker-dot,
+.compact-marker.active .marker-ring,
+.compact-marker.active .marker-pulse {
+    animation-duration: 1s;
+}

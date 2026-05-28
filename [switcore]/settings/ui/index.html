@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SwitCore Settings</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+</head>
+<body>
+
+<div id="overlay">
+    <div class="panel">
+
+        <div class="panel-header">
+            <div class="header-left">
+                <div class="header-icon">
+                    <i data-lucide="settings-2"></i>
+                </div>
+                <div>
+                    <div class="header-title">SwitCore Settings</div>
+                    <div class="header-subtitle" id="titleSub">Panel de configurare</div>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="btn-reload" id="reloadBtn">
+                    <i data-lucide="refresh-cw"></i>
+                    Reload
+                </button>
+                <button class="btn-icon" id="closeBtn" title="Închide (ESC)">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="panel-body">
+
+            <div class="sidebar" id="sidebar"></div>
+
+            <div class="content" id="content">
+                <div class="search-wrap">
+                    <i data-lucide="search"></i>
+                    <input type="text" id="searchInput" placeholder="Caută setare (cheie, label, descriere)…">
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script src="script.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        lucide.createIcons();
+    });
+</script>
+</body>
+</html>

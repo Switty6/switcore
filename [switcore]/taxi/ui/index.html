@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Taxi</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+</head>
+<body>
+<div id="panel" class="panel hidden">
+    <div class="header">
+        <div class="header-left">
+            <span class="icon"><i data-lucide="car"></i></span>
+            <div>
+                <div class="title">Compania de Taxi</div>
+                <div class="subtitle" id="gradeLabel">-</div>
+            </div>
+        </div>
+        <button class="close-btn" id="btnClose"><i data-lucide="x"></i></button>
+    </div>
+
+    <div class="tabs">
+        <button class="tab active" data-tab="stats">Statistici</button>
+        <button class="tab" data-tab="orders">Cereri <span class="badge" id="ordersBadge">0</span></button>
+        <button class="tab" data-tab="history">Istoric</button>
+    </div>
+
+    <div id="tab-stats" class="tab-content active">
+        <div class="info-grid">
+            <div class="info-card">
+                <div class="info-label">Curse totale</div>
+                <div class="info-value" id="statTrips">0</div>
+            </div>
+            <div class="info-card">
+                <div class="info-label">Total câștigat</div>
+                <div class="info-value" id="statEarned">0 lei</div>
+            </div>
+        </div>
+        <div class="duty-row">
+            <button class="duty-btn" id="btnDuty">Intră în tură</button>
+            <button class="quit-btn" id="btnQuit">Renunță la job</button>
+        </div>
+    </div>
+
+    <div id="tab-orders" class="tab-content hidden">
+        <div class="section-title">Cereri disponibile</div>
+        <div id="ordersList" class="list-container">
+            <div class="empty-msg">Nu există cereri active.</div>
+        </div>
+    </div>
+
+    <div id="tab-history" class="tab-content hidden">
+        <div class="section-title">Ultimele curse</div>
+        <div id="historyList" class="list-container">
+            <div class="empty-msg">Nu ai curse efectuate.</div>
+        </div>
+    </div>
+</div>
+
+<script src="app.js"></script>
+<script>document.addEventListener('DOMContentLoaded', () => { if (window.lucide) lucide.createIcons(); });</script>
+</body>
+</html>

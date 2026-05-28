@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LS Customs - SwitCore</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div id="app" class="hidden">
+
+        <div class="main-area">
+
+            <aside class="panel panel-left">
+                <div class="panel-header">
+                    <div class="header-shop">
+                        <svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+                        </svg>
+                        <div>
+                            <div class="header-shop-name" id="shopName">LS Customs</div>
+                            <div class="header-plate" id="vehiclePlate">- - -</div>
+                        </div>
+                    </div>
+                    <div id="vipBadge" class="vip-badge hidden">VIP</div>
+                </div>
+                <nav class="cat-list" id="catList"></nav>
+            </aside>
+
+            <div class="center-area" id="carArea">
+                <div class="zone-label" id="zoneLabel"></div>
+
+                <button class="close-btn" id="btnClose">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+
+                <div class="vehicle-overlay">
+                    <div class="vehicle-name" id="vehicleName">-</div>
+                    <div class="vehicle-model" id="vehicleModel">-</div>
+                </div>
+            </div>
+
+            <aside class="panel panel-right">
+                <div class="panel-right-header">
+                    <span class="panel-right-title" id="modPanelTitle">Motor</span>
+                    <span class="panel-right-desc" id="modPanelDesc"></span>
+                </div>
+                <div class="mod-list" id="modList"></div>
+            </aside>
+
+        </div>
+
+        <footer class="cart-bar" id="cartBar">
+
+            <div class="cart-scroll-area" id="cartScrollArea">
+                <span class="cart-empty-msg" id="cartEmptyMsg">
+                    Niciun upgrade selectat · Adaugă din panoul din dreapta
+                </span>
+            </div>
+
+            <div class="cart-actions">
+                <div class="cart-total-wrap">
+                    <span class="cart-total-label">Total</span>
+                    <span class="cart-total-value" id="cartTotal">$0</span>
+                </div>
+                <div class="pay-toggle">
+                    <button class="pay-btn active" id="payCash" data-method="cash">Cash</button>
+                    <button class="pay-btn"        id="payBank" data-method="bank">Bancă</button>
+                </div>
+                <button class="btn-buy" id="btnBuy" disabled>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <polyline points="20 12 20 22 4 22 4 12"/>
+                        <rect x="2" y="7" width="20" height="5"/>
+                        <line x1="12" y1="22" x2="12" y2="7"/>
+                    </svg>
+                    Cumpără Tot
+                </button>
+                <button class="btn-reset-stock" id="btnReset" title="Reset Stock">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="1 4 1 10 7 10"/>
+                        <path d="M3.51 15a9 9 0 1 0 .49-3.67"/>
+                    </svg>
+                    Reset Stock
+                </button>
+            </div>
+
+        </footer>
+
+        <div class="modal-overlay hidden" id="modalOverlay">
+            <div class="modal">
+                <div class="modal-title"   id="modalTitle">Confirmă</div>
+                <div class="modal-body"    id="modalBody"></div>
+                <div class="modal-actions">
+                    <button class="btn-modal-cancel"  id="modalCancel">Anulează</button>
+                    <button class="btn-modal-confirm" id="modalConfirm">Confirmă</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

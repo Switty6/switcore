@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guvern - Preview</title>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --bg:        #0d0f14;
+    --panel:     #13161f;
+    --card:      #1c2230;
+    --hover:     #222840;
+    --border:    #2a2d38;
+    --accent:    #00b4ff;
+    --accent-d:  #0090cc;
+    --success:   #00c853;
+    --danger:    #ff3b30;
+    --warn:      #ffaa00;
+    --text:      #e0e4ef;
+    --text-dim:  #8890a4;
+    --radius:    6px;
+}
+
+body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    font-size: 13px;
+    color: var(--text);
+    background: #111318;
+    overflow: hidden;
+    user-select: none;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.hidden { display: none !important; }
+
+button {
+    cursor: pointer; border: none; font-family: inherit; font-size: 12px;
+    border-radius: var(--radius); transition: background 0.15s, opacity 0.15s;
+}
+button:active { opacity: 0.8; }
+
+input, textarea, select {
+    background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius);
+    color: var(--text); font-family: inherit; font-size: 12px;
+    padding: 6px 10px; width: 100%; outline: none;
+}
+input:focus, textarea:focus, select:focus { border-color: var(--accent); }
+textarea { resize: vertical; min-height: 60px; }
+input[type="color"] { padding: 2px; height: 30px; cursor: pointer; }
+
+.btn-primary   { background: var(--accent);  color: #fff; padding: 7px 14px; }
+.btn-primary:hover { background: var(--accent-d); }
+.btn-secondary { background: var(--card);    color: var(--text); padding: 7px 14px; border: 1px solid var(--border); }
+.btn-secondary:hover { background: var(--hover); }
+.btn-danger    { background: var(--danger);  color: #fff; padding: 5px 10px; font-size: 11px; }
+.btn-danger:hover { opacity: 0.85; }
+.btn-success   { background: var(--success); color: #fff; padding: 5px 10px; font-size: 11px; }
+.btn-success:hover { opacity: 0.85; }
+.btn-warn      { background: var(--warn);    color: #000; padding: 5px 10px; font-size: 11px; font-weight: 600; }
+.btn-warn:hover { opacity: 0.85; }
+.btn-close     { background: none; color: var(--text-dim); font-size: 16px; padding: 4px 8px; }
+.btn-close:hover { color: var(--danger); }
+
+.badge { font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 10px; display: inline-block; white-space: nowrap; }
+.badge-accent   { background: rgba(0,180,255,0.15); color: var(--accent); }
+.badge-success  { background: rgba(0,200,83,0.15);  color: var(--success); }
+.badge-danger   { background: rgba(255,59,48,0.15); color: var(--danger); }
+.badge-warn     { background: rgba(255,170,0,0.15); color: var(--warn); }
+.badge-gray     { background: rgba(136,144,164,0.15); color: var(--text-dim); }
+
+.panel {
+    width: 1020px; height: 650px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    display: flex; flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.8);
+}
+
+.panel-header {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 18px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+}
+.panel-icon { font-size: 18px; color: var(--accent); }
+.panel-title { font-size: 14px; font-weight: 800; letter-spacing: 0.12em; color: var(--accent); white-space: nowrap; }
+.header-stats { flex: 1; display: flex; align-items: center; gap: 8px; justify-content: center; font-size: 11px; color: var(--text-dim); }
+.stat-item { white-space: nowrap; }
+.stat-sep  { color: var(--border); }
+
+.panel-body { display: flex; flex: 1; overflow: hidden; }
+
+.sidebar {
+    width: 150px; flex-shrink: 0;
+    background: var(--panel);
+    border-right: 1px solid var(--border);
+    padding: 10px 0;
+    display: flex; flex-direction: column; gap: 2px;
+}
+.nav-btn {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 16px;
+    background: none; color: var(--text-dim);
+    font-size: 12px; font-weight: 500;
+    border-radius: 0; text-align: left; width: 100%;
+    transition: background 0.12s, color 0.12s;
+}
+.nav-btn:hover { background: var(--hover); color: var(--text); }
+.nav-btn.active { background: rgba(0,180,255,0.12); color: var(--accent); border-right: 2px solid var(--accent); }
+.nav-icon { font-size: 14px; }
+
+.content { flex: 1; overflow: hidden; position: relative; }
+.tab-panel { display: none; flex-direction: column; height: 100%; padding: 16px; overflow-y: auto; }
+.tab-panel.active { display: flex; }
+.tab-panel::-webkit-scrollbar, .list-container::-webkit-scrollbar { width: 4px; }
+.tab-panel::-webkit-scrollbar-track, .list-container::-webkit-scrollbar-track { background: transparent; }
+.tab-panel::-webkit-scrollbar-thumb, .list-container::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+.dash-cards { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 16px; }
+.dash-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 12px; }
+.dash-card.accent { border-color: rgba(0,180,255,0.3); }
+.dash-card-label { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
+.dash-card-value { font-size: 22px; font-weight: 700; color: var(--text); }
+.dash-card.accent .dash-card-value { color: var(--accent); }
+.section-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim); margin-bottom: 8px; }
+.officials-list { display: flex; flex-wrap: wrap; gap: 6px; max-height: 60px; overflow-y: auto; }
+.official-chip { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 3px 10px; font-size: 11px; color: var(--text-dim); }
+.recent-tx-list { display: flex; flex-direction: column; gap: 4px; }
+.recent-tx-item { display: flex; align-items: center; gap: 8px; padding: 6px 10px; background: var(--card); border-radius: var(--radius); font-size: 11px; }
+.tx-income { color: var(--success); font-weight: 700; }
+.tx-expense { color: var(--danger); font-weight: 700; }
+.tx-desc { flex: 1; color: var(--text-dim); }
+.tx-date { color: var(--text-dim); font-size: 10px; }
+
+.sub-tabs { display: flex; gap: 4px; margin-bottom: 12px; flex-shrink: 0; }
+.sub-btn { padding: 5px 14px; background: var(--card); color: var(--text-dim); border: 1px solid var(--border); font-size: 12px; }
+.sub-btn.active { background: rgba(0,180,255,0.12); color: var(--accent); border-color: rgba(0,180,255,0.3); }
+.sub-panel { display: none; flex-direction: column; flex: 1; overflow: hidden; }
+.sub-panel.active { display: flex; }
+
+.toolbar { display: flex; gap: 8px; margin-bottom: 10px; flex-shrink: 0; }
+.form-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; margin-bottom: 12px; flex-shrink: 0; }
+.form-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--accent); margin-bottom: 10px; }
+.form-row { margin-bottom: 8px; }
+.form-row.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.form-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 10px; }
+.list-container { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
+.empty-state { flex: 1; display: flex; align-items: center; justify-content: center; color: var(--text-dim); font-size: 12px; }
+
+.proposal-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; }
+.proposal-header { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 6px; }
+.proposal-title { font-weight: 700; font-size: 13px; flex: 1; }
+.proposal-meta { font-size: 10px; color: var(--text-dim); margin-bottom: 8px; }
+.proposal-desc { font-size: 11px; color: var(--text-dim); margin-bottom: 8px; line-height: 1.5; }
+.proposal-actions { display: flex; align-items: center; gap: 8px; }
+.vote-count { font-size: 11px; color: var(--text-dim); margin-left: auto; }
+.vote-yes { color: var(--success); font-weight: 700; }
+.vote-no  { color: var(--danger); font-weight: 700; }
+.law-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; }
+.law-header { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.law-title  { font-weight: 700; font-size: 13px; flex: 1; }
+.law-meta   { font-size: 10px; color: var(--text-dim); margin-bottom: 6px; }
+.law-desc   { font-size: 11px; color: var(--text-dim); line-height: 1.5; }
+.law-penalty { font-size: 11px; color: var(--warn); margin-top: 4px; }
+.law-actions { margin-top: 8px; display: flex; gap: 6px; }
+
+.budget-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; flex-shrink: 0; }
+.balance-label { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.06em; }
+.balance-value { font-size: 28px; font-weight: 800; color: var(--accent); }
+.tx-list { gap: 4px; }
+.tx-row { display: grid; grid-template-columns: 80px 1fr 110px 90px 90px; align-items: center; gap: 8px; padding: 8px 10px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); font-size: 11px; }
+.tx-row-type { font-weight: 700; }
+.tx-row-amount { text-align: right; font-weight: 700; }
+.tx-row-cat { color: var(--text-dim); }
+.tx-row-by  { color: var(--text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tx-row-date { color: var(--text-dim); font-size: 10px; text-align: right; }
+
+.parties-layout { display: flex; gap: 12px; flex: 1; overflow: hidden; }
+.parties-left  { width: 240px; flex-shrink: 0; display: flex; flex-direction: column; }
+.parties-right { flex: 1; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; overflow-y: auto; }
+.parties-list { gap: 5px; }
+.party-item { display: flex; align-items: center; gap: 8px; padding: 9px 10px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); cursor: pointer; transition: background 0.12s, border-color 0.12s; }
+.party-item:hover { background: var(--hover); }
+.party-item.selected { border-color: var(--accent); }
+.party-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.party-name { font-size: 12px; font-weight: 600; flex: 1; }
+.party-members { font-size: 10px; color: var(--text-dim); }
+.party-detail-name { font-size: 16px; font-weight: 800; margin-bottom: 4px; }
+.party-detail-meta { font-size: 11px; color: var(--text-dim); margin-bottom: 12px; }
+.party-manifesto { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px; font-size: 11px; color: var(--text-dim); line-height: 1.6; margin-bottom: 12px; min-height: 60px; white-space: pre-wrap; }
+.member-row { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 11px; }
+.member-row:last-child { border-bottom: none; }
+.member-name { flex: 1; }
+.member-role { color: var(--text-dim); }
+.color-row { display: flex; align-items: center; gap: 10px; }
+.color-row label { color: var(--text-dim); white-space: nowrap; }
+
+.elections-list { gap: 10px; }
+.election-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; }
+.election-header { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.election-position { font-size: 14px; font-weight: 700; flex: 1; }
+.election-desc { font-size: 11px; color: var(--text-dim); margin-bottom: 10px; }
+.candidates-grid { display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; }
+.candidate-row { display: flex; align-items: center; gap: 8px; padding: 7px 10px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); font-size: 11px; }
+.candidate-name { flex: 1; font-weight: 600; }
+.candidate-party { color: var(--text-dim); font-size: 10px; }
+.candidate-votes { font-weight: 700; color: var(--accent); margin-right: 8px; }
+.election-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.closed-election-row { display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); font-size: 11px; }
+.closed-pos   { flex: 1; font-weight: 600; }
+.closed-winner { color: var(--success); }
+.closed-date  { color: var(--text-dim); font-size: 10px; }
+</style>
+</head>
+<body>
+
+<div class="panel">
+  <div class="panel-header">
+    <div class="panel-icon"><i data-lucide="scale"></i></div>
+    <span class="panel-title">GUVERNUL ROMÂNIEI</span>
+    <div class="header-stats">
+      <span class="stat-item" id="hdr-balance">Trezorerie: 4.820.000 RON</span>
+      <span class="stat-sep">·</span>
+      <span class="stat-item" id="hdr-laws">Legi: 4</span>
+      <span class="stat-sep">·</span>
+      <span class="stat-item" id="hdr-officials">Funcționari online: 3</span>
+    </div>
+    <button class="btn-close"><i data-lucide="x"></i></button>
+  </div>
+
+  <div class="panel-body">
+    <nav class="sidebar">
+      <button class="nav-btn active" data-tab="dashboard"><span class="nav-icon">◈</span> Dashboard</button>
+      <button class="nav-btn" data-tab="laws"><span class="nav-icon"><i data-lucide="scale"></i></span> Legi</button>
+      <button class="nav-btn" data-tab="budget"><span class="nav-icon">◎</span> Buget</button>
+      <button class="nav-btn" data-tab="parties"><span class="nav-icon">◉</span> Partide</button>
+      <button class="nav-btn" data-tab="elections"><span class="nav-icon">◈</span> Alegeri</button>
+    </nav>
+
+    <div class="content">
+
+      <div class="tab-panel active" id="panel-dashboard">
+        <div class="dash-cards">
+          <div class="dash-card accent">
+            <div class="dash-card-label">Trezorerie</div>
+            <div class="dash-card-value">4.820.000 RON</div>
+          </div>
+          <div class="dash-card">
+            <div class="dash-card-label">Legi active</div>
+            <div class="dash-card-value">4</div>
+          </div>
+          <div class="dash-card">
+            <div class="dash-card-label">Propuneri în așteptare</div>
+            <div class="dash-card-value">2</div>
+          </div>
+          <div class="dash-card">
+            <div class="dash-card-label">Funcționari online</div>
+            <div class="dash-card-value">3</div>
+          </div>
+        </div>
+        <div class="section-title">Funcționari online</div>
+        <div class="officials-list" style="margin-bottom:16px">
+          <span class="official-chip">Mihai Popescu</span>
+          <span class="official-chip">Ana Constantin</span>
+          <span class="official-chip">Ion Vasile</span>
+        </div>
+        <div class="section-title">Ultimele tranzacții</div>
+        <div class="recent-tx-list">
+          <div class="recent-tx-item"><span class="tx-income">+12.500 RON</span><span class="tx-desc">Vanzare magazin: GeneralStore</span><span class="tx-date">27.04.2026 14:22</span></div>
+          <div class="recent-tx-item"><span class="tx-expense">-8.000 RON</span><span class="tx-desc">Salariu Poliție - Ion Vasile</span><span class="tx-date">27.04.2026 14:00</span></div>
+          <div class="recent-tx-item"><span class="tx-income">+5.000 RON</span><span class="tx-desc">Cautiune - Alex Dumitrescu</span><span class="tx-date">27.04.2026 13:45</span></div>
+          <div class="recent-tx-item"><span class="tx-expense">-25.000 RON</span><span class="tx-desc">Infrastructura - reparatii sosea</span><span class="tx-date">27.04.2026 11:30</span></div>
+          <div class="recent-tx-item"><span class="tx-income">+3.200 RON</span><span class="tx-desc">Vanzare magazin: GasStation</span><span class="tx-date">27.04.2026 10:15</span></div>
+        </div>
+      </div>
+
+      <div class="tab-panel" id="panel-laws">
+        <div class="sub-tabs">
+          <button class="sub-btn active" data-sub="proposals">Propuneri (2)</button>
+          <button class="sub-btn" data-sub="active-laws">Legi active (4)</button>
+        </div>
+        <div class="sub-panel active" id="sub-proposals">
+          <div class="toolbar">
+            <button class="btn-primary">+ Propune lege</button>
+          </div>
+          <div class="list-container">
+            <div class="proposal-card">
+              <div class="proposal-header">
+                <span class="proposal-title">Interzicerea vitezei excesive în zone rezidențiale</span>
+                <span class="badge badge-warn">Rutier</span>
+              </div>
+              <div class="proposal-meta">Propus de Mihai Popescu · 27.04.2026 09:00</div>
+              <div class="proposal-desc">Se interzice depășirea vitezei de 30 km/h în zonele rezidențiale marcate. Încălcarea atrage amendă și suspendarea permisului.</div>
+              <div class="law-penalty"><i data-lucide="alert-triangle"></i> Suspendare permis 30 zile · Amendă: 1.500 RON</div>
+              <div class="proposal-actions">
+                <button class="btn-success">▲ Da</button>
+                <button class="btn-danger">▼ Nu</button>
+                <button class="btn-warn"><i data-lucide="x"></i> Respinge</button>
+                <span class="vote-count"><span class="vote-yes">▲2</span> / <span class="vote-no">▼0</span> - cvorum: 3 Da</span>
+              </div>
+            </div>
+            <div class="proposal-card">
+              <div class="proposal-header">
+                <span class="proposal-title">Taxa pe tranzacții bancare peste 50.000 RON</span>
+                <span class="badge badge-success">Fiscal</span>
+              </div>
+              <div class="proposal-meta">Propus de Ana Constantin · 27.04.2026 11:30</div>
+              <div class="proposal-desc">Orice tranzacție bancară care depășește 50.000 RON va fi supusă unei taxe de 2% care va fi virată în trezoreria statului.</div>
+              <div class="proposal-actions">
+                <button class="btn-success">▲ Da</button>
+                <button class="btn-danger">▼ Nu</button>
+                <button class="btn-warn"><i data-lucide="x"></i> Respinge</button>
+                <span class="vote-count"><span class="vote-yes">▲1</span> / <span class="vote-no">▼1</span> - cvorum: 3 Da</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="sub-panel" id="sub-active-laws">
+          <div class="list-container">
+            <div class="law-card">
+              <div class="law-header">
+                <span class="law-title">Interzicerea portului armelor în spații publice</span>
+                <span class="badge badge-danger">Penal</span>
+                <span class="badge badge-success">Activă</span>
+              </div>
+              <div class="law-meta">Adoptată de Ion Vasile · 20.04.2026</div>
+              <div class="law-desc">Este interzis portul oricărei arme de foc sau arme albe în spații publice fără autorizație emisă de Poliție. Excepție fac forțele de ordine în exercitarea atribuțiilor.</div>
+              <div class="law-penalty"><i data-lucide="alert-triangle"></i> Arest 60 min + confiscarea armei · Amendă: 5.000 RON</div>
+              <div class="law-actions"><button class="btn-danger">Abrogă</button></div>
+            </div>
+            <div class="law-card">
+              <div class="law-header">
+                <span class="law-title">Codul Muncii - salariul minim garantat</span>
+                <span class="badge badge-gray">Muncii</span>
+                <span class="badge badge-success">Activă</span>
+              </div>
+              <div class="law-meta">Adoptată de Mihai Popescu · 15.04.2026</div>
+              <div class="law-desc">Niciun angajator nu poate plăti un salariu mai mic de 2.000 RON net pe lună. Nerespectarea atrage sancțiuni administrative și penale.</div>
+              <div class="law-actions"><button class="btn-danger">Abrogă</button></div>
+            </div>
+            <div class="law-card">
+              <div class="law-header">
+                <span class="law-title">Limitare viteză autostradă - 130 km/h</span>
+                <span class="badge badge-warn">Rutier</span>
+                <span class="badge badge-success">Activă</span>
+              </div>
+              <div class="law-meta">Adoptată de Ana Constantin · 10.04.2026</div>
+              <div class="law-desc">Viteza maximă permisă pe autostrăzi este de 130 km/h. Depășirea cu peste 50 km/h atrage reținerea permisului.</div>
+              <div class="law-penalty"><i data-lucide="alert-triangle"></i> Amendă: 2.500 RON</div>
+              <div class="law-actions"><button class="btn-danger">Abrogă</button></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-panel" id="panel-budget">
+        <div class="budget-header">
+          <div>
+            <div class="balance-label">Sold Trezorerie</div>
+            <div class="balance-value">4.820.000 RON</div>
+          </div>
+          <button class="btn-primary">+ Tranzacție</button>
+        </div>
+        <div class="section-title">Istoric tranzacții</div>
+        <div class="list-container tx-list">
+          <div class="tx-row">
+            <span class="tx-row-type tx-income">Venit</span>
+            <span class="tx-row-cat badge badge-gray">Magazine</span>
+            <span class="tx-row-amount tx-income">+12.500 RON</span>
+            <span class="tx-row-by">Auto</span>
+            <span class="tx-row-date">27.04.2026 14:22</span>
+          </div>
+          <div class="tx-row">
+            <span class="tx-row-type tx-expense">Cheltuială</span>
+            <span class="tx-row-cat badge badge-gray">Salarii</span>
+            <span class="tx-row-amount tx-expense">-8.000 RON</span>
+            <span class="tx-row-by">Auto</span>
+            <span class="tx-row-date">27.04.2026 14:00</span>
+          </div>
+          <div class="tx-row">
+            <span class="tx-row-type tx-income">Venit</span>
+            <span class="tx-row-cat badge badge-gray">Amenzi</span>
+            <span class="tx-row-amount tx-income">+5.000 RON</span>
+            <span class="tx-row-by">Auto</span>
+            <span class="tx-row-date">27.04.2026 13:45</span>
+          </div>
+          <div class="tx-row">
+            <span class="tx-row-type tx-expense">Cheltuială</span>
+            <span class="tx-row-cat badge badge-gray">Infrastructură</span>
+            <span class="tx-row-amount tx-expense">-25.000 RON</span>
+            <span class="tx-row-by">Mihai Popescu</span>
+            <span class="tx-row-date">27.04.2026 11:30</span>
+          </div>
+          <div class="tx-row">
+            <span class="tx-row-type tx-income">Venit</span>
+            <span class="tx-row-cat badge badge-gray">Magazine</span>
+            <span class="tx-row-amount tx-income">+3.200 RON</span>
+            <span class="tx-row-by">Auto</span>
+            <span class="tx-row-date">27.04.2026 10:15</span>
+          </div>
+          <div class="tx-row">
+            <span class="tx-row-type tx-expense">Cheltuială</span>
+            <span class="tx-row-cat badge badge-gray">Sănătate</span>
+            <span class="tx-row-amount tx-expense">-50.000 RON</span>
+            <span class="tx-row-by">Ana Constantin</span>
+            <span class="tx-row-date">26.04.2026 17:00</span>
+          </div>
+          <div class="tx-row">
+            <span class="tx-row-type tx-income">Venit</span>
+            <span class="tx-row-cat badge badge-gray">Taxe</span>
+            <span class="tx-row-amount tx-income">+200.000 RON</span>
+            <span class="tx-row-by">Ion Vasile</span>
+            <span class="tx-row-date">26.04.2026 09:00</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-panel" id="panel-parties">
+        <div class="parties-layout">
+          <div class="parties-left">
+            <div class="toolbar">
+              <button class="btn-primary">+ Înființează</button>
+              <button class="btn-secondary">Ieși</button>
+            </div>
+            <div class="list-container parties-list">
+              <div class="party-item selected">
+                <span class="party-dot" style="background:#00b4ff"></span>
+                <span class="party-name">Partidul Liberal</span>
+                <span class="party-members">8 m.</span>
+              </div>
+              <div class="party-item">
+                <span class="party-dot" style="background:#ff3b30"></span>
+                <span class="party-name">Democrații</span>
+                <span class="party-members">5 m.</span>
+              </div>
+              <div class="party-item">
+                <span class="party-dot" style="background:#00c853"></span>
+                <span class="party-name">Verzii</span>
+                <span class="party-members">3 m.</span>
+              </div>
+            </div>
+          </div>
+          <div class="parties-right">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+              <span class="party-dot" style="background:#00b4ff;width:14px;height:14px"></span>
+              <span class="party-detail-name">Partidul Liberal</span>
+            </div>
+            <div class="party-detail-meta">Lider: Mihai Popescu · 8 membri · Înființat: 01.04.2026</div>
+            <div class="section-title">Manifest</div>
+            <div class="party-manifesto">Pledăm pentru o economie liberă, drepturi cetățenești garantate și transparență în administrarea banului public. Prioritățile noastre sunt infrastructura, sănătatea și educația.</div>
+            <div class="section-title">Membri</div>
+            <div class="member-row"><span class="party-dot" style="background:#00b4ff;width:8px;height:8px"></span><span class="member-name">Mihai Popescu</span><span class="member-role badge badge-accent">Lider</span></div>
+            <div class="member-row"><span class="party-dot" style="background:#00b4ff;width:8px;height:8px"></span><span class="member-name">Ana Constantin</span><span class="member-role badge badge-gray">Vicepreședinte</span></div>
+            <div class="member-row"><span class="party-dot" style="background:#00b4ff;width:8px;height:8px"></span><span class="member-name">Ion Vasile</span><span class="member-role badge badge-gray">Secretar</span></div>
+            <div class="member-row"><span class="party-dot" style="background:#00b4ff;width:8px;height:8px"></span><span class="member-name">Elena Marin</span><span class="member-role badge badge-gray">Membru</span></div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:12px">
+              <button class="btn-primary">Alătură-te</button>
+              <button class="btn-secondary">Editează manifest</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-panel" id="panel-elections">
+        <div class="toolbar">
+          <button class="btn-primary">+ Deschide alegeri</button>
+        </div>
+        <div class="list-container elections-list">
+          <div class="election-card">
+            <div class="election-header">
+              <span class="election-position">Președinte</span>
+              <span class="badge badge-success">Activ</span>
+            </div>
+            <div class="election-desc">Alegeri pentru funcția de Președinte al Republicii. Mandatul este de 30 de zile.</div>
+            <div class="candidates-grid">
+              <div class="candidate-row">
+                <span class="candidate-name">Mihai Popescu</span>
+                <span class="candidate-party" style="color:#00b4ff">● Partidul Liberal</span>
+                <span class="candidate-votes">12 voturi</span>
+                <button class="btn-primary" style="padding:3px 8px;font-size:11px">Votează</button>
+              </div>
+              <div class="candidate-row">
+                <span class="candidate-name">George Ionescu</span>
+                <span class="candidate-party" style="color:#ff3b30">● Democrații</span>
+                <span class="candidate-votes">8 voturi</span>
+                <button class="btn-primary" style="padding:3px 8px;font-size:11px">Votează</button>
+              </div>
+              <div class="candidate-row">
+                <span class="candidate-name">Maria Stancu</span>
+                <span class="candidate-party" style="color:#00c853">● Verzii</span>
+                <span class="candidate-votes">3 voturi</span>
+                <button class="btn-primary" style="padding:3px 8px;font-size:11px">Votează</button>
+              </div>
+            </div>
+            <div class="election-actions">
+              <button class="btn-secondary">Candidează</button>
+              <button class="btn-danger">Închide alegerile</button>
+            </div>
+          </div>
+        </div>
+        <div class="section-title" style="margin-top:16px">Alegeri încheiate</div>
+        <div class="list-container" style="flex:none;gap:4px">
+          <div class="closed-election-row">
+            <span class="closed-pos">Ministrul Justiției</span>
+            <span class="closed-winner"><i data-lucide="trophy"></i> Ana Constantin</span>
+            <span class="closed-date">15.04.2026</span>
+          </div>
+          <div class="closed-election-row">
+            <span class="closed-pos">Ministrul de Interne</span>
+            <span class="closed-winner"><i data-lucide="trophy"></i> Ion Vasile</span>
+            <span class="closed-date">01.04.2026</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div id="laws-public" class="hidden" style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:10;">
+  <div style="position:absolute;inset:0;background:rgba(0,0,0,0.6);" id="lawsOverlay"></div>
+  <div style="position:relative;z-index:1;width:700px;max-height:580px;background:var(--bg);border:1px solid var(--border);border-radius:12px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,0.8);">
+    <div style="display:flex;align-items:center;gap:12px;padding:14px 20px;background:var(--panel);border-bottom:1px solid var(--border);flex-shrink:0;">
+      <span style="font-size:22px;color:var(--accent)"><i data-lucide="scale"></i></span>
+      <div>
+        <div style="font-size:14px;font-weight:800;letter-spacing:0.1em;color:var(--accent)">CODUL LEGISLATIV</div>
+        <div style="font-size:10px;color:var(--text-dim);margin-top:1px">Legile în vigoare pe teritoriul statului</div>
+      </div>
+      <button id="btnCloseLawsPreview" style="margin-left:auto;background:none;border:none;color:var(--text-dim);font-size:18px;cursor:pointer;padding:4px 8px;border-radius:6px;"><i data-lucide="x"></i></button>
+    </div>
+    <div style="display:flex;gap:6px;padding:10px 16px;border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap;" id="pubFilters">
+      <button class="pub-filter active" data-cat="" style="padding:4px 12px;font-size:11px;font-weight:600;background:rgba(0,180,255,0.15);color:var(--accent);border:1px solid rgba(0,180,255,0.4);border-radius:20px;cursor:pointer;">Toate</button>
+      <button class="pub-filter" data-cat="Penal" style="padding:4px 12px;font-size:11px;font-weight:600;background:var(--card);color:var(--text-dim);border:1px solid var(--border);border-radius:20px;cursor:pointer;">Penal</button>
+      <button class="pub-filter" data-cat="Rutier" style="padding:4px 12px;font-size:11px;font-weight:600;background:var(--card);color:var(--text-dim);border:1px solid var(--border);border-radius:20px;cursor:pointer;">Rutier</button>
+      <button class="pub-filter" data-cat="Civil" style="padding:4px 12px;font-size:11px;font-weight:600;background:var(--card);color:var(--text-dim);border:1px solid var(--border);border-radius:20px;cursor:pointer;">Civil</button>
+      <button class="pub-filter" data-cat="Fiscal" style="padding:4px 12px;font-size:11px;font-weight:600;background:var(--card);color:var(--text-dim);border:1px solid var(--border);border-radius:20px;cursor:pointer;">Fiscal</button>
+      <button class="pub-filter" data-cat="Ordine Publica" style="padding:4px 12px;font-size:11px;font-weight:600;background:var(--card);color:var(--text-dim);border:1px solid var(--border);border-radius:20px;cursor:pointer;">Ordine Publică</button>
+    </div>
+    <div id="pubLawsList" style="flex:1;overflow-y:auto;padding:12px 16px;display:flex;flex-direction:column;gap:8px;"></div>
+    <div style="padding:8px 16px;border-top:1px solid var(--border);font-size:10px;color:var(--text-dim);flex-shrink:0;" id="pubLawsCount">3 legi în vigoare</div>
+  </div>
+</div>
+
+<script>
+const pubLaws = [
+  { title: 'Interzicerea portului armelor în spații publice', category: 'Penal', description: 'Este interzis portul oricărei arme de foc sau arme albe în spații publice fără autorizație emisă de Poliție. Excepție fac forțele de ordine în exercitarea atribuțiilor.', penalty: 'Arest 60 min + confiscarea armei', fine_amount: 5000 },
+  { title: 'Codul Muncii - salariul minim garantat', category: 'Muncii', description: 'Niciun angajator nu poate plăti un salariu mai mic de 2.000 RON net pe lună. Nerespectarea atrage sancțiuni administrative și penale.', penalty: null, fine_amount: 0 },
+  { title: 'Limitare viteză autostradă - 130 km/h', category: 'Rutier', description: 'Viteza maximă permisă pe autostrăzi este de 130 km/h. Depășirea cu peste 50 km/h atrage reținerea permisului.', penalty: null, fine_amount: 2500 },
+  { title: 'Interzicerea vitezei excesive în zone rezidențiale', category: 'Rutier', description: 'Se interzice depășirea vitezei de 30 km/h în zonele rezidențiale marcate. Încălcarea atrage amendă și suspendarea permisului.', penalty: 'Suspendare permis 30 zile', fine_amount: 1500 },
+];
+
+const catColors = { 'Penal':'#ff3b30','Rutier':'#ffaa00','Civil':'#00b4ff','Fiscal':'#00c853','Ordine Publica':'#a78bfa','Muncii':'#8890a4' };
+const catBadgeCls = { 'Penal':'badge-danger','Rutier':'badge-warn','Civil':'badge-accent','Fiscal':'badge-success','Ordine Publica':'badge-gray','Muncii':'badge-gray' };
+
+let activeFilter = '';
+
+function renderPubLaws() {
+  const filtered = activeFilter ? pubLaws.filter(l => l.category === activeFilter) : pubLaws;
+  document.getElementById('pubLawsCount').textContent = filtered.length + ' lege' + (filtered.length !== 1 ? 'i' : '') + ' în vigoare';
+  const list = document.getElementById('pubLawsList');
+  if (filtered.length === 0) {
+    list.innerHTML = '<div style="flex:1;display:flex;align-items:center;justify-content:center;color:var(--text-dim);font-size:12px;padding:40px 0">Nicio lege în această categorie</div>';
+    return;
+  }
+  const fmt = n => new Intl.NumberFormat('ro-RO').format(n);
+  list.innerHTML = filtered.map((l, i) => `
+    <div style="background:var(--card);border-left:3px solid ${catColors[l.category]||'var(--border)'};border-radius:0 6px 6px 0;padding:12px 14px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;">
+        <span style="font-size:13px;font-weight:700;flex:1;">Art. ${i+1}. ${l.title}</span>
+        <span class="badge ${catBadgeCls[l.category]||'badge-gray'}">${l.category}</span>
+      </div>
+      <div style="font-size:11px;color:var(--text-dim);line-height:1.55;margin-bottom:4px;">${l.description}</div>
+      ${l.penalty||l.fine_amount ? `<span style="display:inline-flex;align-items:center;gap:6px;margin-top:6px;padding:3px 10px;background:rgba(255,170,0,0.08);border:1px solid rgba(255,170,0,0.2);border-radius:20px;font-size:10px;color:var(--warn);"><i data-lucide="alert-triangle"></i> ${l.penalty||''}${l.fine_amount?(l.penalty?' · ':'')+'Amendă: '+fmt(l.fine_amount)+' RON':''}</span>` : ''}
+    </div>
+  `).join('');
+  if (window.lucide) lucide.createIcons();
+}
+
+document.getElementById('laws-public').classList.remove('hidden');
+renderPubLaws();
+document.addEventListener('DOMContentLoaded', () => { if (window.lucide) lucide.createIcons(); });
+if (window.lucide) lucide.createIcons();
+
+document.getElementById('btnCloseLawsPreview').addEventListener('click', () => {
+  document.getElementById('laws-public').classList.add('hidden');
+});
+document.getElementById('lawsOverlay').addEventListener('click', () => {
+  document.getElementById('laws-public').classList.add('hidden');
+});
+
+document.querySelectorAll('.pub-filter').forEach(btn => {
+  btn.addEventListener('click', () => {
+    activeFilter = btn.dataset.cat;
+    document.querySelectorAll('.pub-filter').forEach(b => {
+      b.style.background = b.dataset.cat === activeFilter ? 'rgba(0,180,255,0.15)' : 'var(--card)';
+      b.style.color = b.dataset.cat === activeFilter ? 'var(--accent)' : 'var(--text-dim)';
+      b.style.borderColor = b.dataset.cat === activeFilter ? 'rgba(0,180,255,0.4)' : 'var(--border)';
+    });
+    renderPubLaws();
+  });
+});
+
+document.querySelectorAll('.nav-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        const panel = document.getElementById('panel-' + btn.dataset.tab);
+        if (panel) panel.classList.add('active');
+    });
+});
+
+document.querySelectorAll('.sub-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const parent = btn.closest('.tab-panel');
+        parent.querySelectorAll('.sub-btn').forEach(b => b.classList.remove('active'));
+        parent.querySelectorAll('.sub-panel').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        const panel = document.getElementById('sub-' + btn.dataset.sub);
+        if (panel) panel.classList.add('active');
+    });
+});
+
+document.querySelectorAll('.party-item').forEach(item => {
+    item.addEventListener('click', () => {
+        document.querySelectorAll('.party-item').forEach(i => i.classList.remove('selected'));
+        item.classList.add('selected');
+    });
+});
+</script>
+</body>
+</html>

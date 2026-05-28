@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Salubritate</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+</head>
+<body>
+<div id="panel" class="panel hidden">
+    <div class="header">
+        <div class="header-left">
+            <span class="icon"><i data-lucide="trash-2"></i></span>
+            <div>
+                <div class="title">Salubritate Municipala</div>
+                <div class="subtitle" id="gradeLabel">-</div>
+            </div>
+        </div>
+        <button class="close-btn" id="btnClose"><i data-lucide="x"></i></button>
+    </div>
+
+    <div class="tabs">
+        <button class="tab active" data-tab="stats">Statistici</button>
+        <button class="tab" data-tab="routes">Rute</button>
+        <button class="tab" data-tab="history">Istoric</button>
+    </div>
+
+    <div id="tab-stats" class="tab-content active">
+        <div class="info-grid">
+            <div class="info-card">
+                <div class="info-label">Rute completate</div>
+                <div class="info-value" id="statSessions">0</div>
+            </div>
+            <div class="info-card">
+                <div class="info-label">Containere colectate</div>
+                <div class="info-value" id="statCollected">0</div>
+            </div>
+            <div class="info-card" style="grid-column: span 2">
+                <div class="info-label">Total câștigat</div>
+                <div class="info-value" id="statEarned">0 lei</div>
+            </div>
+        </div>
+
+        <div id="activeRouteSection" class="hidden">
+            <div class="section-title">Ruta activa</div>
+            <div class="progress-bar-wrap">
+                <div class="progress-bar" id="progressBar" style="width:0%"></div>
+            </div>
+            <div class="progress-text" id="progressText">0 / 0 containere</div>
+            <button class="abandon-btn" id="btnAbandon">Abandoneaza Ruta</button>
+        </div>
+
+        <div class="duty-row" id="dutyRow">
+            <button class="duty-btn" id="btnDuty">Intra in tura</button>
+            <button class="quit-btn" id="btnQuit">Renunta la job</button>
+        </div>
+    </div>
+
+    <div id="tab-routes" class="tab-content hidden">
+        <div class="section-title">Alege o ruta</div>
+        <div id="routesList" class="list-container"></div>
+    </div>
+
+    <div id="tab-history" class="tab-content hidden">
+        <div class="section-title">Ultimele sesiuni</div>
+        <div id="historyList" class="list-container">
+            <div class="empty-msg">Nu ai sesiuni efectuate.</div>
+        </div>
+    </div>
+</div>
+
+<div id="confirmOverlay" class="confirm-overlay hidden">
+    <div class="confirm-box">
+        <div class="confirm-text" id="confirmText">-</div>
+        <div class="confirm-actions">
+            <button class="confirm-cancel" id="confirmCancel">Anuleaza</button>
+            <button class="confirm-ok" id="confirmOk">Confirma</button>
+        </div>
+    </div>
+</div>
+
+<div id="collectingOverlay" class="collecting-overlay hidden">
+    <svg class="collect-ring" viewBox="0 0 64 64">
+        <circle class="ring-track" cx="32" cy="32" r="26"/>
+        <circle class="ring-fill"  cx="32" cy="32" r="26" id="ringFill"/>
+    </svg>
+    <div class="collect-icon"><i data-lucide="trash-2"></i></div>
+    <div class="collect-label">Colectezi...</div>
+</div>
+
+<script src="app.js"></script>
+<script>document.addEventListener('DOMContentLoaded', () => lucide.createIcons());</script>
+</body>
+</html>
