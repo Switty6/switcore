@@ -17,7 +17,7 @@ function InitializeBankingSystem()
     StartPeriodicTasks()
     OrgManager.ensureOrgAccount('police', 'MAZE')
     OrgManager.ensureOrgAccount('gov',    'MAZE')
-    print('[BANKING] Sistemul de banking a fost inițializat cu succes!')
+    exports.core:log('info', 'BANKING', 'Sistemul de banking a fost inițializat cu succes!')
 end
 
 function CreateDefaultBanks()
@@ -30,7 +30,7 @@ function CreateDefaultBanks()
         if not existingBank then
             local bank = BankingDatabase.createBank(bankData.name, bankData.code, nil)
             if bank then
-                print(string.format('[BANKING] Bancă creată: %s (%s)', bankData.name, bankData.code))
+                exports.core:log('info', 'BANKING', string.format('Bancă creată: %s (%s)', bankData.name, bankData.code))
             end
         end
     end
@@ -50,7 +50,7 @@ function CreateDefaultCurrencies()
                 currencyData.symbol
             )
             if success then
-                print(string.format('[BANKING] Valută creată: %s (%s)', currencyData.name, currencyData.code))
+                exports.core:log('info', 'BANKING', string.format('Valută creată: %s (%s)', currencyData.name, currencyData.code))
             end
         end
     end
@@ -125,12 +125,12 @@ AddEventHandler('switcore:characterSelected', function(source, characterId, char
 end)
 
 AddEventHandler('banking:accountCreated', function(characterId, accountId, accountNumber)
-    print(string.format('[BANKING] Cont creat: %s pentru caracterul %d', accountNumber, characterId))
+    exports.core:log('debug', 'BANKING', string.format('Cont creat: %s pentru caracterul %d', accountNumber, characterId))
 end)
 
 AddEventHandler('banking:transactionCompleted', function(characterId, transactionType, accountId, amount, currencyId)
     if exports.settings:GetSettingBool('banking.log_transactions', true) then
-        print(string.format('[BANKING] Tranzacție: %s - %s pentru caracterul %d, suma: %.2f', 
+        exports.core:log('debug', 'BANKING', string.format('Tranzacție: %s - %s pentru caracterul %d, suma: %.2f',
             transactionType, accountId and tostring(accountId) or 'N/A', characterId, amount))
     end
 end)

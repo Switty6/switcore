@@ -23,6 +23,8 @@ server_scripts {
     'server/playtime.lua',
     'server/groups.lua',
     'server/permissions.lua',
+    'server/ratelimit.lua',
+    'server/logger.lua',
     'server/moderation.lua',
     'server/commands.lua',
     'server/server.lua'

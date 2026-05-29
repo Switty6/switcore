@@ -19,9 +19,11 @@ CREATE TABLE IF NOT EXISTS settings (
 INSERT INTO settings (key, value, description) VALUES
 
 -- Core
-('core.playtime_update_interval', '60',   'Cât de des se salvează playtime-ul în DB (secunde)'),
-('core.default_language',         'ro',   'Limba implicită a serverului (ro/en)'),
-('core.log_commands',             'true', 'Activează logarea comenzilor admin'),
+('core.playtime_update_interval', '60',    'Cât de des se salvează playtime-ul în DB (secunde)'),
+('core.default_language',         'ro',    'Limba implicită a serverului (ro/en)'),
+('core.log_commands',             'true',  'Activează logarea comenzilor admin'),
+('core.log_level',                'info',  'Nivel minim de logare afișat: debug, info, warn, error'),
+('core.ratelimit_enabled',        'true',  'Activează rate limiting-ul pe evenimentele de rețea'),
 
 -- Characters
 ('characters.max_per_player',          '3',                  'Numărul maxim de personaje per cont'),

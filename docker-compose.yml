@@ -1,0 +1,25 @@
+# PostgreSQL pentru SwitCore. `docker compose up -d` creeaza baza si user-ul si
+# accepta autentificare cu parola, fara configurare manuala. Schemele modulelor
+# se aplica automat la pornirea framework-ului. Parola se ia din .env.
+
+services:
+  postgres:
+    image: postgres:14
+    container_name: switcore-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: switcore
+      POSTGRES_USER: switcore_user
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-switcore}
+    ports:
+      - "5432:5432"
+    volumes:
+      - switcore-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U switcore_user -d switcore"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  switcore-pgdata:
