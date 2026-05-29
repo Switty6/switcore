@@ -20,7 +20,7 @@ Prima lansare publică.
 
 ### Caracteristici
 
-- Toate setările în DB — zero hardcoded în `config.lua`
+- Toate setările în DB, zero hardcoded în `config.lua`
 - Lua 5.4 peste tot
 - Queries parametrizate
 - Permission checks pe toate evenimentele sensibile

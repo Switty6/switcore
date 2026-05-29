@@ -30,7 +30,7 @@ function LoanManager.createLoan(characterId, bankId, loanType, principalAmount, 
 
     if monthlyRate > 0 then
         -- Formula anuitate: P * (r(1+r)^n) / ((1+r)^n - 1)
-        local factor = math.pow(1 + monthlyRate, termMonths)
+        local factor = (1 + monthlyRate) ^ termMonths
         monthlyPayment = principalAmount * (monthlyRate * factor) / (factor - 1)
     else
         monthlyPayment = principalAmount / termMonths

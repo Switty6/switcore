@@ -158,3 +158,21 @@ jobs:
           if fail:
               sys.exit(1)
           print(f"Toate cele {applied} scheme SQL trec validarea PostgreSQL 14")
+
+  lua-tests:
+    name: Teste logica (busted)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: leafo/gh-actions-lua@v10
+        with:
+          luaVersion: "5.4"
+
+      - uses: leafo/gh-actions-luarocks@v4
+
+      - name: Instalare busted
+        run: luarocks install busted
+
+      - name: Rulare teste
+        run: busted --output=plainTerminal

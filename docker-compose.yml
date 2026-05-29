@@ -1,0 +1,34 @@
+# PostgreSQL pentru SwitCore - pornire cu zero configurare manuala.
+#
+#   docker compose up -d
+#
+# Imaginea oficiala creeaza singura baza si user-ul din variabilele de mai jos
+# si accepta autentificare cu parola (scram-sha-256), deci NU trebuie sa atingi
+# pg_hba.conf si nu rulezi niciun CREATE DATABASE/USER manual.
+#
+# Schemele modulelor se aplica automat la pornirea framework-ului, nu aici.
+#
+# Pentru parola, copiaza .env.example in .env si schimb-o. Implicit e 'switcore'
+# (ok pentru dev local, schimb-o pentru orice server expus).
+
+services:
+  postgres:
+    image: postgres:14
+    container_name: switcore-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: switcore
+      POSTGRES_USER: switcore_user
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-switcore}
+    ports:
+      - "5432:5432"
+    volumes:
+      - switcore-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U switcore_user -d switcore"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  switcore-pgdata:
