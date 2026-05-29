@@ -15,10 +15,11 @@ Bug-fix, modul nou, optimizare sau doc: orice îmbunătățire e binevenită.
 - **Logica în `*_manager.lua`**; `database.lua` doar CRUD, `callbacks.lua` doar handlere subțiri.
 - **Queries parametrizate** (`$1`, `$2`...): fără concatenare în SQL.
 - **Permisiuni**: orice event sensibil verifică `exports.core:hasPermission(source, 'perm')` sau ownership.
+- **Rate limiting**: pe evenimentele sensibile (bani, iteme), verifică la început `exports.core:isRateLimited(source, 'actiune', max, fereastraSecunde)` și ieși dacă întoarce `true`.
 - **Notificări**: `TriggerClientEvent('switcore:notify', source, type, msg, duration)`.
 - `lua54 'yes'` în `fxmanifest.lua`.
 - Comentarii și texte UI în română.
-- Fără `print` / `console.log` de debug: folosește un flag din `settings`.
+- **Logging**: în loc de `print`, folosește `exports.core:log(level, 'TAG', mesaj)` cu nivel `debug`/`info`/`warn`/`error`. Nivelul afișat e controlat de setarea `core.log_level`. Feedback-ul direct la o comandă admin tastată în consolă poate rămâne `print`.
 
 ## Structura unui modul
 

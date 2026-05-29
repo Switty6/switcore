@@ -1,12 +1,5 @@
--- Mock minimal al mediului FiveM pentru testarea logicii de server in afara runtime-ului.
---
--- Modulele SwitCore depind de cateva globale injectate de FXServer: `exports`,
--- `json`, `TriggerEvent` si tabelele globale setate de celelalte fisiere ale
--- modulului (BankingDatabase, BankingManager etc.). Niciunul dintre modulele
--- testate aici nu acceseaza aceste globale la incarcare, ci doar in interiorul
--- functiilor, deci e suficient sa le stubuim inainte de a apela o functie.
---
--- Apeleaza FivemEnv.install() in before_each ca fiecare test sa porneasca curat.
+-- Mock minimal al mediului FiveM (exports, json, layerul DB) pentru a testa
+-- logica de server in afara runtime-ului. Apeleaza FivemEnv.install() in before_each.
 
 local FivemEnv = {}
 
@@ -21,22 +14,19 @@ end
 function FivemEnv.install()
     settingsStore = {}
 
-    -- Stub-uri pentru layerul de date; specurile atribuie doar metodele
-    -- de care au nevoie (ex. BankingDatabase.createLoan).
+    -- Stub-uri pentru layerul de date; specurile atribuie doar metodele necesare.
     _G.BankingDatabase = {}
     _G.BankingManager = {}
 
     _G.TriggerEvent = function() end
 
-    -- `json` din FiveM. decode e suprascris per-test acolo unde conteaza
-    -- (parseBalance), ca sa nu depindem de un parser JSON real in teste.
+    -- decode e suprascris per-test (parseBalance), ca sa nu depindem de un parser real.
     _G.json = {
         encode = function(value) return tostring(value) end,
         decode = function() error('json.decode neimplementat in mock') end,
     }
 
-    -- In Lua, `exports.resursa:Metoda(arg)` paseaza tabelul ca prim argument
-    -- (self), deci semnaturile mock incep cu un parametru ignorat.
+    -- exports.resursa:Metoda(arg) paseaza tabelul ca self, de aici primul param ignorat.
     local settingsExport = {
         GetSetting = function(_, key, default)
             return resolveSetting(key, default)
@@ -51,8 +41,7 @@ function FivemEnv.install()
         end,
     }
 
-    -- Orice export neasteptat ridica o eroare clara, ca testul sa spuna exact
-    -- ce dependenta lipseste in loc sa esueze cu "index a nil value".
+    -- Un export nestubuit ridica o eroare clara despre ce dependenta lipseste.
     _G.exports = setmetatable({ settings = settingsExport }, {
         __index = function(_, resource)
             error(('exports.%s nu este stubuit in acest test'):format(resource), 2)
@@ -60,7 +49,6 @@ function FivemEnv.install()
     })
 end
 
--- Seteaza o valoare de setare vizibila prin exports.settings:GetSetting*.
 function FivemEnv.setSetting(key, value)
     settingsStore[key] = value
 end

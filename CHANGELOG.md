@@ -4,6 +4,21 @@ Format [Keep a Changelog](https://keepachangelog.com/ro/1.1.0/), versionare [Sem
 
 ---
 
+## [Nepublicat]
+
+### Adăugat
+- Rate limiting reutilizabil pentru evenimente de rețea sensibile (`exports.core:isRateLimited`).
+- Logging centralizat controlat de setarea `core.log_level` (`exports.core:log`).
+- Teste de logică (busted) pentru `banking` și `core`, rulate în CI pe Lua 5.4.
+- `docker-compose.yml` pentru PostgreSQL, fără configurare manuală.
+- `.editorconfig` și `.gitattributes` pentru consistență de formatare și EOL.
+
+### Reparat
+- Plata creditelor cu scadența pe 29/30/31 eșua în lunile scurte (data invalidă respinsă de coloana `DATE`). Ziua se clampează acum la ultima zi a lunii.
+- `math.pow` înlocuit cu operatorul `^` în calculul ratei la credite (negarantat în Lua 5.4).
+
+---
+
 ## [1.0.0] - 2026-05-28
 
 Prima lansare publică.

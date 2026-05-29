@@ -7,7 +7,7 @@ local function serializeJson(data) return json.encode(data) end
 local function safeDB(label, fn)
     local ok, err = pcall(fn)
     if not ok then
-        print('[BANKING DB] ' .. tostring(label) .. ': ' .. tostring(err))
+        exports.core:log('error', 'BANKING', tostring(label) .. ': ' .. tostring(err))
     end
     return ok, err
 end

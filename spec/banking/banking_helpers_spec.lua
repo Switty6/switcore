@@ -93,4 +93,39 @@ describe('BankingHelpers', function()
             assert.same({}, BankingHelpers.parseBalance(nil))
         end)
     end)
+
+    describe('lastDayOfMonth', function()
+        it('returneaza zilele corecte pentru luni obisnuite', function()
+            assert.equals(31, BankingHelpers.lastDayOfMonth(2026, 1))
+            assert.equals(30, BankingHelpers.lastDayOfMonth(2026, 4))
+            assert.equals(31, BankingHelpers.lastDayOfMonth(2026, 12))
+        end)
+
+        it('gestioneaza februarie in ani normali si bisecti', function()
+            assert.equals(28, BankingHelpers.lastDayOfMonth(2026, 2))
+            assert.equals(29, BankingHelpers.lastDayOfMonth(2024, 2))
+            assert.equals(28, BankingHelpers.lastDayOfMonth(2100, 2)) -- divizibil cu 100, nu cu 400
+            assert.equals(29, BankingHelpers.lastDayOfMonth(2000, 2)) -- divizibil cu 400
+        end)
+    end)
+
+    describe('advanceOneMonth', function()
+        it('avanseaza o luna pastrand ziua cand e valida', function()
+            assert.equals('2026-02-15', BankingHelpers.advanceOneMonth('2026-01-15'))
+        end)
+
+        it('clampeaza ziua 31 la sfarsitul lunii scurte', function()
+            -- bug-ul original: 2026-01-31 producea 2026-02-31, respins de DATE
+            assert.equals('2026-02-28', BankingHelpers.advanceOneMonth('2026-01-31'))
+            assert.equals('2026-04-30', BankingHelpers.advanceOneMonth('2026-03-31'))
+        end)
+
+        it('clampeaza la 29 februarie in an bisect', function()
+            assert.equals('2024-02-29', BankingHelpers.advanceOneMonth('2024-01-31'))
+        end)
+
+        it('trece corect peste granita de an', function()
+            assert.equals('2027-01-31', BankingHelpers.advanceOneMonth('2026-12-31'))
+        end)
+    end)
 end)
