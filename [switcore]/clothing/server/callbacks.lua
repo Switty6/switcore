@@ -3,13 +3,17 @@ local function GetCurrencyId(currencyCode)
     return currency and currency.id or nil
 end
 
-RegisterNetEvent('clothing:getStoreData', function(storeName)
-    local source = source
-    local character = exports.characters:getActiveCharacter(source)
-    if not character then return end
+Sw.SecureEvent('clothing:getStoreData', {
+    character = true,
+    rateLimit = { max = 10, window = 3000 },
+    args = {
+        { name = 'storeName', type = 'string', minLen = 1, maxLen = 64 },
+    },
+}, function(ctx)
+    local character = ctx.character
+    local storeName = ctx.args.storeName
 
     local gender = tonumber(character.appearance and character.appearance.gender) or -1
-
     local characterId = character.id
     local invId       = 'char:' .. tostring(characterId)
 
@@ -26,22 +30,25 @@ RegisterNetEvent('clothing:getStoreData', function(storeName)
 
         local equipped = ClothingManager.getEquipped(characterId)
 
-        TriggerClientEvent('clothing:receiveStoreData', source, items, storeName, ownedItemIds, equipped)
+        TriggerClientEvent('clothing:receiveStoreData', ctx.source, items, storeName, ownedItemIds, equipped)
     end)
 end)
 
-RegisterNetEvent('clothing:buyItem', function(storeItemId, texture)
-    local source = source
-    local character = exports.characters:getActiveCharacter(source)
-    if not character then return end
-
-    storeItemId = tonumber(storeItemId)
-    if not storeItemId then return end
+Sw.SecureEvent('clothing:buyItem', {
+    character = true,
+    rateLimit = { max = 5, window = 2000 },
+    args = {
+        { name = 'storeItemId', type = 'int', min = 1 },
+        { name = 'texture',     type = 'int', min = 0, optional = true },
+    },
+}, function(ctx)
+    local character   = ctx.character
+    local storeItemId = ctx.args.storeItemId
+    local texture     = ctx.args.texture
 
     ClothingDB.getItemById(storeItemId, function(item)
         if not item then
-            TriggerClientEvent('switcore:notify', source, 'error', 'Articolul nu există.', 4000)
-            return
+            return ctx.error('Articolul nu exista.')
         end
 
         local characterId = character.id
@@ -53,8 +60,7 @@ RegisterNetEvent('clothing:buyItem', function(storeItemId, texture)
                 if slot and slot.name == item.item_name then
                     local meta = slot.metadata or {}
                     if tonumber(meta.clothing_item_id) == storeItemId then
-                        TriggerClientEvent('switcore:notify', source, 'error', 'Deja deții acest articol.', 4000)
-                        return
+                        return ctx.error('Deja detii acest articol.')
                     end
                 end
             end
@@ -63,22 +69,19 @@ RegisterNetEvent('clothing:buyItem', function(storeItemId, texture)
         local currencyCode = exports.settings:GetSetting('clothing.currency', 'RON')
         local currencyId   = GetCurrencyId(currencyCode)
         if not currencyId then
-            TriggerClientEvent('switcore:notify', source, 'error', 'Eroare configurare valută.', 4000)
-            return
+            return ctx.error('Eroare configurare valuta.')
         end
 
         local price = tonumber(item.price) or 0
         local cash  = exports.banking:getCharacterCash(characterId, currencyId) or 0
 
         if cash < price then
-            TriggerClientEvent('switcore:notify', source, 'error',
-                string.format('Nu ai suficienți bani. Necesar: %d %s', price, currencyCode), 4000)
-            return
+            return ctx.error(string.format('Nu ai suficienti bani. Necesar: %d %s', price, currencyCode))
         end
 
         exports.banking:addCharacterCash(characterId, currencyId, -price)
 
-        local finalTexture = tonumber(texture) or tonumber(item.default_texture) or 0
+        local finalTexture = texture or tonumber(item.default_texture) or 0
         local metadata = {
             clothing_item_id = storeItemId,
             component_type   = item.component_type,
@@ -94,74 +97,81 @@ RegisterNetEvent('clothing:buyItem', function(storeItemId, texture)
 
         local success, msg = exports.inventory:AddItem(invId, item.item_name, 1, metadata)
         if success then
-            TriggerClientEvent('switcore:notify', source, 'success', 'Ai cumpărat: ' .. item.label, 5000)
+            ctx.success('Ai cumparat: ' .. item.label, 5000)
             local updatedInv = exports.inventory:GetInventory(invId)
             if updatedInv then
-                TriggerClientEvent('switcore:inventoryUpdated', source, invId, updatedInv)
-                TriggerClientEvent('clothing:itemPurchased', source, storeItemId)
+                TriggerClientEvent('switcore:inventoryUpdated', ctx.source, invId, updatedInv)
+                TriggerClientEvent('clothing:itemPurchased', ctx.source, storeItemId)
             end
         else
             exports.banking:addCharacterCash(characterId, currencyId, price)
-            TriggerClientEvent('switcore:notify', source, 'error', 'Inventarul e plin: ' .. (msg or ''), 4000)
+            ctx.error('Inventarul e plin: ' .. (msg or ''))
         end
     end)
 end)
 
-RegisterNetEvent('clothing:equipItem', function(storeItemId, texture)
-    local source = source
-    local character = exports.characters:getActiveCharacter(source)
-    if not character then return end
-
-    ClothingManager.equipItem(source, character.id, tonumber(storeItemId), texture)
+Sw.SecureEvent('clothing:equipItem', {
+    character = true,
+    rateLimit = { max = 15, window = 3000 },
+    args = {
+        { name = 'storeItemId', type = 'int', min = 1 },
+        { name = 'texture',     type = 'int', min = 0, optional = true },
+    },
+}, function(ctx)
+    ClothingManager.equipItem(ctx.source, ctx.character.id, ctx.args.storeItemId, ctx.args.texture)
 end)
 
-RegisterNetEvent('clothing:unequipItem', function(componentType, componentId)
-    local source = source
-    local character = exports.characters:getActiveCharacter(source)
-    if not character then return end
-
-    ClothingManager.unequipItem(source, character.id, componentType, tonumber(componentId))
+Sw.SecureEvent('clothing:unequipItem', {
+    character = true,
+    rateLimit = { max = 15, window = 3000 },
+    args = {
+        { name = 'componentType', type = 'string', minLen = 1, maxLen = 32 },
+        { name = 'componentId',   type = 'int' },
+    },
+}, function(ctx)
+    ClothingManager.unequipItem(ctx.source, ctx.character.id, ctx.args.componentType, ctx.args.componentId)
 end)
 
-RegisterNetEvent('clothing:getOutfits', function()
-    local source = source
-    local character = exports.characters:getActiveCharacter(source)
-    if not character then return end
-
-    ClothingDB.getOutfits(character.id, function(outfits)
-        TriggerClientEvent('clothing:receiveOutfits', source, outfits)
+Sw.SecureEvent('clothing:getOutfits', {
+    character = true,
+    rateLimit = { max = 10, window = 3000 },
+}, function(ctx)
+    ClothingDB.getOutfits(ctx.character.id, function(outfits)
+        TriggerClientEvent('clothing:receiveOutfits', ctx.source, outfits)
     end)
 end)
 
-RegisterNetEvent('clothing:saveOutfit', function(name)
-    local source = source
-    local character = exports.characters:getActiveCharacter(source)
-    if not character then return end
-
-    name = tostring(name or ''):sub(1, 50)
-    if #name < 1 then
-        TriggerClientEvent('switcore:notify', source, 'error', 'Nume invalid.', 4000)
-        return
-    end
+Sw.SecureEvent('clothing:saveOutfit', {
+    character = true,
+    rateLimit = { max = 5, window = 2000 },
+    args = {
+        { name = 'name', type = 'string', minLen = 1, maxLen = 50 },
+    },
+}, function(ctx)
+    local character = ctx.character
+    local name = ctx.args.name
 
     local equipped = ClothingManager.getEquipped(character.id)
     ClothingDB.saveOutfit(character.id, name, equipped, function()
-        TriggerClientEvent('switcore:notify', source, 'success', 'Outfit salvat: ' .. name, 4000)
+        ctx.success('Outfit salvat: ' .. name)
         ClothingDB.getOutfits(character.id, function(outfits)
-            TriggerClientEvent('clothing:receiveOutfits', source, outfits)
+            TriggerClientEvent('clothing:receiveOutfits', ctx.source, outfits)
         end)
     end)
 end)
 
-RegisterNetEvent('clothing:loadOutfit', function(outfitId)
-    local source = source
-    local character = exports.characters:getActiveCharacter(source)
-    if not character then return end
+Sw.SecureEvent('clothing:loadOutfit', {
+    character = true,
+    rateLimit = { max = 10, window = 3000 },
+    args = {
+        { name = 'outfitId', type = 'int', min = 1 },
+    },
+}, function(ctx)
+    local character = ctx.character
 
-    ClothingDB.getOutfitById(tonumber(outfitId), character.id, function(outfit)
+    ClothingDB.getOutfitById(ctx.args.outfitId, character.id, function(outfit)
         if not outfit then
-            TriggerClientEvent('switcore:notify', source, 'error', 'Outfit inexistent.', 4000)
-            return
+            return ctx.error('Outfit inexistent.')
         end
 
         local components = outfit.components
@@ -170,20 +180,24 @@ RegisterNetEvent('clothing:loadOutfit', function(outfitId)
         ClothingManager.setEquipped(character.id, components)
         ClothingManager.recalculateBonuses(character.id)
         ClothingDB.saveEquippedClothing(character.id, components)
-        TriggerClientEvent('clothing:applyComponents', source, components)
-        TriggerClientEvent('switcore:notify', source, 'success', 'Outfit aplicat: ' .. outfit.name, 4000)
+        TriggerClientEvent('clothing:applyComponents', ctx.source, components)
+        ctx.success('Outfit aplicat: ' .. outfit.name)
     end)
 end)
 
-RegisterNetEvent('clothing:deleteOutfit', function(outfitId)
-    local source = source
-    local character = exports.characters:getActiveCharacter(source)
-    if not character then return end
+Sw.SecureEvent('clothing:deleteOutfit', {
+    character = true,
+    rateLimit = { max = 10, window = 3000 },
+    args = {
+        { name = 'outfitId', type = 'int', min = 1 },
+    },
+}, function(ctx)
+    local character = ctx.character
 
-    ClothingDB.deleteOutfit(character.id, tonumber(outfitId), function()
-        TriggerClientEvent('switcore:notify', source, 'success', 'Outfit șters.', 4000)
+    ClothingDB.deleteOutfit(character.id, ctx.args.outfitId, function()
+        ctx.success('Outfit sters.')
         ClothingDB.getOutfits(character.id, function(outfits)
-            TriggerClientEvent('clothing:receiveOutfits', source, outfits)
+            TriggerClientEvent('clothing:receiveOutfits', ctx.source, outfits)
         end)
     end)
 end)

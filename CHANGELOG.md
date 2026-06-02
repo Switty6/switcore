@@ -4,6 +4,21 @@ Format [Keep a Changelog](https://keepachangelog.com/ro/1.1.0/), versionare [Sem
 
 ---
 
+## [Nelansat]
+
+### Adăugat
+
+- **Bibliotecă shared `Sw`** (`core/shared/lib.lua`) - utilitare pure (string, numeric, table, `FormatMoney`) plus motor de validare `Sw.ValidateArgs`, disponibile client + server prin `@core/shared/lib.lua`.
+- **Framework `Sw.SecureEvent`** (`core/server/secure.lua`) - net events sigure cu rate-limit, permisiune, fetch personaj activ, validare argumente și notificare automată la eroare, înlocuind boilerplate-ul repetat din handlere.
+- **Rate limiter centralizat** (`core/server/ratelimit.lua`) - expus ca `exports.core:checkRateLimit`, fereastră glisantă per `(source, cheie)`.
+- Documentație: [docs/modules/lib.md](docs/modules/lib.md).
+
+### Schimbat
+
+- Modulul `clothing` migrat pe `Sw.SecureEvent` ca exemplu de referință (comportament identic).
+
+---
+
 ## [1.0.0] - 2026-05-28
 
 Prima lansare publică.
