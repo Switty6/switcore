@@ -354,11 +354,11 @@ local function SendCashUpdate(src, characterId)
     TriggerClientEvent('switcore:inventoryCashUpdate', src, list)
 end
 
-RegisterNetEvent('switcore:inventoryRequestCash', function()
-    local src = source
-    local character = exports.characters:getActiveCharacter(src)
-    if not character or not character.id then return end
-    SendCashUpdate(src, character.id)
+Sw.SecureEvent('switcore:inventoryRequestCash', {
+    character = true,
+    rateLimit = { max = 15, window = 3000 },
+}, function(ctx)
+    SendCashUpdate(ctx.source, ctx.character.id)
 end)
 
 local function buildClientConfig()

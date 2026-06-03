@@ -145,8 +145,10 @@ exports('defineBucketRule', function(bucketId, rules)
     applyBucketServerRules(bucketId)
 end)
 
-RegisterNetEvent('admin:server:open', function()
-    local src   = source
+Sw.SecureEvent('admin:server:open', {
+    rateLimit = { max = 20, window = 5000 },
+}, function(ctx)
+    local src   = ctx.source
     local tabs  = computeTabs(src)
     local perms = getPermSet(src)
     if #tabs == 0 then
@@ -188,14 +190,19 @@ RegisterNetEvent('admin:server:open', function()
     })
 end)
 
-RegisterNetEvent('admin:server:getPlayers', function()
-    local src = source
+Sw.SecureEvent('admin:server:getPlayers', {
+    rateLimit = { max = 20, window = 5000 },
+}, function(ctx)
+    local src = ctx.source
     if not perm(src, 'admin.players.view') then return end
     TriggerClientEvent('admin:client:updatePlayers', src, buildPlayerList())
 end)
 
-RegisterNetEvent('admin:server:getPlayerInfo', function(targetId)
-    local src = source
+Sw.SecureEvent('admin:server:getPlayerInfo', {
+    rateLimit = { max = 20, window = 5000 },
+}, function(ctx)
+    local src = ctx.source
+    local targetId = ctx.args[1]
     if not perm(src, 'admin.players.view') then return end
     targetId = tonumber(targetId)
     if not isOnline(targetId) then
@@ -233,8 +240,11 @@ RegisterNetEvent('admin:server:getPlayerInfo', function(targetId)
     })
 end)
 
-RegisterNetEvent('admin:server:banPlayer', function(targetId, reason, duration)
-    local src = source
+Sw.SecureEvent('admin:server:banPlayer', {
+    rateLimit = { max = 20, window = 5000 },
+}, function(ctx)
+    local src = ctx.source
+    local targetId, reason, duration = ctx.args[1], ctx.args[2], ctx.args[3]
     if not perm(src, 'admin.players.moderate') then return end
     targetId = tonumber(targetId)
     if not isOnline(targetId) then return notify(src, 'error', 'Țintă invalidă.') end
@@ -247,8 +257,11 @@ RegisterNetEvent('admin:server:banPlayer', function(targetId, reason, duration)
     end
 end)
 
-RegisterNetEvent('admin:server:kickPlayer', function(targetId, reason)
-    local src = source
+Sw.SecureEvent('admin:server:kickPlayer', {
+    rateLimit = { max = 20, window = 5000 },
+}, function(ctx)
+    local src = ctx.source
+    local targetId, reason = ctx.args[1], ctx.args[2]
     if not perm(src, 'admin.players.moderate') then return end
     targetId = tonumber(targetId)
     if not isOnline(targetId) then return notify(src, 'error', 'Țintă invalidă.') end
@@ -259,8 +272,11 @@ RegisterNetEvent('admin:server:kickPlayer', function(targetId, reason)
     end
 end)
 
-RegisterNetEvent('admin:server:warnPlayer', function(targetId, reason)
-    local src = source
+Sw.SecureEvent('admin:server:warnPlayer', {
+    rateLimit = { max = 20, window = 5000 },
+}, function(ctx)
+    local src = ctx.source
+    local targetId, reason = ctx.args[1], ctx.args[2]
     if not perm(src, 'admin.players.moderate') then return end
     targetId = tonumber(targetId)
     if not isOnline(targetId) then return notify(src, 'error', 'Țintă invalidă.') end
@@ -271,8 +287,11 @@ RegisterNetEvent('admin:server:warnPlayer', function(targetId, reason)
     end
 end)
 
-RegisterNetEvent('admin:server:gotoPlayer', function(targetId)
-    local src = source
+Sw.SecureEvent('admin:server:gotoPlayer', {
+    rateLimit = { max = 20, window = 5000 },
+}, function(ctx)
+    local src = ctx.source
+    local targetId = ctx.args[1]
     if not perm(src, 'admin.players.teleport') then return end
     targetId = tonumber(targetId)
     local ped = GetPlayerPed(targetId)
@@ -281,8 +300,11 @@ RegisterNetEvent('admin:server:gotoPlayer', function(targetId)
     TriggerClientEvent('admin:client:teleport', src, { x = c.x + 0.5, y = c.y + 0.5, z = c.z })
 end)
 
-RegisterNetEvent('admin:server:bringPlayer', function(targetId)
-    local src = source
+Sw.SecureEvent('admin:server:bringPlayer', {
+    rateLimit = { max = 20, window = 5000 },
+}, function(ctx)
+    local src = ctx.source
+    local targetId = ctx.args[1]
     if not perm(src, 'admin.players.teleport') then return end
     targetId = tonumber(targetId)
     if not isOnline(targetId) then return notify(src, 'error', 'Țintă invalidă.') end
@@ -293,8 +315,11 @@ RegisterNetEvent('admin:server:bringPlayer', function(targetId)
     notify(src, 'success', 'Jucător adus la tine.')
 end)
 
-RegisterNetEvent('admin:server:freezePlayer', function(targetId, frozen)
-    local src = source
+Sw.SecureEvent('admin:server:freezePlayer', {
+    rateLimit = { max = 20, window = 5000 },
+}, function(ctx)
+    local src = ctx.source
+    local targetId, frozen = ctx.args[1], ctx.args[2]
     if not perm(src, 'admin.players.freeze') then return end
     targetId = tonumber(targetId)
     if not isOnline(targetId) then return notify(src, 'error', 'Țintă invalidă.') end
@@ -332,20 +357,29 @@ local function doCashGrant(adminSrc, targetSrc, amount, target, currencyId)
     end
 end
 
-RegisterNetEvent('admin:server:giveCashToPlayer', function(targetId, amount, target, currencyId)
-    local src = source
+Sw.SecureEvent('admin:server:giveCashToPlayer', {
+    rateLimit = { max = 20, window = 5000 },
+}, function(ctx)
+    local src = ctx.source
+    local targetId, amount, target, currencyId = ctx.args[1], ctx.args[2], ctx.args[3], ctx.args[4]
     if not perm(src, 'admin.players.cash') then return end
     doCashGrant(src, tonumber(targetId), amount, target, currencyId)
 end)
 
-RegisterNetEvent('admin:server:giveCashToSelf', function(amount, target, currencyId)
-    local src = source
+Sw.SecureEvent('admin:server:giveCashToSelf', {
+    rateLimit = { max = 20, window = 5000 },
+}, function(ctx)
+    local src = ctx.source
+    local amount, target, currencyId = ctx.args[1], ctx.args[2], ctx.args[3]
     if not perm(src, 'admin.self.cash') then return end
     doCashGrant(src, src, amount, target, currencyId)
 end)
 
-RegisterNetEvent('admin:server:addGroup', function(targetId, groupName)
-    local src = source
+Sw.SecureEvent('admin:server:addGroup', {
+    rateLimit = { max = 20, window = 5000 },
+}, function(ctx)
+    local src = ctx.source
+    local targetId, groupName = ctx.args[1], ctx.args[2]
     if not perm(src, 'admin.players.groups') then return end
     targetId = tonumber(targetId)
     if not isOnline(targetId) or not groupName or groupName == '' then
@@ -359,8 +393,11 @@ RegisterNetEvent('admin:server:addGroup', function(targetId, groupName)
     end
 end)
 
-RegisterNetEvent('admin:server:removeGroup', function(targetId, groupName)
-    local src = source
+Sw.SecureEvent('admin:server:removeGroup', {
+    rateLimit = { max = 20, window = 5000 },
+}, function(ctx)
+    local src = ctx.source
+    local targetId, groupName = ctx.args[1], ctx.args[2]
     if not perm(src, 'admin.players.groups') then return end
     targetId = tonumber(targetId)
     if not isOnline(targetId) or not groupName or groupName == '' then
@@ -374,8 +411,11 @@ RegisterNetEvent('admin:server:removeGroup', function(targetId, groupName)
     end
 end)
 
-RegisterNetEvent('admin:server:setBucket', function(targetId, bucketId)
-    local src = source
+Sw.SecureEvent('admin:server:setBucket', {
+    rateLimit = { max = 20, window = 5000 },
+}, function(ctx)
+    local src = ctx.source
+    local targetId, bucketId = ctx.args[1], ctx.args[2]
     if not perm(src, 'admin.players.bucket') then return end
     targetId = tonumber(targetId); bucketId = tonumber(bucketId)
     if not isOnline(targetId) or not bucketId then
@@ -385,24 +425,31 @@ RegisterNetEvent('admin:server:setBucket', function(targetId, bucketId)
     notify(src, 'success', ('Bucket %d aplicat.'):format(bucketId))
 end)
 
-RegisterNetEvent('admin:server:teleportToWaypoint', function()
-    local src = source
+Sw.SecureEvent('admin:server:teleportToWaypoint', {
+    rateLimit = { max = 20, window = 5000 },
+}, function(ctx)
+    local src = ctx.source
     if not perm(src, 'admin.self.teleport') then
         return notify(src, 'error', 'Acces interzis.')
     end
     TriggerClientEvent('admin:client:teleportToWaypoint', src)
 end)
 
-RegisterNetEvent('admin:server:teleportToCoords', function(x, y, z)
-    local src = source
+Sw.SecureEvent('admin:server:teleportToCoords', {
+    rateLimit = { max = 20, window = 5000 },
+}, function(ctx)
+    local src = ctx.source
+    local x, y, z = ctx.args[1], ctx.args[2], ctx.args[3]
     if not perm(src, 'admin.self.teleport') then return end
     x, y, z = tonumber(x), tonumber(y), tonumber(z)
     if not (x and y and z) then return notify(src, 'error', 'Coordonate invalide.') end
     TriggerClientEvent('admin:client:teleport', src, { x = x, y = y, z = z })
 end)
 
-RegisterNetEvent('admin:server:checkOverlayPermission', function()
-    local src = source
+Sw.SecureEvent('admin:server:checkOverlayPermission', {
+    rateLimit = { max = 20, window = 5000 },
+}, function(ctx)
+    local src = ctx.source
     if perm(src, 'admin.self.overlay') then
         TriggerClientEvent('admin:client:toggleOverlay', src)
     else
@@ -410,8 +457,11 @@ RegisterNetEvent('admin:server:checkOverlayPermission', function()
     end
 end)
 
-RegisterNetEvent('admin:server:syncTime', function(hour, minute, freeze)
-    local src = source
+Sw.SecureEvent('admin:server:syncTime', {
+    rateLimit = { max = 20, window = 5000 },
+}, function(ctx)
+    local src = ctx.source
+    local hour, minute, freeze = ctx.args[1], ctx.args[2], ctx.args[3]
     if not perm(src, 'admin.world.time') then return end
     hour   = tonumber(hour) or 12
     minute = tonumber(minute) or 0
@@ -419,24 +469,32 @@ RegisterNetEvent('admin:server:syncTime', function(hour, minute, freeze)
     notify(src, 'success', ('Timp setat la %02d:%02d'):format(hour, minute))
 end)
 
-RegisterNetEvent('admin:server:syncWeather', function(weather)
-    local src = source
+Sw.SecureEvent('admin:server:syncWeather', {
+    rateLimit = { max = 20, window = 5000 },
+}, function(ctx)
+    local src = ctx.source
+    local weather = ctx.args[1]
     if not perm(src, 'admin.world.weather') then return end
     if type(weather) ~= 'string' or weather == '' then return end
     TriggerClientEvent('admin:client:syncWeather', -1, weather)
     notify(src, 'success', 'Vreme: ' .. weather)
 end)
 
-RegisterNetEvent('admin:server:announce', function(message)
-    local src = source
+Sw.SecureEvent('admin:server:announce', {
+    rateLimit = { max = 20, window = 5000 },
+}, function(ctx)
+    local src = ctx.source
+    local message = ctx.args[1]
     if not perm(src, 'admin.world.announce') then return end
     if not message or message == '' then return end
     local who = GetPlayerName(src) or 'Admin'
     TriggerClientEvent('switcore:notify', -1, 'warning', ('[ANUNȚ] %s: %s'):format(who, message), 8000)
 end)
 
-RegisterNetEvent('admin:server:getResources', function()
-    local src = source
+Sw.SecureEvent('admin:server:getResources', {
+    rateLimit = { max = 20, window = 5000 },
+}, function(ctx)
+    local src = ctx.source
     if not perm(src, 'admin.world.resources') then return end
     local list = {}
     for i = 0, GetNumResources() - 1 do
@@ -449,8 +507,11 @@ RegisterNetEvent('admin:server:getResources', function()
     TriggerClientEvent('admin:client:resourceList', src, list)
 end)
 
-RegisterNetEvent('admin:server:restartResource', function(resourceName)
-    local src = source
+Sw.SecureEvent('admin:server:restartResource', {
+    rateLimit = { max = 20, window = 5000 },
+}, function(ctx)
+    local src = ctx.source
+    local resourceName = ctx.args[1]
     if not perm(src, 'admin.world.resources') then return end
     if not resourceName or resourceName == '' then return end
     if GetResourceState(resourceName) == 'missing' then
@@ -462,16 +523,22 @@ RegisterNetEvent('admin:server:restartResource', function(resourceName)
     notify(src, 'success', 'Restartat: ' .. resourceName)
 end)
 
-RegisterNetEvent('admin:server:startResource', function(resourceName)
-    local src = source
+Sw.SecureEvent('admin:server:startResource', {
+    rateLimit = { max = 20, window = 5000 },
+}, function(ctx)
+    local src = ctx.source
+    local resourceName = ctx.args[1]
     if not perm(src, 'admin.world.resources') then return end
     if not resourceName or resourceName == '' then return end
     StartResource(resourceName)
     notify(src, 'success', 'Pornit: ' .. resourceName)
 end)
 
-RegisterNetEvent('admin:server:stopResource', function(resourceName)
-    local src = source
+Sw.SecureEvent('admin:server:stopResource', {
+    rateLimit = { max = 20, window = 5000 },
+}, function(ctx)
+    local src = ctx.source
+    local resourceName = ctx.args[1]
     if not perm(src, 'admin.world.resources') then return end
     if not resourceName or resourceName == '' then return end
     StopResource(resourceName)
@@ -562,8 +629,11 @@ local function buildInventoryPayload(charId)
     }
 end
 
-RegisterNetEvent('admin:server:getPlayerInventory', function(targetId)
-    local src = source
+Sw.SecureEvent('admin:server:getPlayerInventory', {
+    rateLimit = { max = 20, window = 5000 },
+}, function(ctx)
+    local src = ctx.source
+    local targetId = ctx.args[1]
     if not perm(src, 'admin.players.inventory') then return end
     targetId = tonumber(targetId)
     local charId = getTargetCharacterId(src, targetId)
@@ -586,8 +656,10 @@ RegisterNetEvent('admin:server:getPlayerInventory', function(targetId)
     end
 end)
 
-RegisterNetEvent('admin:server:getItemCatalog', function()
-    local src = source
+Sw.SecureEvent('admin:server:getItemCatalog', {
+    rateLimit = { max = 20, window = 5000 },
+}, function(ctx)
+    local src = ctx.source
     if not perm(src, 'admin.players.inventory') then return end
 
     local catalog = {}
@@ -616,8 +688,11 @@ local function ensureInventoryLoaded(charId, cb)
     end
 end
 
-RegisterNetEvent('admin:server:givePlayerItem', function(targetId, itemName, amount)
-    local src = source
+Sw.SecureEvent('admin:server:givePlayerItem', {
+    rateLimit = { max = 20, window = 5000 },
+}, function(ctx)
+    local src = ctx.source
+    local targetId, itemName, amount = ctx.args[1], ctx.args[2], ctx.args[3]
     if not perm(src, 'admin.players.inventory') then return end
     targetId = tonumber(targetId)
     amount = tonumber(amount) or 1
@@ -643,8 +718,11 @@ RegisterNetEvent('admin:server:givePlayerItem', function(targetId, itemName, amo
     end)
 end)
 
-RegisterNetEvent('admin:server:takePlayerItem', function(targetId, itemName, amount, slot)
-    local src = source
+Sw.SecureEvent('admin:server:takePlayerItem', {
+    rateLimit = { max = 20, window = 5000 },
+}, function(ctx)
+    local src = ctx.source
+    local targetId, itemName, amount, slot = ctx.args[1], ctx.args[2], ctx.args[3], ctx.args[4]
     if not perm(src, 'admin.players.inventory') then return end
     targetId = tonumber(targetId)
     amount = tonumber(amount) or 1
@@ -705,14 +783,19 @@ local function broadcastItemsCatalog(src)
     TriggerClientEvent('admin:client:itemsCatalog', src, list)
 end
 
-RegisterNetEvent('admin:server:getItemsCatalog', function()
-    local src = source
+Sw.SecureEvent('admin:server:getItemsCatalog', {
+    rateLimit = { max = 20, window = 5000 },
+}, function(ctx)
+    local src = ctx.source
     if not perm(src, 'admin.items.manage') then return end
     broadcastItemsCatalog(src)
 end)
 
-RegisterNetEvent('admin:server:saveItem', function(payload)
-    local src = source
+Sw.SecureEvent('admin:server:saveItem', {
+    rateLimit = { max = 20, window = 5000 },
+}, function(ctx)
+    local src = ctx.source
+    local payload = ctx.args[1]
     if not perm(src, 'admin.items.manage') then return end
     if type(payload) ~= 'table' then return notify(src, 'error', 'Date invalide.') end
 
@@ -787,8 +870,11 @@ RegisterNetEvent('admin:server:saveItem', function(payload)
     broadcastItemsCatalog(src)
 end)
 
-RegisterNetEvent('admin:server:deleteItem', function(itemName)
-    local src = source
+Sw.SecureEvent('admin:server:deleteItem', {
+    rateLimit = { max = 20, window = 5000 },
+}, function(ctx)
+    local src = ctx.source
+    local itemName = ctx.args[1]
     if not perm(src, 'admin.items.manage') then return end
     if type(itemName) ~= 'string' or itemName == '' then
         return notify(src, 'error', 'Nume invalid.')
@@ -814,16 +900,21 @@ RegisterNetEvent('admin:server:deleteItem', function(itemName)
     broadcastItemsCatalog(src)
 end)
 
-RegisterNetEvent('admin:server:reloadItemsCatalog', function()
-    local src = source
+Sw.SecureEvent('admin:server:reloadItemsCatalog', {
+    rateLimit = { max = 20, window = 5000 },
+}, function(ctx)
+    local src = ctx.source
     if not perm(src, 'admin.items.manage') then return end
     pcall(function() exports.inventory:ReloadItems() end)
     notify(src, 'success', 'Catalog reîncărcat.')
     broadcastItemsCatalog(src)
 end)
 
-RegisterNetEvent('admin:server:getPlayerNeeds', function(targetId)
-    local src = source
+Sw.SecureEvent('admin:server:getPlayerNeeds', {
+    rateLimit = { max = 20, window = 5000 },
+}, function(ctx)
+    local src = ctx.source
+    local targetId = ctx.args[1]
     if not perm(src, 'admin.players.needs') then return end
     targetId = tonumber(targetId)
     if not isOnline(targetId) then return notify(src, 'error', 'Țintă invalidă.') end
@@ -846,8 +937,11 @@ RegisterNetEvent('admin:server:getPlayerNeeds', function(targetId)
     })
 end)
 
-RegisterNetEvent('admin:server:setPlayerNeed', function(targetId, key, value)
-    local src = source
+Sw.SecureEvent('admin:server:setPlayerNeed', {
+    rateLimit = { max = 20, window = 5000 },
+}, function(ctx)
+    local src = ctx.source
+    local targetId, key, value = ctx.args[1], ctx.args[2], ctx.args[3]
     if not perm(src, 'admin.players.needs') then return end
     targetId = tonumber(targetId)
     value = tonumber(value)
@@ -877,8 +971,11 @@ local function clearMedicalState(targetId)
     pcall(function() exports.medical:CureAll(targetId) end)
 end
 
-RegisterNetEvent('admin:server:healTarget', function(targetId)
-    local src = source
+Sw.SecureEvent('admin:server:healTarget', {
+    rateLimit = { max = 20, window = 5000 },
+}, function(ctx)
+    local src = ctx.source
+    local targetId = ctx.args[1]
     if not perm(src, 'admin.players.needs') then return end
     targetId = tonumber(targetId)
     if not isOnline(targetId) then return notify(src, 'error', 'Țintă invalidă.') end
@@ -889,8 +986,11 @@ RegisterNetEvent('admin:server:healTarget', function(targetId)
     notify(src, 'success', 'Țintă vindecată.')
 end)
 
-RegisterNetEvent('admin:server:reviveTarget', function(targetId)
-    local src = source
+Sw.SecureEvent('admin:server:reviveTarget', {
+    rateLimit = { max = 20, window = 5000 },
+}, function(ctx)
+    local src = ctx.source
+    local targetId = ctx.args[1]
     if not perm(src, 'admin.players.needs') then return end
     targetId = tonumber(targetId)
     if not isOnline(targetId) then return notify(src, 'error', 'Țintă invalidă.') end
@@ -900,23 +1000,30 @@ RegisterNetEvent('admin:server:reviveTarget', function(targetId)
     notify(src, 'success', 'Țintă reînviată.')
 end)
 
-RegisterNetEvent('admin:server:healSelf', function()
-    local src = source
+Sw.SecureEvent('admin:server:healSelf', {
+    rateLimit = { max = 20, window = 5000 },
+}, function(ctx)
+    local src = ctx.source
     if not perm(src, 'admin.self.heal') then return end
     clearMedicalState(src)
     pcall(function() exports.needs:SetHunger(src, 100); exports.needs:SetThirst(src, 100) end)
     logAdminAction(src, 'self.heal', src, {})
 end)
 
-RegisterNetEvent('admin:server:reviveSelf', function()
-    local src = source
+Sw.SecureEvent('admin:server:reviveSelf', {
+    rateLimit = { max = 20, window = 5000 },
+}, function(ctx)
+    local src = ctx.source
     if not perm(src, 'admin.self.heal') then return end
     clearMedicalState(src)
     logAdminAction(src, 'self.revive', src, {})
 end)
 
-RegisterNetEvent('admin:server:getPlayerCharacterInfo', function(targetId)
-    local src = source
+Sw.SecureEvent('admin:server:getPlayerCharacterInfo', {
+    rateLimit = { max = 20, window = 5000 },
+}, function(ctx)
+    local src = ctx.source
+    local targetId = ctx.args[1]
     if not perm(src, 'admin.players.character') then return end
     targetId = tonumber(targetId)
     if not isOnline(targetId) then return notify(src, 'error', 'Țintă invalidă.') end
@@ -965,8 +1072,11 @@ RegisterNetEvent('admin:server:getPlayerCharacterInfo', function(targetId)
     })
 end)
 
-RegisterNetEvent('admin:server:teleportTargetToCoords', function(targetId, x, y, z)
-    local src = source
+Sw.SecureEvent('admin:server:teleportTargetToCoords', {
+    rateLimit = { max = 20, window = 5000 },
+}, function(ctx)
+    local src = ctx.source
+    local targetId, x, y, z = ctx.args[1], ctx.args[2], ctx.args[3], ctx.args[4]
     if not perm(src, 'admin.players.character') then return end
     targetId = tonumber(targetId)
     x, y, z = tonumber(x), tonumber(y), tonumber(z)
@@ -978,8 +1088,11 @@ RegisterNetEvent('admin:server:teleportTargetToCoords', function(targetId, x, y,
     notify(src, 'success', ('Țintă teleportată la (%.1f, %.1f, %.1f).'):format(x, y, z))
 end)
 
-RegisterNetEvent('admin:server:getPlayerVehicles', function(targetId)
-    local src = source
+Sw.SecureEvent('admin:server:getPlayerVehicles', {
+    rateLimit = { max = 20, window = 5000 },
+}, function(ctx)
+    local src = ctx.source
+    local targetId = ctx.args[1]
     if not perm(src, 'admin.players.vehicles') then return end
     targetId = tonumber(targetId)
     local charId = getTargetCharacterId(src, targetId)
@@ -1005,8 +1118,11 @@ RegisterNetEvent('admin:server:getPlayerVehicles', function(targetId)
     TriggerClientEvent('admin:client:playerVehicles', src, { targetId = targetId, vehicles = list })
 end)
 
-RegisterNetEvent('admin:server:spawnPlayerVehicle', function(targetId, vehicleId)
-    local src = source
+Sw.SecureEvent('admin:server:spawnPlayerVehicle', {
+    rateLimit = { max = 20, window = 5000 },
+}, function(ctx)
+    local src = ctx.source
+    local targetId, vehicleId = ctx.args[1], ctx.args[2]
     if not perm(src, 'admin.players.vehicles') then return end
     targetId = tonumber(targetId); vehicleId = tonumber(vehicleId)
     if not isOnline(targetId) or not vehicleId then return notify(src, 'error', 'Parametri invalizi.') end
@@ -1016,8 +1132,11 @@ RegisterNetEvent('admin:server:spawnPlayerVehicle', function(targetId, vehicleId
     notify(src, 'success', 'Vehicul spawnat la țintă.')
 end)
 
-RegisterNetEvent('admin:server:impoundPlayerVehicle', function(vehicleId, reason)
-    local src = source
+Sw.SecureEvent('admin:server:impoundPlayerVehicle', {
+    rateLimit = { max = 20, window = 5000 },
+}, function(ctx)
+    local src = ctx.source
+    local vehicleId, reason = ctx.args[1], ctx.args[2]
     if not perm(src, 'admin.players.vehicles') then return end
     vehicleId = tonumber(vehicleId)
     if not vehicleId then return notify(src, 'error', 'ID invalid.') end
@@ -1026,8 +1145,11 @@ RegisterNetEvent('admin:server:impoundPlayerVehicle', function(vehicleId, reason
     notify(src, 'success', 'Vehicul sechestrat.')
 end)
 
-RegisterNetEvent('admin:server:releasePlayerVehicle', function(vehicleId)
-    local src = source
+Sw.SecureEvent('admin:server:releasePlayerVehicle', {
+    rateLimit = { max = 20, window = 5000 },
+}, function(ctx)
+    local src = ctx.source
+    local vehicleId = ctx.args[1]
     if not perm(src, 'admin.players.vehicles') then return end
     vehicleId = tonumber(vehicleId)
     if not vehicleId then return notify(src, 'error', 'ID invalid.') end
@@ -1036,8 +1158,11 @@ RegisterNetEvent('admin:server:releasePlayerVehicle', function(vehicleId)
     notify(src, 'success', 'Vehicul eliberat.')
 end)
 
-RegisterNetEvent('admin:server:setVehicleFuelAdmin', function(vehicleId, amount)
-    local src = source
+Sw.SecureEvent('admin:server:setVehicleFuelAdmin', {
+    rateLimit = { max = 20, window = 5000 },
+}, function(ctx)
+    local src = ctx.source
+    local vehicleId, amount = ctx.args[1], ctx.args[2]
     if not perm(src, 'admin.players.vehicles') then return end
     vehicleId = tonumber(vehicleId); amount = tonumber(amount)
     if not vehicleId or not amount then return notify(src, 'error', 'Parametri invalizi.') end
@@ -1047,8 +1172,10 @@ RegisterNetEvent('admin:server:setVehicleFuelAdmin', function(vehicleId, amount)
     notify(src, 'success', ('Combustibil setat la %d%%.'):format(amount))
 end)
 
-RegisterNetEvent('admin:server:getJobsCatalog', function()
-    local src = source
+Sw.SecureEvent('admin:server:getJobsCatalog', {
+    rateLimit = { max = 20, window = 5000 },
+}, function(ctx)
+    local src = ctx.source
     if not perm(src, 'admin.players.jobs') then return end
 
     local catalog = {}
@@ -1080,8 +1207,11 @@ RegisterNetEvent('admin:server:getJobsCatalog', function()
     TriggerClientEvent('admin:client:jobsCatalog', src, catalog)
 end)
 
-RegisterNetEvent('admin:server:getPlayerJob', function(targetId)
-    local src = source
+Sw.SecureEvent('admin:server:getPlayerJob', {
+    rateLimit = { max = 20, window = 5000 },
+}, function(ctx)
+    local src = ctx.source
+    local targetId = ctx.args[1]
     if not perm(src, 'admin.players.jobs') then return end
     targetId = tonumber(targetId)
     local charId = getTargetCharacterId(src, targetId)
@@ -1104,8 +1234,11 @@ RegisterNetEvent('admin:server:getPlayerJob', function(targetId)
     })
 end)
 
-RegisterNetEvent('admin:server:setPlayerJob', function(targetId, jobName, grade)
-    local src = source
+Sw.SecureEvent('admin:server:setPlayerJob', {
+    rateLimit = { max = 20, window = 5000 },
+}, function(ctx)
+    local src = ctx.source
+    local targetId, jobName, grade = ctx.args[1], ctx.args[2], ctx.args[3]
     if not perm(src, 'admin.players.jobs') then return end
     targetId = tonumber(targetId)
     grade = tonumber(grade) or 0
@@ -1122,8 +1255,11 @@ RegisterNetEvent('admin:server:setPlayerJob', function(targetId, jobName, grade)
     notify(targetId, 'info', ('Job nou: %s (grad %d).'):format(jobName, grade))
 end)
 
-RegisterNetEvent('admin:server:firePlayer', function(targetId)
-    local src = source
+Sw.SecureEvent('admin:server:firePlayer', {
+    rateLimit = { max = 20, window = 5000 },
+}, function(ctx)
+    local src = ctx.source
+    local targetId = ctx.args[1]
     if not perm(src, 'admin.players.jobs') then return end
     targetId = tonumber(targetId)
     local charId = getTargetCharacterId(src, targetId)

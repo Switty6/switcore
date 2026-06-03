@@ -25,16 +25,19 @@ local function notify(source, t, msg)
     TriggerClientEvent('switcore:notify', source, t, msg)
 end
 
-RegisterNetEvent('government:server:getPublicLaws', function()
-    local src  = source
+Sw.SecureEvent('government:server:getPublicLaws', {
+    rateLimit = { max = 10, window = 3000 },
+}, function(ctx)
+    local src  = ctx.source
     local laws = GovDB.getLaws(true) or {}
     TriggerClientEvent('government:client:openLaws', src, laws)
 end)
 
-RegisterNetEvent('government:server:open', function()
-    local src  = source
-    local char = getChar(src)
-    if not char then return end
+Sw.SecureEvent('government:server:open', {
+    character = true,
+    rateLimit = { max = 10, window = 3000 },
+}, function(ctx)
+    local src = ctx.source
 
     if not hasAnyGovPerm(src) then
         notify(src, 'error', 'Acces interzis.')
@@ -45,10 +48,13 @@ RegisterNetEvent('government:server:open', function()
     TriggerClientEvent('government:client:open', src, data)
 end)
 
-RegisterNetEvent('government:server:proposeLaw', function(data)
-    local src  = source
-    local char = getChar(src)
-    if not char then return end
+Sw.SecureEvent('government:server:proposeLaw', {
+    character = true,
+    rateLimit = { max = 10, window = 5000 },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
+    local data = ctx.args[1]
     if not perm(src, 'government.laws') then
         notify(src, 'error', 'Nu ai permisiunea de a propune legi.')
         return
@@ -60,10 +66,13 @@ RegisterNetEvent('government:server:proposeLaw', function(data)
     end
 end)
 
-RegisterNetEvent('government:server:voteLaw', function(proposalId, vote)
-    local src  = source
-    local char = getChar(src)
-    if not char then return end
+Sw.SecureEvent('government:server:voteLaw', {
+    character = true,
+    rateLimit = { max = 20, window = 5000 },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
+    local proposalId, vote = ctx.args[1], ctx.args[2]
     if not perm(src, 'government.laws') then
         notify(src, 'error', 'Nu ai permisiunea de a vota.')
         return
@@ -85,10 +94,13 @@ RegisterNetEvent('government:server:voteLaw', function(proposalId, vote)
     end
 end)
 
-RegisterNetEvent('government:server:repealLaw', function(lawId)
-    local src  = source
-    local char = getChar(src)
-    if not char then return end
+Sw.SecureEvent('government:server:repealLaw', {
+    character = true,
+    rateLimit = { max = 10, window = 5000 },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
+    local lawId = ctx.args[1]
     if not perm(src, 'government.laws') then
         notify(src, 'error', 'Nu ai permisiunea de a abroga legi.')
         return
@@ -100,10 +112,13 @@ RegisterNetEvent('government:server:repealLaw', function(lawId)
     end
 end)
 
-RegisterNetEvent('government:server:rejectProposal', function(proposalId)
-    local src  = source
-    local char = getChar(src)
-    if not char then return end
+Sw.SecureEvent('government:server:rejectProposal', {
+    character = true,
+    rateLimit = { max = 10, window = 5000 },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
+    local proposalId = ctx.args[1]
     if not perm(src, 'government.laws') then return end
     local ok = GovManager.rejectProposal(src, char.id, proposalId)
     if ok then
@@ -112,10 +127,13 @@ RegisterNetEvent('government:server:rejectProposal', function(proposalId)
     end
 end)
 
-RegisterNetEvent('government:server:addTransaction', function(data)
-    local src  = source
-    local char = getChar(src)
-    if not char then return end
+Sw.SecureEvent('government:server:addTransaction', {
+    character = true,
+    rateLimit = { max = 10, window = 5000 },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
+    local data = ctx.args[1]
     if not perm(src, 'government.budget') then
         notify(src, 'error', 'Nu ai permisiunea de a gestiona bugetul.')
         return
@@ -142,10 +160,13 @@ RegisterNetEvent('government:server:addTransaction', function(data)
     TriggerClientEvent('government:client:update', src, updated)
 end)
 
-RegisterNetEvent('government:server:createParty', function(name, color)
-    local src  = source
-    local char = getChar(src)
-    if not char then return end
+Sw.SecureEvent('government:server:createParty', {
+    character = true,
+    rateLimit = { max = 5, window = 5000 },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
+    local name, color = ctx.args[1], ctx.args[2]
     if not perm(src, 'government.parties') then
         notify(src, 'error', 'Nu ai permisiunea de a infiinta partide.')
         return
@@ -157,10 +178,13 @@ RegisterNetEvent('government:server:createParty', function(name, color)
     end
 end)
 
-RegisterNetEvent('government:server:joinParty', function(partyId)
-    local src  = source
-    local char = getChar(src)
-    if not char then return end
+Sw.SecureEvent('government:server:joinParty', {
+    character = true,
+    rateLimit = { max = 10, window = 3000 },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
+    local partyId = ctx.args[1]
     if not hasAnyGovPerm(src) then return end
     local ok = GovManager.joinParty(src, char.id, partyId)
     if ok then
@@ -169,10 +193,12 @@ RegisterNetEvent('government:server:joinParty', function(partyId)
     end
 end)
 
-RegisterNetEvent('government:server:leaveParty', function()
-    local src  = source
-    local char = getChar(src)
-    if not char then return end
+Sw.SecureEvent('government:server:leaveParty', {
+    character = true,
+    rateLimit = { max = 10, window = 3000 },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
     local ok = GovManager.leaveParty(src, char.id)
     if ok then
         local updated = GovManager.buildFullData(src)
@@ -180,10 +206,13 @@ RegisterNetEvent('government:server:leaveParty', function()
     end
 end)
 
-RegisterNetEvent('government:server:kickPartyMember', function(targetCharId)
-    local src  = source
-    local char = getChar(src)
-    if not char then return end
+Sw.SecureEvent('government:server:kickPartyMember', {
+    character = true,
+    rateLimit = { max = 10, window = 3000 },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
+    local targetCharId = ctx.args[1]
     local ok = GovManager.kickPartyMember(src, char.id, targetCharId)
     if ok then
         local updated = GovManager.buildFullData(src)
@@ -191,10 +220,13 @@ RegisterNetEvent('government:server:kickPartyMember', function(targetCharId)
     end
 end)
 
-RegisterNetEvent('government:server:updateManifesto', function(manifesto)
-    local src  = source
-    local char = getChar(src)
-    if not char then return end
+Sw.SecureEvent('government:server:updateManifesto', {
+    character = true,
+    rateLimit = { max = 10, window = 5000 },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
+    local manifesto = ctx.args[1]
     local ok = GovManager.updateManifesto(src, char.id, manifesto)
     if ok then
         local updated = GovManager.buildFullData(src)
@@ -202,10 +234,13 @@ RegisterNetEvent('government:server:updateManifesto', function(manifesto)
     end
 end)
 
-RegisterNetEvent('government:server:startElection', function(position, description)
-    local src  = source
-    local char = getChar(src)
-    if not char then return end
+Sw.SecureEvent('government:server:startElection', {
+    character = true,
+    rateLimit = { max = 5, window = 5000 },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
+    local position, description = ctx.args[1], ctx.args[2]
     if not perm(src, 'government.elections') then
         notify(src, 'error', 'Nu ai permisiunea de a deschide alegeri.')
         return
@@ -222,10 +257,13 @@ RegisterNetEvent('government:server:startElection', function(position, descripti
     end
 end)
 
-RegisterNetEvent('government:server:candidateElection', function(electionId)
-    local src  = source
-    local char = getChar(src)
-    if not char then return end
+Sw.SecureEvent('government:server:candidateElection', {
+    character = true,
+    rateLimit = { max = 10, window = 3000 },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
+    local electionId = ctx.args[1]
     if not hasAnyGovPerm(src) then return end
     local ok = GovManager.candidateElection(src, char.id, electionId)
     if ok then
@@ -234,10 +272,13 @@ RegisterNetEvent('government:server:candidateElection', function(electionId)
     end
 end)
 
-RegisterNetEvent('government:server:voteElection', function(electionId, candidateId)
-    local src  = source
-    local char = getChar(src)
-    if not char then return end
+Sw.SecureEvent('government:server:voteElection', {
+    character = true,
+    rateLimit = { max = 10, window = 5000 },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
+    local electionId, candidateId = ctx.args[1], ctx.args[2]
     if not hasAnyGovPerm(src) then return end
     local ok = GovManager.voteElection(src, char.id, electionId, candidateId)
     if ok then
@@ -246,10 +287,13 @@ RegisterNetEvent('government:server:voteElection', function(electionId, candidat
     end
 end)
 
-RegisterNetEvent('government:server:closeElection', function(electionId)
-    local src  = source
-    local char = getChar(src)
-    if not char then return end
+Sw.SecureEvent('government:server:closeElection', {
+    character = true,
+    rateLimit = { max = 5, window = 5000 },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
+    local electionId = ctx.args[1]
     if not perm(src, 'government.elections') then
         notify(src, 'error', 'Nu ai permisiunea de a inchide alegerile.')
         return

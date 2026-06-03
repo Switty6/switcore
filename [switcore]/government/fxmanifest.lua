@@ -5,7 +5,12 @@ author 'Switty'
 description 'SwitCore Government System'
 version '1.0.0'
 
+shared_scripts {
+    '@core/shared/lib.lua',
+}
+
 server_scripts {
+    '@core/server/secure.lua',
     'server/database.lua',
     'server/government_manager.lua',
     'server/exports.lua',

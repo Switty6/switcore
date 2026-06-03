@@ -1,6 +1,17 @@
 local drops = {}
 local dropCounter = 0
 
+-- Sistemul foloseste doar inventare char:<id> si keys:<id>, iar un jucator
+-- poate accesa prin aceste net events DOAR inventarele propriului personaj activ.
+-- (Containerele secundare gen portbagaj/stash nu trec prin aceste evenimente.)
+-- Previne ca un client modificat sa trimita un invId arbitrar (ex. char:<alt_id>)
+-- pentru a manipula inventarul altui jucator.
+local function ownsInventory(characterId, invId)
+    if type(invId) ~= 'string' then return false end
+    local invCharId = tonumber(invId:match('^char:(%d+)$')) or tonumber(invId:match('^keys:(%d+)$'))
+    return invCharId ~= nil and invCharId == characterId
+end
+
 CreateThread(function()
     while true do
         Wait(30000)
@@ -18,9 +29,21 @@ CreateThread(function()
     end
 end)
 
-RegisterNetEvent('switcore:inventoryMoveItem')
-AddEventHandler('switcore:inventoryMoveItem', function(fromInvId, toInvId, fromSlot, toSlot, amount)
-    local src = source
+Sw.SecureEvent('switcore:inventoryMoveItem', {
+    character = true,
+    rateLimit = { max = 40, window = 3000 },
+    args = {
+        { name = 'fromInvId', type = 'string', minLen = 1, maxLen = 64 },
+        { name = 'toInvId',   type = 'string', minLen = 1, maxLen = 64 },
+        { name = 'fromSlot',  type = 'int', min = 1 },
+        { name = 'toSlot',    type = 'int', min = 1 },
+        { name = 'amount',    type = 'int', min = 1, optional = true },
+    },
+}, function(ctx)
+    local src = ctx.source
+    local fromInvId, toInvId = ctx.args.fromInvId, ctx.args.toInvId
+    local fromSlot, toSlot   = ctx.args.fromSlot, ctx.args.toSlot
+    if not ownsInventory(ctx.character.id, fromInvId) or not ownsInventory(ctx.character.id, toInvId) then return end
     local fromInv = GetInventory(fromInvId)
     local toInv = GetInventory(toInvId)
 
@@ -28,7 +51,7 @@ AddEventHandler('switcore:inventoryMoveItem', function(fromInvId, toInvId, fromS
     local item = fromInv.slots[fromSlot]
     if not item then return end
 
-    amount = tonumber(amount) or item.amount
+    local amount = ctx.args.amount or item.amount
     if amount > item.amount then amount = item.amount end
 
     local cfg = GetItemConfig(item.name)
@@ -84,7 +107,7 @@ AddEventHandler('switcore:inventoryMoveItem', function(fromInvId, toInvId, fromS
             amount = amount,
             metadata = item.metadata
         }
-        
+
         if amount == item.amount then
             fromInv.slots[fromSlot] = nil
             InventoryDB.saveSlot(fromInvId, fromSlot, nil)
@@ -101,9 +124,17 @@ AddEventHandler('switcore:inventoryMoveItem', function(fromInvId, toInvId, fromS
     end
 end)
 
-RegisterNetEvent('switcore:inventoryUseItem')
-AddEventHandler('switcore:inventoryUseItem', function(invId, slot)
-    local src = source
+Sw.SecureEvent('switcore:inventoryUseItem', {
+    character = true,
+    rateLimit = { max = 15, window = 3000 },
+    args = {
+        { name = 'invId', type = 'string', minLen = 1, maxLen = 64 },
+        { name = 'slot',  type = 'int', min = 1 },
+    },
+}, function(ctx)
+    local src = ctx.source
+    local invId, slot = ctx.args.invId, ctx.args.slot
+    if not ownsInventory(ctx.character.id, invId) then return end
     local inv = GetInventory(invId)
     if not inv then return end
 
@@ -111,9 +142,9 @@ AddEventHandler('switcore:inventoryUseItem', function(invId, slot)
     if not item then return end
 
     local cfg = GetItemConfig(item.name)
-    if not cfg or not cfg.usable then 
+    if not cfg or not cfg.usable then
         TriggerClientEvent("switcore:showNotification", src, "Acest item nu se poate folosi.")
-        return 
+        return
     end
 
     if exports.inventory:UseItem(src, item.name) then
@@ -123,16 +154,25 @@ AddEventHandler('switcore:inventoryUseItem', function(invId, slot)
     end
 end)
 
-RegisterNetEvent('switcore:inventoryDropItem')
-AddEventHandler('switcore:inventoryDropItem', function(invId, slot, amount)
-    local src = source
+Sw.SecureEvent('switcore:inventoryDropItem', {
+    character = true,
+    rateLimit = { max = 15, window = 3000 },
+    args = {
+        { name = 'invId',  type = 'string', minLen = 1, maxLen = 64 },
+        { name = 'slot',   type = 'int', min = 1 },
+        { name = 'amount', type = 'int', min = 1, optional = true },
+    },
+}, function(ctx)
+    local src = ctx.source
+    local invId, slot = ctx.args.invId, ctx.args.slot
+    if not ownsInventory(ctx.character.id, invId) then return end
     local inv = GetInventory(invId)
     if not inv then return end
 
     local item = inv.slots[slot]
     if not item then return end
 
-    amount = tonumber(amount) or item.amount
+    local amount = ctx.args.amount or item.amount
     if amount > item.amount then amount = item.amount end
 
     local dropItem = {
@@ -177,34 +217,50 @@ AddEventHandler('switcore:inventoryDropItem', function(invId, slot, amount)
     TriggerClientEvent('switcore:createPhysicalDrop', -1, dropId, dropItem.name, label, dropCoords, dropProp)
 end)
 
-RegisterNetEvent('switcore:inventoryPickupDrop')
-AddEventHandler('switcore:inventoryPickupDrop', function(dropId, targetInvId)
-    local src = source
-    local drop = drops[dropId]
+Sw.SecureEvent('switcore:inventoryPickupDrop', {
+    character = true,
+    rateLimit = { max = 15, window = 3000 },
+    args = {
+        { name = 'dropId',      type = 'string', minLen = 1, maxLen = 64 },
+        { name = 'targetInvId', type = 'string', minLen = 1, maxLen = 64 },
+    },
+}, function(ctx)
+    local src = ctx.source
+    local drop = drops[ctx.args.dropId]
     if not drop then return end
+    if not ownsInventory(ctx.character.id, ctx.args.targetInvId) then return end
 
     local ped = GetPlayerPed(src)
     local coords = GetEntityCoords(ped)
     if #(coords - drop.coords) > 5.0 then return end
 
-    local success, msg = exports.inventory:AddItem(targetInvId, drop.itemData.name, drop.itemData.amount, drop.itemData.metadata)
-    
+    local success, msg = exports.inventory:AddItem(ctx.args.targetInvId, drop.itemData.name, drop.itemData.amount, drop.itemData.metadata)
+
     if success then
-        drops[dropId] = nil
-        TriggerClientEvent('switcore:removePhysicalDrop', -1, dropId)
+        drops[ctx.args.dropId] = nil
+        TriggerClientEvent('switcore:removePhysicalDrop', -1, ctx.args.dropId)
     else
         TriggerClientEvent("switcore:showNotification", src, msg, "error")
     end
 end)
 
-RegisterNetEvent('switcore:inventoryGiveItem')
-AddEventHandler('switcore:inventoryGiveItem', function(targetSrc, invId, slot, amount)
-    local src = source
-    targetSrc = tonumber(targetSrc)
-    slot      = tonumber(slot)
-    amount    = tonumber(amount) or 1
-    if not targetSrc or not invId or not slot or amount <= 0 then return end
+Sw.SecureEvent('switcore:inventoryGiveItem', {
+    character = true,
+    rateLimit = { max = 10, window = 3000 },
+    args = {
+        { name = 'targetSrc', type = 'int', min = 1 },
+        { name = 'invId',     type = 'string', minLen = 1, maxLen = 64 },
+        { name = 'slot',      type = 'int', min = 1 },
+        { name = 'amount',    type = 'int', min = 1, optional = true, default = 1 },
+    },
+}, function(ctx)
+    local src = ctx.source
+    local targetSrc = ctx.args.targetSrc
+    local invId     = ctx.args.invId
+    local slot      = ctx.args.slot
+    local amount    = ctx.args.amount
     if targetSrc == src then return end
+    if not ownsInventory(ctx.character.id, invId) then return end
 
     local srcPed    = GetPlayerPed(src)
     local targetPed = GetPlayerPed(targetSrc)

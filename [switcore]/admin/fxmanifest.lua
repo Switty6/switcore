@@ -10,6 +10,7 @@ version     '1.0.0'
 ui_page 'ui/index.html'
 
 shared_scripts {
+    '@core/shared/lib.lua',
     'config.lua',
 }
 
@@ -21,6 +22,7 @@ client_scripts {
 }
 
 server_scripts {
+    '@core/server/secure.lua',
     'server/server.lua',
 }
 
