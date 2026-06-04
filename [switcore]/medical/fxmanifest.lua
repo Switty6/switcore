@@ -15,7 +15,12 @@ dependencies {
     'settings'
 }
 
+shared_scripts {
+    '@core/shared/lib.lua'
+}
+
 server_scripts {
+    '@core/server/secure.lua',
     'server/config_loader.lua',
     'server/database.lua',
     'server/conditions.lua',

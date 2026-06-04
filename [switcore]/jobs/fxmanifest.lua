@@ -16,9 +16,13 @@ dependencies {
     'blips'
 }
 
-shared_script 'config.lua'
+shared_scripts {
+    '@core/shared/lib.lua',
+    'config.lua'
+}
 
 server_scripts {
+    '@core/server/secure.lua',
     'server/database.lua',
     'server/server.lua',
     'server/callbacks.lua'
