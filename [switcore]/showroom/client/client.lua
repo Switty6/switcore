@@ -11,6 +11,7 @@ local registeredInteractions = {}
 
 local displayVehicle = 0
 local showroomCam = 0
+local spawnToken = 0
 
 local function DespawnDisplayVehicle()
     if displayVehicle ~= 0 and DoesEntityExist(displayVehicle) then
@@ -29,12 +30,40 @@ local function DestroyShowroomCam()
 end
 
 local function SpawnDisplayVehicle(modelName, colorIndex)
+    -- Token de generatie: la selectie rapida, doar ultimul apel ajunge sa creeze
+    -- vehiculul. Fara asta, apelurile concurente (care cedeaza in Wait-ul de mai
+    -- jos) suprascriu globalul displayVehicle si lasa entitati orfane in lume.
+    spawnToken = spawnToken + 1
+    local myToken = spawnToken
+
+    -- Sterge imediat preview-ul curent, ca sa nu existe doua vehicule simultan
     DespawnDisplayVehicle()
+
     local model = GetHashKey(modelName)
     RequestModel(model)
     local timeout = 0
-    while not HasModelLoaded(model) and timeout < 100 do Wait(50); timeout = timeout + 1 end
-    if not HasModelLoaded(model) then return end
+    while not HasModelLoaded(model) and timeout < 100 do
+        Wait(50)
+        timeout = timeout + 1
+        -- A venit o selectie mai noua cat asteptam modelul: renuntam la asta
+        if myToken ~= spawnToken then
+            SetModelAsNoLongerNeeded(model)
+            return
+        end
+    end
+    if not HasModelLoaded(model) then
+        SetModelAsNoLongerNeeded(model)
+        return
+    end
+
+    -- Ultima verificare inainte de spawn (selectie noua aparuta exact la final)
+    if myToken ~= spawnToken then
+        SetModelAsNoLongerNeeded(model)
+        return
+    end
+
+    -- Curata orice entitate ramasa de la un apel anterior mai lent
+    DespawnDisplayVehicle()
 
     local spawnPoint = nil
     for _, loc in ipairs(dealershipLocations) do
@@ -62,6 +91,8 @@ local function SpawnDisplayVehicle(modelName, colorIndex)
         SetCamCoord(showroomCam, camPos.x, camPos.y, camPos.z)
         PointCamAtEntity(showroomCam, displayVehicle, 0.0, 0.0, 0.0, true)
         SetCamActive(showroomCam, true)
+    else
+        SetModelAsNoLongerNeeded(model)
     end
 end
 
