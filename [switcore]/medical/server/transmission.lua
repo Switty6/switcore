@@ -1,6 +1,12 @@
-RegisterNetEvent('medical:server:playerSneezed')
-AddEventHandler('medical:server:playerSneezed', function(clientCoords)
-    local src = source
+Sw.SecureEvent('medical:server:playerSneezed', {
+    silent = true,
+    rateLimit = { max = 5, window = 3000 },
+    args = {
+        { name = 'clientCoords', type = 'table' },
+    },
+}, function(ctx)
+    local src          = ctx.source
+    local clientCoords = ctx.args.clientCoords
 
     local sneezerData = GetPlayerConditionsData()[src]
     if not sneezerData then return end

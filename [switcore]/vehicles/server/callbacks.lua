@@ -4,8 +4,11 @@ local function GetCharacterId(source)
     return character and character.id
 end
 
-RegisterNetEvent('vehicles:server:getMyVehicles', function()
-    local source = source
+Sw.SecureEvent('vehicles:server:getMyVehicles', {
+    silent = true,
+    rateLimit = { max = 10, window = 3000 },
+}, function(ctx)
+    local source = ctx.source
     local characterId = GetCharacterId(source)
     if not characterId then
         TriggerClientEvent('vehicles:client:myVehicles', source, { success = false, error = 'No character' })
@@ -20,23 +23,25 @@ RegisterNetEvent('vehicles:server:getMyVehicles', function()
     })
 end)
 
-RegisterNetEvent('vehicles:server:spawnVehicle', function(vehicleId)
-    local source = source
-    local characterId = GetCharacterId(source)
-    if not characterId then return end
-
-    vehicleId = tonumber(vehicleId)
-    if not vehicleId then return end
+Sw.SecureEvent('vehicles:server:spawnVehicle', {
+    character = true,
+    silent = true,
+    rateLimit = { max = 10, window = 3000 },
+    args = {
+        { name = 'vehicleId', type = 'int', min = 1 },
+    },
+}, function(ctx)
+    local source      = ctx.source
+    local characterId = ctx.character.id
+    local vehicleId   = ctx.args.vehicleId
 
     local vehicle = VehiclesDatabase.getOwnedVehicleIfKeyed(vehicleId, characterId)
     if not vehicle then
-        TriggerClientEvent('switcore:notify', source, 'error', 'Nu ai cheie pentru acest vehicul sau este inexistent', 4000)
-        return
+        return ctx.error('Nu ai cheie pentru acest vehicul sau este inexistent')
     end
 
     if vehicle.impounded then
-        TriggerClientEvent('switcore:notify', source, 'error', 'Vehiculul este sechestrat', 4000)
-        return
+        return ctx.error('Vehiculul este sechestrat')
     end
 
     VehiclesDatabase.updateVehicleState(vehicleId, { stored = false })
@@ -44,13 +49,18 @@ RegisterNetEvent('vehicles:server:spawnVehicle', function(vehicleId)
     TriggerClientEvent('vehicles:client:spawnVehicle', source, VehiclesManager.buildSpawnData(vehicle))
 end)
 
-RegisterNetEvent('vehicles:server:saveVehicleState', function(vehicleId, state)
-    local source = source
-    local characterId = GetCharacterId(source)
-    if not characterId then return end
-
-    vehicleId = tonumber(vehicleId)
-    if not vehicleId or not state then return end
+Sw.SecureEvent('vehicles:server:saveVehicleState', {
+    character = true,
+    silent = true,
+    rateLimit = { max = 20, window = 3000 },
+    args = {
+        { name = 'vehicleId', type = 'int', min = 1 },
+        { name = 'state',     type = 'table' },
+    },
+}, function(ctx)
+    local characterId = ctx.character.id
+    local vehicleId   = ctx.args.vehicleId
+    local state       = ctx.args.state
 
     if not KeysManager.hasKey(vehicleId, characterId) then return end
 
@@ -61,13 +71,18 @@ RegisterNetEvent('vehicles:server:saveVehicleState', function(vehicleId, state)
     end
 end)
 
-RegisterNetEvent('vehicles:server:despawnVehicle', function(vehicleId, state)
-    local source = source
-    local characterId = GetCharacterId(source)
-    if not characterId then return end
-
-    vehicleId = tonumber(vehicleId)
-    if not vehicleId then return end
+Sw.SecureEvent('vehicles:server:despawnVehicle', {
+    character = true,
+    silent = true,
+    rateLimit = { max = 20, window = 3000 },
+    args = {
+        { name = 'vehicleId', type = 'int', min = 1 },
+        { name = 'state',     type = 'table', optional = true },
+    },
+}, function(ctx)
+    local characterId = ctx.character.id
+    local vehicleId   = ctx.args.vehicleId
+    local state       = ctx.args.state
 
     if not KeysManager.hasKey(vehicleId, characterId) then return end
 
@@ -83,8 +98,11 @@ end)
 
 local fuelTickCounters = {}
 
-RegisterNetEvent('vehicles:server:requestFuelMultiplier', function()
-    local source = source
+Sw.SecureEvent('vehicles:server:requestFuelMultiplier', {
+    silent = true,
+    rateLimit = { max = 10, window = 3000 },
+}, function(ctx)
+    local source = ctx.source
     local mult   = exports.settings:GetSettingNumber('vehicles.fuel_consumption_rate', 1.0) or 1.0
     TriggerClientEvent('vehicles:client:setFuelMultiplier', source, mult)
     local mileageOn = exports.settings:GetSettingBool('vehicles.enable_mileage', true)
@@ -93,12 +111,18 @@ end)
 
 local mileageBuffer = {}
 
-RegisterNetEvent('vehicles:server:requestMileage', function(vehicleId)
-    local source = source
-    local characterId = GetCharacterId(source)
-    if not characterId then return end
-    vehicleId = tonumber(vehicleId)
-    if not vehicleId then return end
+Sw.SecureEvent('vehicles:server:requestMileage', {
+    character = true,
+    silent = true,
+    rateLimit = { max = 10, window = 3000 },
+    args = {
+        { name = 'vehicleId', type = 'int', min = 1 },
+    },
+}, function(ctx)
+    local source      = ctx.source
+    local characterId = ctx.character.id
+    local vehicleId   = ctx.args.vehicleId
+
     if not KeysManager.hasKey(vehicleId, characterId) then return end
 
     local vehicle = VehiclesManager.getOwnedVehicle(vehicleId)
@@ -107,15 +131,21 @@ RegisterNetEvent('vehicles:server:requestMileage', function(vehicleId)
     TriggerClientEvent('vehicles:client:setCurrentMileage', source, vehicleId, km)
 end)
 
-RegisterNetEvent('vehicles:server:mileageTick', function(vehicleId, km)
-    local source = source
-    local characterId = GetCharacterId(source)
-    if not characterId then return end
+Sw.SecureEvent('vehicles:server:mileageTick', {
+    character = true,
+    silent = true,
+    rateLimit = { max = 15, window = 1000 },
+    args = {
+        { name = 'vehicleId', type = 'int', min = 1 },
+        { name = 'km',        type = 'number' },
+    },
+}, function(ctx)
+    local characterId = ctx.character.id
+    local vehicleId   = ctx.args.vehicleId
+    local km          = ctx.args.km
 
-    vehicleId = tonumber(vehicleId)
-    km = tonumber(km)
     -- Sanity cap pe tick (anti-cheat: la 100ms tick max distanță fizic plauzibilă ~5km)
-    if not vehicleId or not km or km <= 0 or km > 5.0 then return end
+    if km <= 0 or km > 5.0 then return end
 
     if not KeysManager.hasKey(vehicleId, characterId) then return end
 
@@ -128,11 +158,17 @@ end)
 
 local lastFuelByVeh = {}
 
-RegisterNetEvent('vehicles:server:fuelTick', function(vehicleId, currentFuel)
-    local source = source
-    vehicleId    = tonumber(vehicleId)
-    currentFuel  = tonumber(currentFuel)
-    if not vehicleId or not currentFuel then return end
+Sw.SecureEvent('vehicles:server:fuelTick', {
+    silent = true,
+    rateLimit = { max = 15, window = 1000 },
+    args = {
+        { name = 'vehicleId',   type = 'int', min = 1 },
+        { name = 'currentFuel', type = 'number' },
+    },
+}, function(ctx)
+    local source      = ctx.source
+    local vehicleId   = ctx.args.vehicleId
+    local currentFuel = ctx.args.currentFuel
 
     if not FuelManager.validateClientTick(vehicleId, currentFuel) then
         print(('[VEHICLES] WARN: fuel tick respins vehicle=%d src=%s fuel=%.2f')
@@ -149,14 +185,18 @@ RegisterNetEvent('vehicles:server:fuelTick', function(vehicleId, currentFuel)
     end
 end)
 
-RegisterNetEvent('vehicles:server:onKeyItemGiven', function(vehicleId, toCharacterId)
-    local source = source
-    local fromCharacterId = GetCharacterId(source)
-    if not fromCharacterId then return end
-
-    vehicleId     = tonumber(vehicleId)
-    toCharacterId = tonumber(toCharacterId)
-    if not vehicleId or not toCharacterId then return end
+Sw.SecureEvent('vehicles:server:onKeyItemGiven', {
+    character = true,
+    silent = true,
+    rateLimit = { max = 10, window = 3000 },
+    args = {
+        { name = 'vehicleId',     type = 'int', min = 1 },
+        { name = 'toCharacterId', type = 'int', min = 1 },
+    },
+}, function(ctx)
+    local fromCharacterId = ctx.character.id
+    local vehicleId       = ctx.args.vehicleId
+    local toCharacterId   = ctx.args.toCharacterId
 
     if not KeysManager.hasKey(vehicleId, fromCharacterId) then return end
 
@@ -173,13 +213,16 @@ AddEventHandler('playerDropped', function()
     )
 end)
 
-RegisterNetEvent('vehicles:server:onKeyItemLost', function(vehicleId)
-    local source = source
-    local characterId = GetCharacterId(source)
-    if not characterId then return end
-
-    vehicleId = tonumber(vehicleId)
-    if not vehicleId then return end
+Sw.SecureEvent('vehicles:server:onKeyItemLost', {
+    character = true,
+    silent = true,
+    rateLimit = { max = 10, window = 3000 },
+    args = {
+        { name = 'vehicleId', type = 'int', min = 1 },
+    },
+}, function(ctx)
+    local characterId = ctx.character.id
+    local vehicleId   = ctx.args.vehicleId
 
     local keys = VehiclesDatabase.getVehicleKeys(vehicleId)
     for _, key in ipairs(keys) do

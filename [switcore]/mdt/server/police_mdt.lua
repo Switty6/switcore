@@ -61,10 +61,18 @@ local function sanitizeText(input, maxLen)
     return trimmed
 end
 
-RegisterNetEvent('mdt:server:getCriminalHistory', function(data)
-    local src  = source
-    local char = getActiveChar(src)
-    if not char or not data or not data.characterId then return end
+Sw.SecureEvent('mdt:server:getCriminalHistory', {
+    character = true,
+    silent = true,
+    rateLimit = { max = 15, window = 3000 },
+    args = {
+        { name = 'data', type = 'table' },
+    },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
+    local data = ctx.args.data
+    if not data.characterId then return end
     if not hasPoliceMDTAccess(char.id) then
         notify(src, 'error', 'Acces refuzat', 'Nu ai acces la dosarele MDT.')
         return
@@ -78,15 +86,22 @@ RegisterNetEvent('mdt:server:getCriminalHistory', function(data)
     end)
 end)
 
-RegisterNetEvent('mdt:server:createCitation', function(data)
-    local src  = source
-    local char = getActiveChar(src)
-    if not char then return end
+Sw.SecureEvent('mdt:server:createCitation', {
+    character = true,
+    silent = true,
+    rateLimit = { max = 10, window = 3000 },
+    args = {
+        { name = 'data', type = 'table' },
+    },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
+    local data = ctx.args.data
     if not hasArrestPerm(char.id) then
         notify(src, 'error', 'Acces refuzat', 'Nu ai permisiunea sa emiti citatii.')
         return
     end
-    if not data or not data.characterId or not data.offense or not data.fineAmount then return end
+    if not data.characterId or not data.offense or not data.fineAmount then return end
 
     MDTDatabase.createCitation(char.id, data.characterId, data.offense, tonumber(data.fineAmount) or 500, function(row)
         if row then
@@ -96,10 +111,13 @@ RegisterNetEvent('mdt:server:createCitation', function(data)
     end)
 end)
 
-RegisterNetEvent('mdt:server:getCitations', function()
-    local src  = source
-    local char = getActiveChar(src)
-    if not char then return end
+Sw.SecureEvent('mdt:server:getCitations', {
+    character = true,
+    silent = true,
+    rateLimit = { max = 15, window = 3000 },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
     if not hasPoliceMDTAccess(char.id) then return end
 
     MDTDatabase.getCitations(function(rows)
@@ -107,10 +125,18 @@ RegisterNetEvent('mdt:server:getCitations', function()
     end)
 end)
 
-RegisterNetEvent('mdt:server:payCitationOfficer', function(data)
-    local src  = source
-    local char = getActiveChar(src)
-    if not char or not data or not data.citationId then return end
+Sw.SecureEvent('mdt:server:payCitationOfficer', {
+    character = true,
+    silent = true,
+    rateLimit = { max = 10, window = 3000 },
+    args = {
+        { name = 'data', type = 'table' },
+    },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
+    local data = ctx.args.data
+    if not data.citationId then return end
     if not hasPoliceMDTAccess(char.id) then return end
 
     local citationId = tonumber(data.citationId)
@@ -125,15 +151,22 @@ RegisterNetEvent('mdt:server:payCitationOfficer', function(data)
     end)
 end)
 
-RegisterNetEvent('mdt:server:createBOLO', function(data)
-    local src  = source
-    local char = getActiveChar(src)
-    if not char then return end
+Sw.SecureEvent('mdt:server:createBOLO', {
+    character = true,
+    silent = true,
+    rateLimit = { max = 10, window = 3000 },
+    args = {
+        { name = 'data', type = 'table' },
+    },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
+    local data = ctx.args.data
     if not hasArrestPerm(char.id) then
         notify(src, 'error', 'Acces refuzat', 'Nu ai permisiunea sa emiti BOLO.')
         return
     end
-    if not data or not data.subjectName or not data.description then return end
+    if not data.subjectName or not data.description then return end
 
     MDTDatabase.createBOLO(char.id, data.subjectName, data.description, data.vehicleInfo or '', function(row)
         if row then
@@ -143,10 +176,13 @@ RegisterNetEvent('mdt:server:createBOLO', function(data)
     end)
 end)
 
-RegisterNetEvent('mdt:server:getActiveBOLOs', function()
-    local src  = source
-    local char = getActiveChar(src)
-    if not char then return end
+Sw.SecureEvent('mdt:server:getActiveBOLOs', {
+    character = true,
+    silent = true,
+    rateLimit = { max = 15, window = 3000 },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
     if not hasPoliceMDTAccess(char.id) then return end
 
     MDTDatabase.getActiveBOLOs(function(rows)
@@ -154,25 +190,39 @@ RegisterNetEvent('mdt:server:getActiveBOLOs', function()
     end)
 end)
 
-RegisterNetEvent('mdt:server:closeBOLO', function(data)
-    local src  = source
-    local char = getActiveChar(src)
-    if not char or not data or not data.boloId then return end
+Sw.SecureEvent('mdt:server:closeBOLO', {
+    character = true,
+    silent = true,
+    rateLimit = { max = 10, window = 3000 },
+    args = {
+        { name = 'data', type = 'table' },
+    },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
+    local data = ctx.args.data
+    if not data.boloId then return end
 
     MDTDatabase.closeBOLO(data.boloId, char.id, function()
         notify(src, 'success', 'BOLO', 'BOLO inchis.')
     end)
 end)
 
-RegisterNetEvent('mdt:server:createIncident', function(data)
-    local src  = source
-    local char = getActiveChar(src)
-    if not char then return end
+Sw.SecureEvent('mdt:server:createIncident', {
+    character = true,
+    silent = true,
+    rateLimit = { max = 10, window = 3000 },
+    args = {
+        { name = 'data', type = 'table' },
+    },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
+    local data = ctx.args.data
     if not hasArrestPerm(char.id) then
         notify(src, 'error', 'Acces refuzat', 'Nu ai permisiunea sa creezi incidente.')
         return
     end
-    if not data then return end
 
     local title       = sanitizeText(data.title, 200)
     local description = sanitizeText(data.description, 5000)
@@ -189,10 +239,13 @@ RegisterNetEvent('mdt:server:createIncident', function(data)
     end)
 end)
 
-RegisterNetEvent('mdt:server:getIncidents', function()
-    local src  = source
-    local char = getActiveChar(src)
-    if not char then return end
+Sw.SecureEvent('mdt:server:getIncidents', {
+    character = true,
+    silent = true,
+    rateLimit = { max = 15, window = 3000 },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
     if not hasPoliceMDTAccess(char.id) then return end
 
     MDTDatabase.getIncidents(function(rows)
@@ -200,15 +253,22 @@ RegisterNetEvent('mdt:server:getIncidents', function()
     end)
 end)
 
-RegisterNetEvent('mdt:server:impoundVehicle', function(data)
-    local src  = source
-    local char = getActiveChar(src)
-    if not char then return end
+Sw.SecureEvent('mdt:server:impoundVehicle', {
+    character = true,
+    silent = true,
+    rateLimit = { max = 10, window = 3000 },
+    args = {
+        { name = 'data', type = 'table' },
+    },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
+    local data = ctx.args.data
     if not hasArrestPerm(char.id) then
         notify(src, 'error', 'Acces refuzat', 'Nu ai permisiunea sa sechestru vehicule.')
         return
     end
-    if not data or not data.plate or not data.reason then return end
+    if not data.plate or not data.reason then return end
 
     local fee = tonumber(data.fee) or 2500
     MDTDatabase.createImpound(char.id, data.plate:upper(), data.model or '', data.reason, fee, function(row)
@@ -219,10 +279,13 @@ RegisterNetEvent('mdt:server:impoundVehicle', function(data)
     end)
 end)
 
-RegisterNetEvent('mdt:server:getImpounds', function()
-    local src  = source
-    local char = getActiveChar(src)
-    if not char then return end
+Sw.SecureEvent('mdt:server:getImpounds', {
+    character = true,
+    silent = true,
+    rateLimit = { max = 15, window = 3000 },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
     if not hasPoliceMDTAccess(char.id) then return end
 
     MDTDatabase.getImpounds(function(rows)
@@ -230,10 +293,18 @@ RegisterNetEvent('mdt:server:getImpounds', function()
     end)
 end)
 
-RegisterNetEvent('mdt:server:retrieveImpound', function(data)
-    local src  = source
-    local char = getActiveChar(src)
-    if not char or not data or not data.impoundId then return end
+Sw.SecureEvent('mdt:server:retrieveImpound', {
+    character = true,
+    silent = true,
+    rateLimit = { max = 10, window = 3000 },
+    args = {
+        { name = 'data', type = 'table' },
+    },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
+    local data = ctx.args.data
+    if not data.impoundId then return end
     if not hasPoliceMDTAccess(char.id) then return end
 
     local impoundId = tonumber(data.impoundId)

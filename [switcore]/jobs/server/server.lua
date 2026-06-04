@@ -158,19 +158,25 @@ exports('IsJobManager', function(characterId)
     return job ~= nil and job.can_manage == true
 end)
 
-RegisterNetEvent('jobs:server:getMyJob', function()
-    local src = source
-    local character = getActiveChar(src)
-    if not character then return end
+Sw.SecureEvent('jobs:server:getMyJob', {
+    character = true,
+    silent = true,
+    rateLimit = { max = 10, window = 3000 },
+}, function(ctx)
+    local src = ctx.source
+    local character = ctx.character
 
     local job = JobsDatabase.ensureDefaultJob(character.id)
     TriggerClientEvent('jobs:client:jobUpdated', src, BuildJobPayload(job))
 end)
 
-RegisterNetEvent('jobs:server:clockIn', function()
-    local src = source
-    local character = getActiveChar(src)
-    if not character then return end
+Sw.SecureEvent('jobs:server:clockIn', {
+    character = true,
+    silent = true,
+    rateLimit = { max = 10, window = 3000 },
+}, function(ctx)
+    local src = ctx.source
+    local character = ctx.character
 
     local job = JobsDatabase.getCharacterJob(character.id)
     if not job then return end
@@ -186,12 +192,21 @@ RegisterNetEvent('jobs:server:clockIn', function()
     TriggerClientEvent('jobs:client:jobUpdated', src, BuildJobPayload(updated))
 end)
 
-RegisterNetEvent('jobs:server:adminAssign', function(targetSrc, jobName, grade)
-    local src = source
-    local myChar = getActiveChar(src)
-    if not myChar then return end
-
-    grade = tonumber(grade) or 0
+Sw.SecureEvent('jobs:server:adminAssign', {
+    character = true,
+    silent = true,
+    rateLimit = { max = 10, window = 3000 },
+    args = {
+        { name = 'targetSrc', type = 'int', min = 1 },
+        { name = 'jobName',   type = 'string', minLen = 1, maxLen = 64 },
+        { name = 'grade',     type = 'int', min = 0, optional = true, default = 0 },
+    },
+}, function(ctx)
+    local src    = ctx.source
+    local myChar = ctx.character
+    local targetSrc = ctx.args.targetSrc
+    local jobName   = ctx.args.jobName
+    local grade     = ctx.args.grade
 
     if not isAdmin(src) then
         local myJob = JobsDatabase.getCharacterJob(myChar.id)
@@ -222,13 +237,19 @@ RegisterNetEvent('jobs:server:adminAssign', function(targetSrc, jobName, grade)
     notify(src, 'success', 'Job atribuit', 'Job atribuit cu succes.')
 end)
 
-RegisterNetEvent('jobs:server:manageGrade', function(targetCharId, newGrade)
-    local src = source
-    local myChar = getActiveChar(src)
-    if not myChar then return end
-
-    targetCharId = tonumber(targetCharId)
-    newGrade     = tonumber(newGrade) or 0
+Sw.SecureEvent('jobs:server:manageGrade', {
+    character = true,
+    silent = true,
+    rateLimit = { max = 10, window = 3000 },
+    args = {
+        { name = 'targetCharId', type = 'int', min = 1 },
+        { name = 'newGrade',     type = 'int', min = 0, optional = true, default = 0 },
+    },
+}, function(ctx)
+    local src    = ctx.source
+    local myChar = ctx.character
+    local targetCharId = ctx.args.targetCharId
+    local newGrade     = ctx.args.newGrade
 
     if not isAdmin(src) then
         local myJob = JobsDatabase.getCharacterJob(myChar.id)
@@ -264,10 +285,17 @@ RegisterNetEvent('jobs:server:manageGrade', function(targetCharId, newGrade)
     end
 end)
 
-RegisterNetEvent('jobs:server:getRoster', function(jobName)
-    local src = source
-    local character = getActiveChar(src)
-    if not character then return end
+Sw.SecureEvent('jobs:server:getRoster', {
+    character = true,
+    silent = true,
+    rateLimit = { max = 10, window = 3000 },
+    args = {
+        { name = 'jobName', type = 'string', minLen = 1, maxLen = 64 },
+    },
+}, function(ctx)
+    local src       = ctx.source
+    local character  = ctx.character
+    local jobName    = ctx.args.jobName
 
     if not isAdmin(src) then
         local myJob = JobsDatabase.getCharacterJob(character.id)

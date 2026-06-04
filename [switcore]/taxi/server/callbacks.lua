@@ -19,10 +19,13 @@ local function notify(src, notifType, title, message)
     })
 end
 
-RegisterNetEvent('taxi:server:hire', function()
-    local src  = source
-    local char = getActiveChar(src)
-    if not char then return end
+Sw.SecureEvent('taxi:server:hire', {
+    character = true,
+    silent = true,
+    rateLimit = { max = 5, window = 3000 },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
 
     local job = getCharJob(char.id)
     if job and job.name == Config.JobName then
@@ -38,10 +41,13 @@ RegisterNetEvent('taxi:server:hire', function()
     notify(src, 'success', 'Angajat!', 'Bine ai venit la Compania de Taxi! Intra in tura pentru a primi curse.')
 end)
 
-RegisterNetEvent('taxi:server:quit', function()
-    local src  = source
-    local char = getActiveChar(src)
-    if not char then return end
+Sw.SecureEvent('taxi:server:quit', {
+    character = true,
+    silent = true,
+    rateLimit = { max = 5, window = 3000 },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
 
     local job = getCharJob(char.id)
     if not job or job.name ~= Config.JobName then return end
@@ -52,12 +58,19 @@ RegisterNetEvent('taxi:server:quit', function()
     notify(src, 'info', 'Taxi', 'Ai parasit Compania de Taxi.')
 end)
 
-RegisterNetEvent('taxi:server:requestRide', function(pickupCoords)
-    local src  = source
-    local char = getActiveChar(src)
-    if not char then return end
+Sw.SecureEvent('taxi:server:requestRide', {
+    character = true,
+    silent = true,
+    rateLimit = { max = 5, window = 3000 },
+    args = {
+        { name = 'pickupCoords', type = 'table' },
+    },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
+    local pickupCoords = ctx.args.pickupCoords
 
-    if not pickupCoords or not pickupCoords.x then
+    if not pickupCoords.x then
         notify(src, 'error', 'Taxi', 'Coordonate invalide.')
         return
     end
@@ -79,10 +92,17 @@ RegisterNetEvent('taxi:server:requestRide', function(pickupCoords)
     notify(src, 'info', 'Taxi', 'Cererea a fost trimisa. Asteapta un sofer.')
 end)
 
-RegisterNetEvent('taxi:server:acceptOrder', function(orderId)
-    local src  = source
-    local char = getActiveChar(src)
-    if not char then return end
+Sw.SecureEvent('taxi:server:acceptOrder', {
+    character = true,
+    silent = true,
+    rateLimit = { max = 10, window = 3000 },
+    args = {
+        { name = 'orderId', type = 'int', min = 1 },
+    },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
+    local orderId = ctx.args.orderId
 
     local job = getCharJob(char.id)
     if not job or job.name ~= Config.JobName or not job.isOnDuty then
@@ -130,10 +150,17 @@ RegisterNetEvent('taxi:server:acceptOrder', function(orderId)
     end
 end)
 
-RegisterNetEvent('taxi:server:confirmPickup', function(orderId)
-    local src  = source
-    local char = getActiveChar(src)
-    if not char then return end
+Sw.SecureEvent('taxi:server:confirmPickup', {
+    character = true,
+    silent = true,
+    rateLimit = { max = 10, window = 3000 },
+    args = {
+        { name = 'orderId', type = 'int', min = 1 },
+    },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
+    local orderId = ctx.args.orderId
 
     local order = TaxiDB.getOrder(orderId)
     if not order or order.driver_char_id ~= char.id then return end
@@ -148,12 +175,21 @@ RegisterNetEvent('taxi:server:confirmPickup', function(orderId)
     end
 end)
 
-RegisterNetEvent('taxi:server:setDestination', function(orderId, dropoffCoords)
-    local src  = source
-    local char = getActiveChar(src)
-    if not char then return end
+Sw.SecureEvent('taxi:server:setDestination', {
+    character = true,
+    silent = true,
+    rateLimit = { max = 10, window = 3000 },
+    args = {
+        { name = 'orderId',       type = 'int', min = 1 },
+        { name = 'dropoffCoords', type = 'table' },
+    },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
+    local orderId = ctx.args.orderId
+    local dropoffCoords = ctx.args.dropoffCoords
 
-    if not dropoffCoords or not dropoffCoords.x then
+    if not dropoffCoords.x then
         notify(src, 'error', 'Taxi', 'Coordonate invalide.')
         return
     end
@@ -171,10 +207,17 @@ RegisterNetEvent('taxi:server:setDestination', function(orderId, dropoffCoords)
     notify(src, 'success', 'Taxi', 'Destinatia a fost trimisa soferului.')
 end)
 
-RegisterNetEvent('taxi:server:completeRide', function(orderId)
-    local src  = source
-    local char = getActiveChar(src)
-    if not char then return end
+Sw.SecureEvent('taxi:server:completeRide', {
+    character = true,
+    silent = true,
+    rateLimit = { max = 10, window = 3000 },
+    args = {
+        { name = 'orderId', type = 'int', min = 1 },
+    },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
+    local orderId = ctx.args.orderId
 
     local order = TaxiDB.getOrder(orderId)
     if not order or order.driver_char_id ~= char.id then
@@ -226,10 +269,17 @@ RegisterNetEvent('taxi:server:completeRide', function(orderId)
     CheckPromotion(char.id, src)
 end)
 
-RegisterNetEvent('taxi:server:cancelOrder', function(orderId)
-    local src  = source
-    local char = getActiveChar(src)
-    if not char then return end
+Sw.SecureEvent('taxi:server:cancelOrder', {
+    character = true,
+    silent = true,
+    rateLimit = { max = 10, window = 3000 },
+    args = {
+        { name = 'orderId', type = 'int', min = 1 },
+    },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
+    local orderId = ctx.args.orderId
 
     local order = TaxiDB.getOrder(orderId)
     if not order then return end
@@ -255,10 +305,13 @@ RegisterNetEvent('taxi:server:cancelOrder', function(orderId)
     end
 end)
 
-RegisterNetEvent('taxi:server:openTablet', function()
-    local src  = source
-    local char = getActiveChar(src)
-    if not char then return end
+Sw.SecureEvent('taxi:server:openTablet', {
+    character = true,
+    silent = true,
+    rateLimit = { max = 10, window = 3000 },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
 
     local job = getCharJob(char.id)
     if not job or job.name ~= Config.JobName then return end
@@ -275,17 +328,24 @@ RegisterNetEvent('taxi:server:openTablet', function()
     })
 end)
 
-RegisterNetEvent('taxi:server:npcRideComplete', function(distKm, multiplier)
-    local src  = source
-    local char = getActiveChar(src)
-    if not char then return end
+Sw.SecureEvent('taxi:server:npcRideComplete', {
+    character = true,
+    silent = true,
+    rateLimit = { max = 10, window = 3000 },
+    args = {
+        { name = 'distKm',     type = 'number' },
+        { name = 'multiplier', type = 'number', optional = true, default = 1.0 },
+    },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
 
     local job = getCharJob(char.id)
     if not job or job.name ~= Config.JobName or not job.isOnDuty then return end
 
     -- Anti-cheat: clamp distanta si multiplicator
-    distKm     = math.max(0.1, math.min(distKm, 50.0))
-    multiplier = math.max(1.0, math.min(tonumber(multiplier) or 1.0, 2.0))
+    local distKm     = math.max(0.1, math.min(ctx.args.distKm, 50.0))
+    local multiplier = math.max(1.0, math.min(tonumber(ctx.args.multiplier) or 1.0, 2.0))
 
     local pay        = math.floor(CalculatePay(char.id, distKm) * multiplier)
     local currencyId = TaxiDB.getCurrencyId()

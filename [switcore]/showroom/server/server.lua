@@ -85,8 +85,10 @@ CreateThread(function()
     InitializeShowroomSystem()
 end)
 
-RegisterNetEvent('showroom:server:getLocationConfig', function()
-    local src = source
+Sw.SecureEvent('showroom:server:getLocationConfig', {
+    silent = true,
+    rateLimit = { max = 5, window = 3000 },
+}, function(ctx)
     local locations = exports.settings:GetSettingList('showroom.dealership_locations', {})
-    TriggerClientEvent('showroom:client:locationConfig', src, { locations = locations })
+    TriggerClientEvent('showroom:client:locationConfig', ctx.source, { locations = locations })
 end)

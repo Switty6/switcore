@@ -16,6 +16,10 @@ dependencies {
     'vehicles'
 }
 
+shared_scripts {
+    '@core/shared/lib.lua'
+}
+
 ui_page 'ui/index.html'
 
 files {
@@ -25,6 +29,7 @@ files {
 }
 
 server_scripts {
+    '@core/server/secure.lua',
     'server/tuning_data.lua',
     'server/tuning_database.lua',
     'server/tuning_manager.lua',
