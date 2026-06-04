@@ -25,6 +25,7 @@ end)
 
 Sw.SecureEvent('vehicles:server:spawnVehicle', {
     character = true,
+    silent = true,
     rateLimit = { max = 10, window = 3000 },
     args = {
         { name = 'vehicleId', type = 'int', min = 1 },

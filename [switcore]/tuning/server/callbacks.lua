@@ -17,6 +17,7 @@ end
 
 Sw.SecureEvent('tuning:server:openShop', {
     character = true,
+    silent = true,
     rateLimit = { max = 10, window = 3000 },
     args = {
         { name = 'plate',    type = 'string', minLen = 1, maxLen = 12 },

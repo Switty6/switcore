@@ -1,5 +1,6 @@
 Sw.SecureEvent('showroom:server:openDealership', {
     character = true,
+    silent = true,
     rateLimit = { max = 10, window = 3000 },
     args = {
         { name = 'dealershipCode', type = 'string', minLen = 1, maxLen = 64 },
@@ -28,6 +29,7 @@ end)
 
 Sw.SecureEvent('showroom:server:purchaseVehicle', {
     character = true,
+    silent = true,
     rateLimit = { max = 5, window = 3000 },
     args = {
         { name = 'catalogId',     type = 'int', min = 1 },
@@ -49,6 +51,7 @@ end)
 
 Sw.SecureEvent('showroom:server:startTestDrive', {
     character = true,
+    silent = true,
     rateLimit = { max = 5, window = 3000 },
     args = {
         { name = 'catalogId', type = 'int', min = 1 },
