@@ -53,6 +53,23 @@ settings-panel ← independent (Node.js)                                    │
 
 ---
 
+## Layer shared (`Sw`) & Secure Events
+
+`core` expune o bibliotecă shared și un framework de net events sigure, folosite de orice modul prin includere `@core/...` în manifest. Detalii complete în [`docs/modules/lib.md`](modules/lib.md).
+
+- **`Sw`** (`core/shared/lib.lua`) - utilitare pure (string, numeric, table, format bani) plus motorul de validare `Sw.ValidateArgs`. Shared client + server, zero stare.
+- **`Sw.SecureEvent`** (`core/server/secure.lua`) - înlocuiește boilerplate-ul repetat din handlerele de server (rate-limit, permisiune, fetch personaj, validare argumente, notificare la eroare) cu o singură declarație și un `ctx` curat.
+- **Rate limiter** (`core/server/ratelimit.lua`) - fereastră glisantă per `(source, cheie)`, expus ca `exports.core:checkRateLimit`, curățat la `playerDropped`.
+
+Un modul adoptă layerul adăugând în manifest:
+```lua
+shared_scripts { '@core/shared/lib.lua', 'config.lua' }
+server_scripts { '@core/server/secure.lua', ... }
+```
+Adopția e incrementală - modulele care nu includ aceste fișiere funcționează neschimbat.
+
+---
+
 ## Player Lifecycle
 
 ### 1. Connect (`playerConnecting`)

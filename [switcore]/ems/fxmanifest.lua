@@ -19,7 +19,12 @@ dependencies {
     'medical'
 }
 
+shared_scripts {
+    '@core/shared/lib.lua'
+}
+
 server_scripts {
+    '@core/server/secure.lua',
     'server/database.lua',
     'server/unconscious.lua',
     'server/calls.lua',

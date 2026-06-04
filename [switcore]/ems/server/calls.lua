@@ -63,11 +63,13 @@ CreateThread(function()
     print(('[EMS] %d apeluri active incarcate din DB.'):format(#rows))
 end)
 
-RegisterNetEvent('ems:server:call112')
-AddEventHandler('ems:server:call112', function(message)
-    local src    = source
-    local charId = exports.characters:getCharacterId(src)
-    if not charId then return end
+Sw.SecureEvent('ems:server:call112', {
+    character = true,
+    rateLimit = { max = 5, window = 10000 },
+}, function(ctx)
+    local src     = ctx.source
+    local charId  = ctx.character.id
+    local message = ctx.args[1]
 
     if not message or #message < 3 then
         TriggerClientEvent('switcore:notify', src, 'warning', 'Mesajul este prea scurt.', 3000)
@@ -99,11 +101,13 @@ AddEventHandler('ems:server:call112', function(message)
     print(('[EMS] Apel 112 #%d de la %s: %s'):format(callId, name, message))
 end)
 
-RegisterNetEvent('ems:server:acceptCall')
-AddEventHandler('ems:server:acceptCall', function(callId)
-    local src    = source
-    local charId = exports.characters:getCharacterId(src)
-    if not charId then return end
+Sw.SecureEvent('ems:server:acceptCall', {
+    character = true,
+    rateLimit = { max = 15, window = 3000 },
+}, function(ctx)
+    local src    = ctx.source
+    local charId = ctx.character.id
+    local callId = ctx.args[1]
 
     local job = exports.jobs:GetCharacterJob(charId)
     if not job or job.name ~= 'ems' or not job.isOnDuty then return end
@@ -123,11 +127,13 @@ AddEventHandler('ems:server:acceptCall', function(callId)
     end
 end)
 
-RegisterNetEvent('ems:server:resolveCall')
-AddEventHandler('ems:server:resolveCall', function(callId)
-    local src    = source
-    local charId = exports.characters:getCharacterId(src)
-    if not charId then return end
+Sw.SecureEvent('ems:server:resolveCall', {
+    character = true,
+    rateLimit = { max = 15, window = 3000 },
+}, function(ctx)
+    local src    = ctx.source
+    local charId = ctx.character.id
+    local callId = ctx.args[1]
 
     local job = exports.jobs:GetCharacterJob(charId)
     if not job or job.name ~= 'ems' or not job.isOnDuty then return end
@@ -139,11 +145,12 @@ AddEventHandler('ems:server:resolveCall', function(callId)
     BroadcastToEMS('ems:client:callsUpdated', activeCalls)
 end)
 
-RegisterNetEvent('ems:server:getCalls')
-AddEventHandler('ems:server:getCalls', function()
-    local src    = source
-    local charId = exports.characters:getCharacterId(src)
-    if not charId then return end
+Sw.SecureEvent('ems:server:getCalls', {
+    character = true,
+    rateLimit = { max = 15, window = 3000 },
+}, function(ctx)
+    local src    = ctx.source
+    local charId = ctx.character.id
 
     local job = exports.jobs:GetCharacterJob(charId)
     if not job or job.name ~= 'ems' then return end

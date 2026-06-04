@@ -11,22 +11,23 @@ Bug-fix, modul nou, optimizare sau doc: orice îmbunătățire e binevenită.
 
 ## Convenții de cod
 
-- **Setările în DB**: nu hardcoda în `config.lua`. Seedează cu `INSERT ... ON CONFLICT DO NOTHING`.
+- **`Sw.SecureEvent` peste tot** — orice net event de server se înregistrează prin `Sw.SecureEvent`, nu prin `RegisterNetEvent` direct. El se ocupă de rate-limit, permisiune, personaj activ, validarea argumentelor și notificarea la eroare. Vezi [docs/modules/lib.md](docs/modules/lib.md). Standardul ăsta e obligatoriu la module noi, iar modulele vechi se migrează treptat pe el (`clothing` e exemplul de referință).
+- **Biblioteca `Sw`** — folosește funcțiile din `@core/shared/lib.lua` (`Sw.Trim`, `Sw.Round`, `Sw.FormatMoney`, validare etc.) în loc să rescrii utilitare locale.
+- **Setările în DB** — nu hardcoda în `config.lua`. Seedează cu `INSERT ... ON CONFLICT DO NOTHING`.
 - **Logica în `*_manager.lua`**; `database.lua` doar CRUD, `callbacks.lua` doar handlere subțiri.
-- **Queries parametrizate** (`$1`, `$2`...): fără concatenare în SQL.
-- **Permisiuni**: orice event sensibil verifică `exports.core:hasPermission(source, 'perm')` sau ownership.
-- **Rate limiting**: pe evenimentele sensibile (bani, iteme), verifică la început `exports.core:isRateLimited(source, 'actiune', max, fereastraSecunde)` și ieși dacă întoarce `true`.
-- **Notificări**: `TriggerClientEvent('switcore:notify', source, type, msg, duration)`.
+- **Queries parametrizate** (`$1`, `$2`...) — fără concatenare în SQL.
+- **Permisiuni**: orice event sensibil cere `permission` în `Sw.SecureEvent` (sau verifică ownership). Pentru cazuri în afara unui event, `exports.core:hasPermission(source, 'perm')`.
+- **Notificări**: din handler folosește `ctx.error` / `ctx.success` / `ctx.notify`; în rest `TriggerClientEvent('switcore:notify', source, type, msg, duration)`.
 - `lua54 'yes'` în `fxmanifest.lua`.
-- Comentarii și texte UI în română.
-- **Logging**: în loc de `print`, folosește `exports.core:log(level, 'TAG', mesaj)` cu nivel `debug`/`info`/`warn`/`error`. Nivelul afișat e controlat de setarea `core.log_level`. Feedback-ul direct la o comandă admin tastată în consolă poate rămâne `print`.
+- Codul Lua/JS fără comentarii — explicațiile stau în `docs/`. Textele de UI în română.
+- Fără `print` / `console.log` de debug — folosește un flag din `settings`.
 
 ## Structura unui modul
 
 ```
 [switcore]/modul/
-├── fxmanifest.lua
-├── config.lua            # gol, setările sunt în DB
+├── fxmanifest.lua        # include @core/shared/lib.lua și @core/server/secure.lua
+├── config.lua            # gol — setările sunt în DB
 ├── schema.sql            # dacă folosește DB
 ├── server/
 │   ├── database.lua      # CRUD brut

@@ -150,14 +150,20 @@ exports('GetUnconsciousData', GetUnconsciousData)
 exports('SetUnconscious',     SetUnconscious)
 exports('RevivePlayer',       RevivePlayer)
 
-RegisterNetEvent('ems:server:goUnconscious')
-AddEventHandler('ems:server:goUnconscious', function()
-    SetUnconscious(source)
+Sw.SecureEvent('ems:server:goUnconscious', {
+    character = true,
+    rateLimit = { max = 10, window = 5000 },
+    silent = true,
+}, function(ctx)
+    SetUnconscious(ctx.source)
 end)
 
-RegisterNetEvent('ems:server:requestRespawn')
-AddEventHandler('ems:server:requestRespawn', function()
-    RespawnAtHospital(source)
+Sw.SecureEvent('ems:server:requestRespawn', {
+    character = true,
+    rateLimit = { max = 10, window = 5000 },
+    silent = true,
+}, function(ctx)
+    RespawnAtHospital(ctx.source)
 end)
 
 AddEventHandler('playerDropped', function()

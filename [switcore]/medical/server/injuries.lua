@@ -182,9 +182,15 @@ AddEventHandler('playerDropped', function()
     playerLastHP[src]   = nil
 end)
 
-RegisterNetEvent('medical:server:playerInjured')
-AddEventHandler('medical:server:playerInjured', function(injuryData)
-    local src = source
+Sw.SecureEvent('medical:server:playerInjured', {
+    silent = true,
+    rateLimit = { max = 10, window = 3000 },
+    args = {
+        { name = 'injuryData', type = 'table' },
+    },
+}, function(ctx)
+    local src        = ctx.source
+    local injuryData = ctx.args.injuryData
     if not playerInjuries[src] then return end
 
     if not VALID_INJURY_TYPES[injuryData.injuryType] then return end

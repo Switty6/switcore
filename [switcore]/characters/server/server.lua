@@ -30,9 +30,16 @@ AddEventHandler('playerJoining', function()
     TriggerClientEvent('switcore:openCharacterSelection', source)
 end)
 
-RegisterNetEvent('switcore:selectCharacter', function(characterId)
-    local source = source
-    local success, err, character = CharacterManager.selectCharacter(source, characterId)
+-- Aceste evenimente ruleaza pe ecranul de selectie, inainte de a exista un
+-- personaj activ, deci nu folosesc optiunea character=true.
+Sw.SecureEvent('switcore:selectCharacter', {
+    rateLimit = { max = 5, window = 3000 },
+    args = {
+        { name = 'characterId', type = 'int', min = 1 },
+    },
+}, function(ctx)
+    local source = ctx.source
+    local success, err, character = CharacterManager.selectCharacter(source, ctx.args.characterId)
     if success then
         TriggerClientEvent('switcore:characterSelected', source, character)
     else
@@ -40,9 +47,18 @@ RegisterNetEvent('switcore:selectCharacter', function(characterId)
     end
 end)
 
-RegisterNetEvent('switcore:createCharacter', function(firstName, lastName, age, appearance)
-    local source = source
-    local success, err, character = CharacterManager.createCharacterForPlayer(source, firstName, lastName, age, appearance)
+Sw.SecureEvent('switcore:createCharacter', {
+    rateLimit = { max = 3, window = 5000 },
+    args = {
+        { name = 'firstName',  type = 'string', minLen = 1, maxLen = 32 },
+        { name = 'lastName',   type = 'string', minLen = 1, maxLen = 32 },
+        { name = 'age',        type = 'int', min = 1, max = 120 },
+        { name = 'appearance', type = 'table' },
+    },
+}, function(ctx)
+    local source = ctx.source
+    local a = ctx.args
+    local success, err, character = CharacterManager.createCharacterForPlayer(source, a.firstName, a.lastName, a.age, a.appearance)
     if success then
         TriggerClientEvent('switcore:characterCreated', source, character)
         TriggerClientEvent('switcore:characterSelected', source, character)
@@ -51,24 +67,27 @@ RegisterNetEvent('switcore:createCharacter', function(firstName, lastName, age, 
     end
 end)
 
-RegisterNetEvent('switcore:deleteCharacter', function(characterId)
-    local source = source
-    local id = tonumber(characterId)
-    if not id then
-        print(('[CHARACTERS] ID invalid de la source %s'):format(source))
-        return
-    end
+Sw.SecureEvent('switcore:deleteCharacter', {
+    rateLimit = { max = 3, window = 5000 },
+    args = {
+        { name = 'characterId', type = 'int', min = 1 },
+    },
+}, function(ctx)
+    local source = ctx.source
+    local id = ctx.args.characterId
     local success, err = CharacterManager.deleteCharacterForPlayer(source, id)
     if success then
-        TriggerClientEvent('switcore:characterDeleted', source, characterId)
+        TriggerClientEvent('switcore:characterDeleted', source, id)
         TriggerClientEvent('switcore:charactersList', source, CharacterManager.getPlayerCharacters(source))
     else
         TriggerClientEvent('switcore:characterError', source, err or exports.core:translate('characters.error_deleting_character', source))
     end
 end)
 
-RegisterNetEvent('switcore:requestCharacters', function()
-    local source = source
+Sw.SecureEvent('switcore:requestCharacters', {
+    rateLimit = { max = 10, window = 3000 },
+}, function(ctx)
+    local source = ctx.source
     local characters = CharacterManager.getPlayerCharacters(source)
 
     local lang = exports.core:getPlayerLanguage(source) or 'ro'

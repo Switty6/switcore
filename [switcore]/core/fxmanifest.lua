@@ -13,17 +13,19 @@ dependencies {
 shared_script 'config.lua'
 
 shared_scripts {
+    'shared/lib.lua',
     'shared/localization.lua'
 }
 
 server_scripts {
+    'server/ratelimit.lua',
+    'server/secure.lua',
     'server/localization.lua',
     'server/player_cache.lua',
     'server/database.lua',
     'server/playtime.lua',
     'server/groups.lua',
     'server/permissions.lua',
-    'server/ratelimit.lua',
     'server/logger.lua',
     'server/moderation.lua',
     'server/commands.lua',

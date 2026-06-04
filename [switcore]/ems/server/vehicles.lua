@@ -15,10 +15,16 @@ local function BuildBlipsList()
     return list
 end
 
-RegisterNetEvent('ems:server:reportVehiclePos')
-AddEventHandler('ems:server:reportVehiclePos', function(plate, coords, model)
-    local src = source
+Sw.SecureEvent('ems:server:reportVehiclePos', {
+    character = true,
+    rateLimit = { max = 30, window = 10000 },
+    silent = true,
+}, function(ctx)
+    local src = ctx.source
     if not IsEMSOnDuty(src) then return end
+
+    local plate, coords, model = ctx.args[1], ctx.args[2], ctx.args[3]
+    if type(coords) ~= 'table' then return end
 
     emsVehicles[src] = {
         plate = plate,
@@ -31,20 +37,26 @@ AddEventHandler('ems:server:reportVehiclePos', function(plate, coords, model)
     TriggerClientEvent('ems:client:updateEMSBlips', -1, BuildBlipsList())
 end)
 
-RegisterNetEvent('ems:server:getVehicleInventory')
-AddEventHandler('ems:server:getVehicleInventory', function(plate)
-    local src = source
+Sw.SecureEvent('ems:server:getVehicleInventory', {
+    character = true,
+    rateLimit = { max = 15, window = 3000 },
+}, function(ctx)
+    local src = ctx.source
     if not IsEMSOnDuty(src) then return end
 
+    local plate = ctx.args[1]
     local items = EmsDB.getVehicleInventory(plate)
     TriggerClientEvent('ems:client:vehicleInventory', src, items, plate)
 end)
 
-RegisterNetEvent('ems:server:stockDefaultInventory')
-AddEventHandler('ems:server:stockDefaultInventory', function(plate)
-    local src = source
+Sw.SecureEvent('ems:server:stockDefaultInventory', {
+    character = true,
+    rateLimit = { max = 10, window = 3000 },
+}, function(ctx)
+    local src = ctx.source
     if not IsEMSOnDuty(src) then return end
 
+    local plate = ctx.args[1]
     local defaultStock = exports.settings:GetSettingJSON('ems.default_stock', {})
 
     for _, entry in ipairs(defaultStock) do
@@ -57,11 +69,13 @@ AddEventHandler('ems:server:stockDefaultInventory', function(plate)
     print(('[EMS] Ambulanta %s aprovizionata cu stoc implicit.'):format(plate))
 end)
 
-RegisterNetEvent('ems:server:takeFromAmbulance')
-AddEventHandler('ems:server:takeFromAmbulance', function(plate, itemName, qty)
-    local src    = source
-    local charId = exports.characters:getCharacterId(src)
-    if not charId then return end
+Sw.SecureEvent('ems:server:takeFromAmbulance', {
+    character = true,
+    rateLimit = { max = 15, window = 3000 },
+}, function(ctx)
+    local src    = ctx.source
+    local charId = ctx.character.id
+    local plate, itemName, qty = ctx.args[1], ctx.args[2], ctx.args[3]
 
     if not IsEMSOnDuty(src) then return end
 

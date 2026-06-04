@@ -87,8 +87,10 @@ function CreateDefaultFees()
     end
 end
 
-RegisterNetEvent('banking:server:getProximityConfig', function()
-    local src = source
+Sw.SecureEvent('banking:server:getProximityConfig', {
+    rateLimit = { max = 10, window = 3000 },
+}, function(ctx)
+    local src = ctx.source
     local atmModels = exports.settings:GetSettingList('banking.atm_models', {
         'prop_atm_01', 'prop_atm_02', 'prop_atm_03', 'prop_fleeca_atm',
     })

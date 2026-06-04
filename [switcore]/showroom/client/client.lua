@@ -11,6 +11,7 @@ local registeredInteractions = {}
 
 local displayVehicle = 0
 local showroomCam = 0
+local spawnToken = 0
 
 local function DespawnDisplayVehicle()
     if displayVehicle ~= 0 and DoesEntityExist(displayVehicle) then
@@ -29,12 +30,33 @@ local function DestroyShowroomCam()
 end
 
 local function SpawnDisplayVehicle(modelName, colorIndex)
+    spawnToken = spawnToken + 1
+    local myToken = spawnToken
+
     DespawnDisplayVehicle()
+
     local model = GetHashKey(modelName)
     RequestModel(model)
     local timeout = 0
-    while not HasModelLoaded(model) and timeout < 100 do Wait(50); timeout = timeout + 1 end
-    if not HasModelLoaded(model) then return end
+    while not HasModelLoaded(model) and timeout < 100 do
+        Wait(50)
+        timeout = timeout + 1
+        if myToken ~= spawnToken then
+            SetModelAsNoLongerNeeded(model)
+            return
+        end
+    end
+    if not HasModelLoaded(model) then
+        SetModelAsNoLongerNeeded(model)
+        return
+    end
+
+    if myToken ~= spawnToken then
+        SetModelAsNoLongerNeeded(model)
+        return
+    end
+
+    DespawnDisplayVehicle()
 
     local spawnPoint = nil
     for _, loc in ipairs(dealershipLocations) do
@@ -62,6 +84,8 @@ local function SpawnDisplayVehicle(modelName, colorIndex)
         SetCamCoord(showroomCam, camPos.x, camPos.y, camPos.z)
         PointCamAtEntity(showroomCam, displayVehicle, 0.0, 0.0, 0.0, true)
         SetCamActive(showroomCam, true)
+    else
+        SetModelAsNoLongerNeeded(model)
     end
 end
 
@@ -95,9 +119,6 @@ RegisterNetEvent('showroom:client:locationConfig', function(config)
             end
         )
         table.insert(registeredInteractions, id)
-
-        -- interiorCoords nu se seteaza aici: pdm_showroom din PREDEFINED_INTERIORS
-        -- are coordonate corecte in interiorul cladirii si gestioneaza LoadInterior
     end
     print('[SHOWROOM-CLIENT] ' .. #dealershipLocations .. ' dealership-uri înregistrate proximity')
 end)

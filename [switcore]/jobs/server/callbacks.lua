@@ -1,11 +1,12 @@
 
 -- When the tablet opens, send full job context (job + grades + coworkers on duty)
-RegisterNetEvent('jobs:server:openTablet', function()
-    local src = source
-    local ok, character = pcall(function()
-        return exports.characters:getActiveCharacter(src)
-    end)
-    if not ok or not character then return end
+Sw.SecureEvent('jobs:server:openTablet', {
+    character = true,
+    silent = true,
+    rateLimit = { max = 10, window = 3000 },
+}, function(ctx)
+    local src       = ctx.source
+    local character = ctx.character
 
     local job       = JobsDatabase.ensureDefaultJob(character.id)
     local grades    = JobsDatabase.getJobGrades(job.job_name)

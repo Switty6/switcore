@@ -103,6 +103,7 @@ Le modifici din panoul web sau direct în DB; reîncărci cu `exports.settings:R
 ## Documentație
 
 - [Arhitectură](docs/architecture.md)
+- [Bibliotecă shared `Sw` & Secure Events](docs/modules/lib.md)
 - [Core](docs/modules/core.md) · [Characters](docs/modules/characters.md) · [Banking](docs/modules/banking.md)
 - [Jobs](docs/modules/jobs.md) · [Vehicles](docs/modules/vehicles.md) · [Inventory](docs/modules/inventory.md)
 

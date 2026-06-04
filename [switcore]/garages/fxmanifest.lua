@@ -16,9 +16,13 @@ dependencies {
     'banking'
 }
 
-shared_script 'config.lua'
+shared_scripts {
+    '@core/shared/lib.lua',
+    'config.lua'
+}
 
 server_scripts {
+    '@core/server/secure.lua',
     'server/garages_database.lua',
     'server/garages_manager.lua',
     'server/impound_manager.lua',

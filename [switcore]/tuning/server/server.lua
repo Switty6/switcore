@@ -59,10 +59,12 @@ AddEventHandler('playerSpawned', function()
     end
 end)
 
-RegisterNetEvent('tuning:server:requestShops', function()
-    local source = source
-    local shops  = TuningDatabase.getActiveShops()
+Sw.SecureEvent('tuning:server:requestShops', {
+    silent = true,
+    rateLimit = { max = 10, window = 3000 },
+}, function(ctx)
+    local shops = TuningDatabase.getActiveShops()
     if shops then
-        TriggerClientEvent('tuning:client:initShops', source, shops)
+        TriggerClientEvent('tuning:client:initShops', ctx.source, shops)
     end
 end)

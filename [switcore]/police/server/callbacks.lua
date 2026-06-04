@@ -33,10 +33,13 @@ local function withArmoryLock(fn)
     if not ok then print('[POLICE] armory lock error: ' .. tostring(err)) end
 end
 
-RegisterNetEvent('police:server:handcuffPlayer', function(targetSrc)
-    local src  = source
-    local char = getActiveChar(src)
-    if not char then return end
+Sw.SecureEvent('police:server:handcuffPlayer', {
+    character = true,
+    rateLimit = { max = 10, window = 5000 },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
+    local targetSrc = ctx.args[1]
 
     if not isPoliceOnDuty(char.id) or not hasArrestPerm(char.id) then
         notify(src, 'error', 'Acces refuzat', 'Nu ai permisiunea sa incatusezi.')
@@ -77,10 +80,13 @@ RegisterNetEvent('police:server:handcuffPlayer', function(targetSrc)
     notify(src, 'success', 'Incatusat', 'Jucatorul a fost incatusat.')
 end)
 
-RegisterNetEvent('police:server:unhandcuffPlayer', function(targetSrc)
-    local src  = source
-    local char = getActiveChar(src)
-    if not char then return end
+Sw.SecureEvent('police:server:unhandcuffPlayer', {
+    character = true,
+    rateLimit = { max = 10, window = 5000 },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
+    local targetSrc = ctx.args[1]
 
     if not isPoliceOnDuty(char.id) or not hasArrestPerm(char.id) then
         notify(src, 'error', 'Acces refuzat', 'Nu ai permisiunea sa scoti catusele.')
@@ -99,10 +105,13 @@ RegisterNetEvent('police:server:unhandcuffPlayer', function(targetSrc)
     notify(src, 'success', 'Catuse scoase', 'Catusele au fost scoase.')
 end)
 
-RegisterNetEvent('police:server:arrestPlayer', function(targetSrc, reason, sentenceMinutes, bailAmount)
-    local src  = source
-    local char = getActiveChar(src)
-    if not char then return end
+Sw.SecureEvent('police:server:arrestPlayer', {
+    character = true,
+    rateLimit = { max = 10, window = 5000 },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
+    local targetSrc, reason, sentenceMinutes, bailAmount = ctx.args[1], ctx.args[2], ctx.args[3], ctx.args[4]
 
     if not isPoliceOnDuty(char.id) or not hasArrestPerm(char.id) then
         notify(src, 'error', 'Acces refuzat', 'Nu ai permisiunea sa arestezi.')
@@ -135,10 +144,13 @@ RegisterNetEvent('police:server:arrestPlayer', function(targetSrc, reason, sente
     notify(src, 'success', 'Arestat', targetChar.first_name .. ' ' .. targetChar.last_name .. ' a fost arestat.')
 end)
 
-RegisterNetEvent('police:server:unjailEarly', function(targetCharId)
-    local src  = source
-    local char = getActiveChar(src)
-    if not char then return end
+Sw.SecureEvent('police:server:unjailEarly', {
+    character = true,
+    rateLimit = { max = 10, window = 5000 },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
+    local targetCharId = ctx.args[1]
 
     if not isAdmin(src) and not hasArrestPerm(char.id) then
         notify(src, 'error', 'Acces refuzat', 'Nu ai permisiunea de eliberare timpurie.')
@@ -156,10 +168,12 @@ RegisterNetEvent('police:server:unjailEarly', function(targetCharId)
     end
 end)
 
-RegisterNetEvent('police:server:payBail', function()
-    local src  = source
-    local char = getActiveChar(src)
-    if not char then return end
+Sw.SecureEvent('police:server:payBail', {
+    character = true,
+    rateLimit = { max = 5, window = 5000 },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
 
     local sentence = PoliceDatabase.getActiveJailSentence(char.id)
     if not sentence then
@@ -189,10 +203,12 @@ RegisterNetEvent('police:server:payBail', function()
     ReleaseFromJail(char.id, 'bail')
 end)
 
-RegisterNetEvent('police:server:openArmory', function()
-    local src  = source
-    local char = getActiveChar(src)
-    if not char then return end
+Sw.SecureEvent('police:server:openArmory', {
+    character = true,
+    rateLimit = { max = 10, window = 3000 },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
 
     if not isPoliceOnDuty(char.id) or not hasArmoryPerm(char.id) then
         notify(src, 'error', 'Acces refuzat', 'Nu ai acces la armament.')
@@ -203,10 +219,13 @@ RegisterNetEvent('police:server:openArmory', function()
     TriggerClientEvent('police:client:openArmory', src, settings.armoryWeapons, settings.armoryEquipment)
 end)
 
-RegisterNetEvent('police:server:takeArmoryItem', function(itemName, isWeapon)
-    local src  = source
-    local char = getActiveChar(src)
-    if not char then return end
+Sw.SecureEvent('police:server:takeArmoryItem', {
+    character = true,
+    rateLimit = { max = 15, window = 3000 },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
+    local itemName, isWeapon = ctx.args[1], ctx.args[2]
 
     if not isPoliceOnDuty(char.id) or not hasArmoryPerm(char.id) then return end
 
@@ -233,10 +252,12 @@ RegisterNetEvent('police:server:takeArmoryItem', function(itemName, isWeapon)
     notify(src, 'success', 'Echipament', cfg.label .. ' adaugat in inventar.')
 end)
 
-RegisterNetEvent('police:server:openCloakroom', function()
-    local src  = source
-    local char = getActiveChar(src)
-    if not char then return end
+Sw.SecureEvent('police:server:openCloakroom', {
+    character = true,
+    rateLimit = { max = 10, window = 3000 },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
 
     if not isPoliceOnDuty(char.id) then
         notify(src, 'error', 'Acces refuzat', 'Trebuie sa fii in tura.')
@@ -259,10 +280,13 @@ RegisterNetEvent('police:server:openCloakroom', function()
     TriggerClientEvent('police:client:openCloakroom', src, gender)
 end)
 
-RegisterNetEvent('police:server:applyUniform', function(gender)
-    local src  = source
-    local char = getActiveChar(src)
-    if not char then return end
+Sw.SecureEvent('police:server:applyUniform', {
+    character = true,
+    rateLimit = { max = 10, window = 3000 },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
+    local gender = ctx.args[1]
 
     if not isPoliceOnDuty(char.id) then return end
 
@@ -271,17 +295,20 @@ RegisterNetEvent('police:server:applyUniform', function(gender)
     TriggerClientEvent('police:client:applyUniform', src, components)
 end)
 
-RegisterNetEvent('police:server:setCivilianClothes', function()
-    local src  = source
-    local char = getActiveChar(src)
-    if not char then return end
+Sw.SecureEvent('police:server:setCivilianClothes', {
+    character = true,
+    rateLimit = { max = 10, window = 3000 },
+}, function(ctx)
+    local src = ctx.source
     TriggerClientEvent('police:client:restoreCivilianClothes', src)
 end)
 
-RegisterNetEvent('police:server:openMDT', function()
-    local src  = source
-    local char = getActiveChar(src)
-    if not char then return end
+Sw.SecureEvent('police:server:openMDT', {
+    character = true,
+    rateLimit = { max = 10, window = 3000 },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
 
     if not isPoliceOnDuty(char.id) then
         notify(src, 'error', 'Acces refuzat', 'Trebuie sa fii in tura.')
@@ -319,10 +346,13 @@ RegisterNetEvent('police:server:openMDT', function()
     })
 end)
 
-RegisterNetEvent('police:server:searchCharacter', function(query)
-    local src  = source
-    local char = getActiveChar(src)
-    if not char then return end
+Sw.SecureEvent('police:server:searchCharacter', {
+    character = true,
+    rateLimit = { max = 15, window = 3000 },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
+    local query = ctx.args[1]
 
     if not isPoliceOnDuty(char.id) then return end
 
@@ -341,10 +371,13 @@ RegisterNetEvent('police:server:searchCharacter', function(query)
     TriggerClientEvent('police:client:searchResults', src, results)
 end)
 
-RegisterNetEvent('police:server:createWarrant', function(characterId, charges, bailAmount)
-    local src  = source
-    local char = getActiveChar(src)
-    if not char then return end
+Sw.SecureEvent('police:server:createWarrant', {
+    character = true,
+    rateLimit = { max = 10, window = 5000 },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
+    local characterId, charges, bailAmount = ctx.args[1], ctx.args[2], ctx.args[3]
 
     if not isPoliceOnDuty(char.id) or not hasArrestPerm(char.id) then
         notify(src, 'error', 'Acces refuzat', 'Nu ai permisiunea sa emiti mandate.')
@@ -367,10 +400,13 @@ RegisterNetEvent('police:server:createWarrant', function(characterId, charges, b
     end
 end)
 
-RegisterNetEvent('police:server:closeWarrant', function(warrantId)
-    local src  = source
-    local char = getActiveChar(src)
-    if not char then return end
+Sw.SecureEvent('police:server:closeWarrant', {
+    character = true,
+    rateLimit = { max = 10, window = 3000 },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
+    local warrantId = ctx.args[1]
 
     if not isPoliceOnDuty(char.id) or not hasArrestPerm(char.id) then return end
 
@@ -382,20 +418,24 @@ RegisterNetEvent('police:server:closeWarrant', function(warrantId)
     notify(src, 'success', 'Mandat', 'Mandatul a fost inchis.')
 end)
 
-RegisterNetEvent('police:server:getOnDutyOfficers', function()
-    local src  = source
-    local char = getActiveChar(src)
-    if not char then return end
+Sw.SecureEvent('police:server:getOnDutyOfficers', {
+    character = true,
+    rateLimit = { max = 15, window = 3000 },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
 
     if not isPoliceOnDuty(char.id) then return end
 
     TriggerClientEvent('police:client:onDutyOfficers', src, getOnDutyRoster())
 end)
 
-RegisterNetEvent('police:server:openGarage', function()
-    local src  = source
-    local char = getActiveChar(src)
-    if not char then return end
+Sw.SecureEvent('police:server:openGarage', {
+    character = true,
+    rateLimit = { max = 10, window = 3000 },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
 
     if not isPoliceOnDuty(char.id) then
         notify(src, 'error', 'Acces refuzat', 'Trebuie sa fii in tura.')
@@ -413,10 +453,13 @@ RegisterNetEvent('police:server:openGarage', function()
     })
 end)
 
-RegisterNetEvent('police:server:checkoutVehicle', function(vehicleId)
-    local src  = source
-    local char = getActiveChar(src)
-    if not char then return end
+Sw.SecureEvent('police:server:checkoutVehicle', {
+    character = true,
+    rateLimit = { max = 10, window = 3000 },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
+    local vehicleId = ctx.args[1]
 
     if not isPoliceOnDuty(char.id) then
         notify(src, 'error', 'Acces refuzat', 'Trebuie sa fii in tura.')
@@ -464,10 +507,13 @@ RegisterNetEvent('police:server:checkoutVehicle', function(vehicleId)
     notify(src, 'success', 'Garaj', vehicle.label .. ' a fost preluat.')
 end)
 
-RegisterNetEvent('police:server:returnVehicle', function(vehicleId, state)
-    local src  = source
-    local char = getActiveChar(src)
-    if not char then return end
+Sw.SecureEvent('police:server:returnVehicle', {
+    character = true,
+    rateLimit = { max = 10, window = 3000 },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
+    local vehicleId, state = ctx.args[1], ctx.args[2]
 
     vehicleId = tonumber(vehicleId)
     local vehicle = PoliceDatabase.getFleetVehicle(vehicleId)
@@ -488,10 +534,13 @@ RegisterNetEvent('police:server:returnVehicle', function(vehicleId, state)
     notify(src, 'success', 'Garaj', vehicle.label .. ' a fost returnat.')
 end)
 
-RegisterNetEvent('police:server:fleetMileageTick', function(vehicleId, addedKm)
-    local src  = source
-    local char = getActiveChar(src)
-    if not char then return end
+Sw.SecureEvent('police:server:fleetMileageTick', {
+    character = true,
+    rateLimit = { max = 30, window = 10000 },
+    silent = true,
+}, function(ctx)
+    local char = ctx.character
+    local vehicleId, addedKm = ctx.args[1], ctx.args[2]
 
     vehicleId = tonumber(vehicleId)
     addedKm   = math.max(0, math.min(tonumber(addedKm) or 0, 5.0))
@@ -502,10 +551,13 @@ RegisterNetEvent('police:server:fleetMileageTick', function(vehicleId, addedKm)
     PoliceDatabase.updateFleetMileage(vehicleId, (vehicle.mileage or 0) + addedKm)
 end)
 
-RegisterNetEvent('police:server:fleetStateTick', function(vehicleId, state)
-    local src  = source
-    local char = getActiveChar(src)
-    if not char then return end
+Sw.SecureEvent('police:server:fleetStateTick', {
+    character = true,
+    rateLimit = { max = 30, window = 10000 },
+    silent = true,
+}, function(ctx)
+    local char = ctx.character
+    local vehicleId, state = ctx.args[1], ctx.args[2]
 
     vehicleId = tonumber(vehicleId)
     local vehicle = PoliceDatabase.getFleetVehicle(vehicleId)
@@ -520,10 +572,13 @@ RegisterNetEvent('police:server:fleetStateTick', function(vehicleId, state)
     PoliceDatabase.updateFleetState(vehicleId, fuel, mileage, bodyHealth, engHealth)
 end)
 
-RegisterNetEvent('police:server:purchaseFleetVehicle', function(modelName)
-    local src  = source
-    local char = getActiveChar(src)
-    if not char then return end
+Sw.SecureEvent('police:server:purchaseFleetVehicle', {
+    character = true,
+    rateLimit = { max = 5, window = 5000 },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
+    local modelName = ctx.args[1]
 
     if not isPoliceOnDuty(char.id) or not hasManagePerm(char.id) then
         notify(src, 'error', 'Acces refuzat', 'Nu ai permisiunea de management.')
@@ -581,10 +636,13 @@ RegisterNetEvent('police:server:purchaseFleetVehicle', function(modelName)
     TriggerClientEvent('police:client:fleetVehicleAdded', src, vehicle)
 end)
 
-RegisterNetEvent('police:server:sellFleetVehicle', function(vehicleId)
-    local src  = source
-    local char = getActiveChar(src)
-    if not char then return end
+Sw.SecureEvent('police:server:sellFleetVehicle', {
+    character = true,
+    rateLimit = { max = 5, window = 5000 },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
+    local vehicleId = ctx.args[1]
 
     if not isPoliceOnDuty(char.id) or not hasManagePerm(char.id) then
         notify(src, 'error', 'Acces refuzat', 'Nu ai permisiunea de management.')
@@ -619,10 +677,14 @@ RegisterNetEvent('police:server:sellFleetVehicle', function(vehicleId)
     TriggerClientEvent('police:client:fleetVehicleRemoved', src, vehicleId)
 end)
 
-RegisterNetEvent('police:server:addArmoryWeapon', function(itemName, label, ammoItem, ammoAmount)
-    local src  = source
-    local char = getActiveChar(src)
-    if not char then return end
+Sw.SecureEvent('police:server:addArmoryWeapon', {
+    character = true,
+    rateLimit = { max = 10, window = 5000 },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
+    local itemName, label, ammoItem, ammoAmount = ctx.args[1], ctx.args[2], ctx.args[3], ctx.args[4]
+
     if not isPoliceOnDuty(char.id) or not hasManagePerm(char.id) then
         notify(src, 'error', 'Acces refuzat', 'Nu ai permisiunea de management.')
         return
@@ -654,10 +716,14 @@ RegisterNetEvent('police:server:addArmoryWeapon', function(itemName, label, ammo
     end)
 end)
 
-RegisterNetEvent('police:server:removeArmoryWeapon', function(itemName)
-    local src  = source
-    local char = getActiveChar(src)
-    if not char then return end
+Sw.SecureEvent('police:server:removeArmoryWeapon', {
+    character = true,
+    rateLimit = { max = 10, window = 5000 },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
+    local itemName = ctx.args[1]
+
     if not isPoliceOnDuty(char.id) or not hasManagePerm(char.id) then return end
 
     itemName = tostring(itemName or '')
@@ -672,10 +738,14 @@ RegisterNetEvent('police:server:removeArmoryWeapon', function(itemName)
     end)
 end)
 
-RegisterNetEvent('police:server:addArmoryEquipment', function(itemName, label, amount)
-    local src  = source
-    local char = getActiveChar(src)
-    if not char then return end
+Sw.SecureEvent('police:server:addArmoryEquipment', {
+    character = true,
+    rateLimit = { max = 10, window = 5000 },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
+    local itemName, label, amount = ctx.args[1], ctx.args[2], ctx.args[3]
+
     if not isPoliceOnDuty(char.id) or not hasManagePerm(char.id) then
         notify(src, 'error', 'Acces refuzat', 'Nu ai permisiunea de management.')
         return
@@ -706,10 +776,14 @@ RegisterNetEvent('police:server:addArmoryEquipment', function(itemName, label, a
     end)
 end)
 
-RegisterNetEvent('police:server:removeArmoryEquipment', function(itemName)
-    local src  = source
-    local char = getActiveChar(src)
-    if not char then return end
+Sw.SecureEvent('police:server:removeArmoryEquipment', {
+    character = true,
+    rateLimit = { max = 10, window = 5000 },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
+    local itemName = ctx.args[1]
+
     if not isPoliceOnDuty(char.id) or not hasManagePerm(char.id) then return end
 
     itemName = tostring(itemName or '')
@@ -724,10 +798,13 @@ RegisterNetEvent('police:server:removeArmoryEquipment', function(itemName)
     end)
 end)
 
-RegisterNetEvent('police:server:saveJailTimer', function(remaining)
-    local src  = source
-    local char = getActiveChar(src)
-    if not char then return end
+Sw.SecureEvent('police:server:saveJailTimer', {
+    character = true,
+    rateLimit = { max = 30, window = 10000 },
+    silent = true,
+}, function(ctx)
+    local char = ctx.character
+    local remaining = ctx.args[1]
 
     local data = activeJailTimers[char.id]
     if data then

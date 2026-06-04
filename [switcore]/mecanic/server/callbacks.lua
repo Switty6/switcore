@@ -1,18 +1,16 @@
-local damageRateLimit = {}
-local DAMAGE_RL_MS    = 3000
+Sw.SecureEvent('mecanic:server:vehicleDamaged', {
+    character = true,
+    silent = true,
+    rateLimit = { max = 1, window = 3000 },
+    args = {
+        { name = 'data', type = 'table' },
+    },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
+    local data = ctx.args.data
 
-AddEventHandler('playerDropped', function()
-    damageRateLimit[source] = nil
-end)
-
-RegisterNetEvent('mecanic:server:vehicleDamaged', function(data)
-    local src = source
-    local now = GetGameTimer()
-
-    if damageRateLimit[src] and (now - damageRateLimit[src]) < DAMAGE_RL_MS then return end
-    damageRateLimit[src] = now
-
-    if not data or not data.vehicleId then return end
+    if not data.vehicleId then return end
 
     local vehicleId    = tonumber(data.vehicleId)
     local bodyHealth   = tonumber(data.bodyHealth)
@@ -20,9 +18,6 @@ RegisterNetEvent('mecanic:server:vehicleDamaged', function(data)
     local compDelta    = data.components
 
     if not vehicleId then return end
-
-    local char = getActiveChar(src)
-    if not char then return end
 
     local vehicle = exports.vehicles:getOwnedVehicle(vehicleId)
     if not vehicle or tostring(vehicle.character_id) ~= tostring(char.id) then return end
@@ -94,10 +89,13 @@ local function findSourceForChar(characterId)
     return nil
 end
 
-RegisterNetEvent('mecanic:server:openTablet', function()
-    local src  = source
-    local char = getActiveChar(src)
-    if not char then return end
+Sw.SecureEvent('mecanic:server:openTablet', {
+    character = true,
+    silent = true,
+    rateLimit = { max = 10, window = 3000 },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
 
     if not hasPermission(char.id, 'inspect') then
         notify(src, 'error', 'Acces interzis', 'Nu esti mecanic.')
@@ -116,12 +114,19 @@ RegisterNetEvent('mecanic:server:openTablet', function()
     })
 end)
 
-RegisterNetEvent('mecanic:server:requestService', function(data)
-    local src  = source
-    local char = getActiveChar(src)
-    if not char then return end
+Sw.SecureEvent('mecanic:server:requestService', {
+    character = true,
+    silent = true,
+    rateLimit = { max = 5, window = 3000 },
+    args = {
+        { name = 'data', type = 'table' },
+    },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
+    local data = ctx.args.data
 
-    if not data or not data.problemType or not data.location then return end
+    if not data.problemType or not data.location then return end
 
     local vehicleId   = tonumber(data.vehicleId)
     local problemType = tostring(data.problemType)
@@ -147,17 +152,23 @@ RegisterNetEvent('mecanic:server:requestService', function(data)
     BroadcastCallToMechanics(callData)
 end)
 
-RegisterNetEvent('mecanic:server:acceptCall', function(callId)
-    local src  = source
-    local char = getActiveChar(src)
-    if not char then return end
+Sw.SecureEvent('mecanic:server:acceptCall', {
+    character = true,
+    silent = true,
+    rateLimit = { max = 10, window = 3000 },
+    args = {
+        { name = 'callId', type = 'int', min = 1 },
+    },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
+    local callId = ctx.args.callId
 
     if not hasPermission(char.id, 'roadside') then
         notify(src, 'error', 'Acces interzis', 'Nu ai permisiunea de asistenta rutiera.')
         return
     end
 
-    callId = tonumber(callId)
     local call = MecanicDB.getCallById(callId)
     if not call or call.status ~= 'pending' then
         notify(src, 'error', 'Cerere invalida', 'Cererea nu mai este disponibila.')
@@ -185,12 +196,18 @@ RegisterNetEvent('mecanic:server:acceptCall', function(callId)
     end
 end)
 
-RegisterNetEvent('mecanic:server:cancelCall', function(callId)
-    local src  = source
-    local char = getActiveChar(src)
-    if not char then return end
+Sw.SecureEvent('mecanic:server:cancelCall', {
+    character = true,
+    silent = true,
+    rateLimit = { max = 10, window = 3000 },
+    args = {
+        { name = 'callId', type = 'int', min = 1 },
+    },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
+    local callId = ctx.args.callId
 
-    callId     = tonumber(callId)
     local call = MecanicDB.getCallById(callId)
     if not call or call.client_char_id ~= char.id then return end
 
@@ -198,12 +215,19 @@ RegisterNetEvent('mecanic:server:cancelCall', function(callId)
     notify(src, 'warning', 'Cerere anulata', 'Cererea de mecanic a fost anulata.')
 end)
 
-RegisterNetEvent('mecanic:server:performService', function(data)
-    local src  = source
-    local char = getActiveChar(src)
-    if not char then return end
+Sw.SecureEvent('mecanic:server:performService', {
+    character = true,
+    silent = true,
+    rateLimit = { max = 10, window = 3000 },
+    args = {
+        { name = 'data', type = 'table' },
+    },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
+    local data = ctx.args.data
 
-    if not data or not data.serviceType or not data.vehicleId then return end
+    if not data.serviceType or not data.vehicleId then return end
 
     local serviceType = tostring(data.serviceType)
     local vehicleId   = tonumber(data.vehicleId)
@@ -429,17 +453,24 @@ RegisterNetEvent('mecanic:server:performService', function(data)
     end
 end)
 
-RegisterNetEvent('mecanic:server:buyParts', function(data)
-    local src  = source
-    local char = getActiveChar(src)
-    if not char then return end
+Sw.SecureEvent('mecanic:server:buyParts', {
+    character = true,
+    silent = true,
+    rateLimit = { max = 10, window = 3000 },
+    args = {
+        { name = 'data', type = 'table' },
+    },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
+    local data = ctx.args.data
 
     if not hasPermission(char.id, 'buy_parts') then
         notify(src, 'error', 'Acces interzis', 'Doar managerul poate cumpara piese.')
         return
     end
 
-    if not data or not data.itemName or not data.amount then return end
+    if not data.itemName or not data.amount then return end
 
     local amount    = math.max(1, math.min(50, tonumber(data.amount) or 1))
     local unitPrice = tonumber(data.unitPrice) or 0
@@ -470,14 +501,19 @@ RegisterNetEvent('mecanic:server:buyParts', function(data)
     end
 end)
 
-RegisterNetEvent('mecanic:server:getVehicleByPlate', function(plate)
-    local src  = source
-    local char = getActiveChar(src)
-    if not char then return end
+Sw.SecureEvent('mecanic:server:getVehicleByPlate', {
+    character = true,
+    silent = true,
+    rateLimit = { max = 10, window = 3000 },
+    args = {
+        { name = 'plate', type = 'string', minLen = 1, maxLen = 12 },
+    },
+}, function(ctx)
+    local src   = ctx.source
+    local char  = ctx.character
+    local plate = ctx.args.plate
 
     if not hasPermission(char.id, 'inspect') then return end
-
-    if not plate or plate == '' then return end
 
     local vehicle = exports.vehicles:getOwnedVehicleByPlate(plate)
     if not vehicle then
@@ -509,10 +545,13 @@ RegisterNetEvent('mecanic:server:getVehicleByPlate', function(plate)
     })
 end)
 
-RegisterNetEvent('mecanic:server:getOpenCalls', function()
-    local src  = source
-    local char = getActiveChar(src)
-    if not char then return end
+Sw.SecureEvent('mecanic:server:getOpenCalls', {
+    character = true,
+    silent = true,
+    rateLimit = { max = 10, window = 3000 },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
 
     if not hasPermission(char.id, 'inspect') then return end
 
