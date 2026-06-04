@@ -30,13 +30,9 @@ local function DestroyShowroomCam()
 end
 
 local function SpawnDisplayVehicle(modelName, colorIndex)
-    -- Token de generatie: la selectie rapida, doar ultimul apel ajunge sa creeze
-    -- vehiculul. Fara asta, apelurile concurente (care cedeaza in Wait-ul de mai
-    -- jos) suprascriu globalul displayVehicle si lasa entitati orfane in lume.
     spawnToken = spawnToken + 1
     local myToken = spawnToken
 
-    -- Sterge imediat preview-ul curent, ca sa nu existe doua vehicule simultan
     DespawnDisplayVehicle()
 
     local model = GetHashKey(modelName)
@@ -45,7 +41,6 @@ local function SpawnDisplayVehicle(modelName, colorIndex)
     while not HasModelLoaded(model) and timeout < 100 do
         Wait(50)
         timeout = timeout + 1
-        -- A venit o selectie mai noua cat asteptam modelul: renuntam la asta
         if myToken ~= spawnToken then
             SetModelAsNoLongerNeeded(model)
             return
@@ -56,13 +51,11 @@ local function SpawnDisplayVehicle(modelName, colorIndex)
         return
     end
 
-    -- Ultima verificare inainte de spawn (selectie noua aparuta exact la final)
     if myToken ~= spawnToken then
         SetModelAsNoLongerNeeded(model)
         return
     end
 
-    -- Curata orice entitate ramasa de la un apel anterior mai lent
     DespawnDisplayVehicle()
 
     local spawnPoint = nil
@@ -126,9 +119,6 @@ RegisterNetEvent('showroom:client:locationConfig', function(config)
             end
         )
         table.insert(registeredInteractions, id)
-
-        -- interiorCoords nu se seteaza aici: pdm_showroom din PREDEFINED_INTERIORS
-        -- are coordonate corecte in interiorul cladirii si gestioneaza LoadInterior
     end
     print('[SHOWROOM-CLIENT] ' .. #dealershipLocations .. ' dealership-uri înregistrate proximity')
 end)
