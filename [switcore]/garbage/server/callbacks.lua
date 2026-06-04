@@ -26,10 +26,13 @@ local function getRouteById(routeId)
     return nil
 end
 
-RegisterNetEvent('garbage:server:hire', function()
-    local src  = source
-    local char = getActiveChar(src)
-    if not char then return end
+Sw.SecureEvent('garbage:server:hire', {
+    character = true,
+    silent = true,
+    rateLimit = { max = 5, window = 3000 },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
 
     local job = getCharJob(char.id)
     if job and job.name == Config.JobName then
@@ -46,10 +49,13 @@ RegisterNetEvent('garbage:server:hire', function()
         'Bine ai venit! Ramai la depou si apasa ALT pentru a intra in tura, apoi alege o ruta din tableta.')
 end)
 
-RegisterNetEvent('garbage:server:quit', function()
-    local src  = source
-    local char = getActiveChar(src)
-    if not char then return end
+Sw.SecureEvent('garbage:server:quit', {
+    character = true,
+    silent = true,
+    rateLimit = { max = 5, window = 3000 },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
 
     local job = getCharJob(char.id)
     if not job or job.name ~= Config.JobName then return end
@@ -74,10 +80,17 @@ RegisterNetEvent('garbage:server:quit', function()
     notify(src, 'info', 'Salubritate', 'Ai parasit Salubritatea.')
 end)
 
-RegisterNetEvent('garbage:server:startRoute', function(routeId)
-    local src  = source
-    local char = getActiveChar(src)
-    if not char then return end
+Sw.SecureEvent('garbage:server:startRoute', {
+    character = true,
+    silent = true,
+    rateLimit = { max = 10, window = 3000 },
+    args = {
+        { name = 'routeId', type = 'int', min = 1 },
+    },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
+    local routeId = ctx.args.routeId
 
     local job = getCharJob(char.id)
     if not job or job.name ~= Config.JobName then
@@ -115,10 +128,19 @@ RegisterNetEvent('garbage:server:startRoute', function(routeId)
     })
 end)
 
-RegisterNetEvent('garbage:server:collectPoint', function(sessionId, pointIndex)
-    local src  = source
-    local char = getActiveChar(src)
-    if not char then return end
+Sw.SecureEvent('garbage:server:collectPoint', {
+    character = true,
+    silent = true,
+    rateLimit = { max = 30, window = 3000 },
+    args = {
+        { name = 'sessionId',  type = 'int', min = 1 },
+        { name = 'pointIndex', type = 'int', min = 1 },
+    },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
+    local sessionId  = ctx.args.sessionId
+    local pointIndex = ctx.args.pointIndex
 
     local session = GarbageDB.getActiveSession(char.id)
     if not session or session.id ~= sessionId then
@@ -145,10 +167,17 @@ RegisterNetEvent('garbage:server:collectPoint', function(sessionId, pointIndex)
     })
 end)
 
-RegisterNetEvent('garbage:server:completeRoute', function(sessionId)
-    local src  = source
-    local char = getActiveChar(src)
-    if not char then return end
+Sw.SecureEvent('garbage:server:completeRoute', {
+    character = true,
+    silent = true,
+    rateLimit = { max = 10, window = 3000 },
+    args = {
+        { name = 'sessionId', type = 'int', min = 1 },
+    },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
+    local sessionId = ctx.args.sessionId
 
     local session = GarbageDB.getActiveSession(char.id)
     if not session or session.id ~= sessionId then
@@ -178,10 +207,17 @@ RegisterNetEvent('garbage:server:completeRoute', function(sessionId)
     CheckGarbagePromotion(char.id, src)
 end)
 
-RegisterNetEvent('garbage:server:abandonRoute', function(sessionId)
-    local src  = source
-    local char = getActiveChar(src)
-    if not char then return end
+Sw.SecureEvent('garbage:server:abandonRoute', {
+    character = true,
+    silent = true,
+    rateLimit = { max = 10, window = 3000 },
+    args = {
+        { name = 'sessionId', type = 'int', min = 1 },
+    },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
+    local sessionId = ctx.args.sessionId
 
     local session = GarbageDB.getActiveSession(char.id)
     if not session or session.id ~= sessionId then return end
@@ -203,10 +239,13 @@ RegisterNetEvent('garbage:server:abandonRoute', function(sessionId)
     })
 end)
 
-RegisterNetEvent('garbage:server:openTablet', function()
-    local src  = source
-    local char = getActiveChar(src)
-    if not char then return end
+Sw.SecureEvent('garbage:server:openTablet', {
+    character = true,
+    silent = true,
+    rateLimit = { max = 10, window = 3000 },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
 
     local job = getCharJob(char.id)
     if not job or job.name ~= Config.JobName then return end

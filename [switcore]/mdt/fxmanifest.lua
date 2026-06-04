@@ -18,7 +18,12 @@ dependencies {
     'ems'
 }
 
+shared_scripts {
+    '@core/shared/lib.lua'
+}
+
 server_scripts {
+    '@core/server/secure.lua',
     'server/database.lua',
     'server/police_mdt.lua'
 }

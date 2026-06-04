@@ -3,21 +3,29 @@ local function GetCharacterId(source)
     return character and character.id or nil
 end
 
-RegisterNetEvent('shops:server:getShops', function()
-    local src = source
+Sw.SecureEvent('shops:server:getShops', {
+    silent = true,
+    rateLimit = { max = 10, window = 3000 },
+}, function(ctx)
     local shops = ShopsDatabase.getAllShops()
-    TriggerClientEvent('shops:client:shopsData', src, shops or {})
+    TriggerClientEvent('shops:client:shopsData', ctx.source, shops or {})
 end)
 
-RegisterNetEvent('shops:server:openShop', function(shopName)
-    local src = source
-    local characterId = GetCharacterId(src)
-    if not characterId then return end
+Sw.SecureEvent('shops:server:openShop', {
+    character = true,
+    silent = true,
+    rateLimit = { max = 10, window = 3000 },
+    args = {
+        { name = 'shopName', type = 'string', minLen = 1, maxLen = 64 },
+    },
+}, function(ctx)
+    local src         = ctx.source
+    local characterId = ctx.character.id
+    local shopName    = ctx.args.shopName
 
     local shop = ShopsDatabase.getShopByName(shopName)
     if not shop or not shop.is_open then
-        TriggerClientEvent('switcore:notify', src, 'error', 'Magazin indisponibil', 3000)
-        return
+        return ctx.error('Magazin indisponibil', 3000)
     end
 
     local items = ShopsDatabase.getShopItems(shopName)
@@ -52,9 +60,16 @@ RegisterNetEvent('shops:server:openShop', function(shopName)
     })
 end)
 
-RegisterNetEvent('shops:server:buyItem', function(data)
-    local src = source
-    if not data or not data.shopName or not data.itemName then return end
+Sw.SecureEvent('shops:server:buyItem', {
+    silent = true,
+    rateLimit = { max = 10, window = 3000 },
+    args = {
+        { name = 'data', type = 'table' },
+    },
+}, function(ctx)
+    local src  = ctx.source
+    local data = ctx.args.data
+    if not data.shopName or not data.itemName then return end
 
     local quantity = tonumber(data.quantity) or 1
     local paymentMethod = data.paymentMethod or 'cash'
