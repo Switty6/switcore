@@ -17,9 +17,13 @@ dependencies {
     'interiors'
 }
 
-shared_script 'config.lua'
+shared_scripts {
+    '@core/shared/lib.lua',
+    'config.lua'
+}
 
 server_scripts {
+    '@core/server/secure.lua',
     'server/showroom_database.lua',
     'server/showroom_manager.lua',
     'server/exports.lua',

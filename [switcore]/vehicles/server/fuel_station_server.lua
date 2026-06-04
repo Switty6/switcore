@@ -13,8 +13,11 @@ local function getFirstCurrencyId()
     return c and c.id or nil
 end
 
-RegisterNetEvent('vehicles:server:getBalanceForFuel', function()
-    local source = source
+Sw.SecureEvent('vehicles:server:getBalanceForFuel', {
+    silent = true,
+    rateLimit = { max = 10, window = 3000 },
+}, function(ctx)
+    local source = ctx.source
     local characterId = GetCharacterId(source)
     local currency    = getFirstCurrency()
     local symbol      = currency and currency.symbol or '$'
@@ -36,11 +39,21 @@ RegisterNetEvent('vehicles:server:getBalanceForFuel', function()
         source, cash + bank, pricePerLitre, cash, bank, symbol)
 end)
 
-RegisterNetEvent('vehicles:server:refuel', function(vehicleId, litres, totalCost, method)
-    local source = source
-    vehicleId = tonumber(vehicleId)
-    litres    = tonumber(litres) or 0
-    method    = method == 'card' and 'card' or 'cash'
+Sw.SecureEvent('vehicles:server:refuel', {
+    silent = true,
+    rateLimit = { max = 10, window = 3000 },
+    args = {
+        { name = 'vehicleId', type = 'int',    min = 1, optional = true },
+        { name = 'litres',    type = 'number' },
+        { name = 'totalCost', type = 'number', optional = true },
+        { name = 'method',    type = 'string', optional = true },
+    },
+}, function(ctx)
+    local source    = ctx.source
+    local vehicleId = ctx.args.vehicleId
+    local litres    = ctx.args.litres or 0
+    local totalCost = ctx.args.totalCost
+    local method    = ctx.args.method == 'card' and 'card' or 'cash'
 
     if litres <= 0 then return end
 
@@ -112,10 +125,17 @@ RegisterNetEvent('vehicles:server:refuel', function(vehicleId, litres, totalCost
         5000)
 end)
 
-RegisterNetEvent('vehicles:server:fuelFailed', function(vehicleId, litresActuallyAdded)
-    local source = source
-    vehicleId           = tonumber(vehicleId)
-    litresActuallyAdded = tonumber(litresActuallyAdded) or 0
+Sw.SecureEvent('vehicles:server:fuelFailed', {
+    silent = true,
+    rateLimit = { max = 10, window = 3000 },
+    args = {
+        { name = 'vehicleId',           type = 'int',    min = 1, optional = true },
+        { name = 'litresActuallyAdded', type = 'number' },
+    },
+}, function(ctx)
+    local source              = ctx.source
+    local vehicleId           = ctx.args.vehicleId
+    local litresActuallyAdded = ctx.args.litresActuallyAdded or 0
 
     if litresActuallyAdded <= 0 then return end
 

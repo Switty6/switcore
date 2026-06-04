@@ -16,7 +16,10 @@ dependencies {
     'proximity'
 }
 
-shared_script 'config.lua'
+shared_scripts {
+    '@core/shared/lib.lua',
+    'config.lua'
+}
 
 ui_page 'ui/index.html'
 
@@ -28,6 +31,7 @@ files {
 }
 
 server_scripts {
+    '@core/server/secure.lua',
     'server/vehicles_database.lua',
     'server/vehicles_manager.lua',
     'server/fuel_manager.lua',

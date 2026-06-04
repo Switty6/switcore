@@ -22,11 +22,13 @@ CreateThread(function()
     InitializeGaragesSystem()
 end)
 
-RegisterNetEvent('garages:server:getLocationConfig', function()
-    local src = source
+Sw.SecureEvent('garages:server:getLocationConfig', {
+    silent = true,
+    rateLimit = { max = 5, window = 3000 },
+}, function(ctx)
     local locations = exports.settings:GetSettingList('garages.locations', {})
     local distance  = exports.settings:GetSettingNumber('garages.interaction_distance', 2.5)
-    TriggerClientEvent('garages:client:locationConfig', src, {
+    TriggerClientEvent('garages:client:locationConfig', ctx.source, {
         locations = locations,
         distance  = distance,
     })

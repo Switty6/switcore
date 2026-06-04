@@ -15,87 +15,136 @@ local function buildTuningConfig(source, shopCode)
     }
 end
 
-RegisterNetEvent('tuning:server:openShop', function(plate, shopCode)
-    local source = source
-
-    local character = exports.characters:getActiveCharacter(source)
-    if not character then return end
+Sw.SecureEvent('tuning:server:openShop', {
+    character = true,
+    rateLimit = { max = 10, window = 3000 },
+    args = {
+        { name = 'plate',    type = 'string', minLen = 1, maxLen = 12 },
+        { name = 'shopCode', type = 'string', minLen = 1, maxLen = 64 },
+    },
+}, function(ctx)
+    local source  = ctx.source
+    local plate   = ctx.args.plate
+    local character = ctx.character
 
     local vehicle = exports.vehicles:getOwnedVehicleByPlate(plate)
     if not vehicle then
-        TriggerClientEvent('tuning:client:openFailed', source, 'Vehiculul nu este înregistrat în sistem.')
-        return
+        return TriggerClientEvent('tuning:client:openFailed', source, 'Vehiculul nu este înregistrat în sistem.')
     end
 
     if not exports.vehicles:hasVehicleKey(vehicle.id, character.id) then
-        TriggerClientEvent('tuning:client:openFailed', source, 'Nu ai cheie pentru acest vehicul.')
-        return
+        return TriggerClientEvent('tuning:client:openFailed', source, 'Nu ai cheie pentru acest vehicul.')
     end
 
     if vehicle.impounded then
-        TriggerClientEvent('tuning:client:openFailed', source, 'Vehiculul este sechestrat.')
-        return
+        return TriggerClientEvent('tuning:client:openFailed', source, 'Vehiculul este sechestrat.')
     end
 
-    local config = buildTuningConfig(source, shopCode)
+    local config = buildTuningConfig(source, ctx.args.shopCode)
     TriggerClientEvent('tuning:client:openUI', source, vehicle, config)
 end)
 
-RegisterNetEvent('tuning:server:applyMod', function(vehicleId, category, tier, paymentMethod, shopCode, extra)
-    local source = source
+Sw.SecureEvent('tuning:server:applyMod', {
+    character = true,
+    rateLimit = { max = 15, window = 3000 },
+    args = {
+        { name = 'vehicleId',     type = 'int', min = 1 },
+        { name = 'category',      type = 'string', minLen = 1, maxLen = 64 },
+        { name = 'tier',          type = 'int', min = 0 },
+        { name = 'paymentMethod', type = 'string', minLen = 1, maxLen = 32 },
+        { name = 'shopCode',      type = 'string', minLen = 1, maxLen = 64 },
+        { name = 'extra',         type = 'table', optional = true },
+    },
+}, function(ctx)
+    local source = ctx.source
+    local a = ctx.args
 
     local success, err, newMods = TuningManager.applyMod(
-        source, vehicleId, category, tier, paymentMethod, shopCode, extra
+        source, a.vehicleId, a.category, a.tier, a.paymentMethod, a.shopCode, a.extra
     )
 
     if success then
-        TriggerClientEvent('switcore:notify', source, 'success', 'Mod aplicat cu succes!', 4000)
-        TriggerClientEvent('tuning:client:modApplied', source, category, tier, newMods)
+        ctx.success('Mod aplicat cu succes!', 4000)
+        TriggerClientEvent('tuning:client:modApplied', source, a.category, a.tier, newMods)
     else
-        TriggerClientEvent('switcore:notify', source, 'error', err or 'Eroare la aplicare mod.', 5000)
-        TriggerClientEvent('tuning:client:modFailed', source, category, tier)
+        ctx.error(err or 'Eroare la aplicare mod.', 5000)
+        TriggerClientEvent('tuning:client:modFailed', source, a.category, a.tier)
     end
 end)
 
-RegisterNetEvent('tuning:server:applyColor', function(vehicleId, colorPrimary, colorSecondary, paymentMethod, shopCode, colorPearl)
-    local source = source
+Sw.SecureEvent('tuning:server:applyColor', {
+    character = true,
+    rateLimit = { max = 15, window = 3000 },
+    args = {
+        { name = 'vehicleId',      type = 'int', min = 1 },
+        { name = 'colorPrimary',   type = 'int', min = 0 },
+        { name = 'colorSecondary', type = 'int', min = 0 },
+        { name = 'paymentMethod',  type = 'string', minLen = 1, maxLen = 32 },
+        { name = 'shopCode',       type = 'string', minLen = 1, maxLen = 64 },
+        { name = 'colorPearl',     type = 'int', min = 0, optional = true },
+    },
+}, function(ctx)
+    local source = ctx.source
+    local a = ctx.args
 
     local success, err, newMods = TuningManager.applyColor(
-        source, vehicleId, colorPrimary, colorSecondary, paymentMethod, shopCode, colorPearl
+        source, a.vehicleId, a.colorPrimary, a.colorSecondary, a.paymentMethod, a.shopCode, a.colorPearl
     )
 
     if success then
-        TriggerClientEvent('switcore:notify', source, 'success', 'Culoare aplicată!', 4000)
-        TriggerClientEvent('tuning:client:colorApplied', source, colorPrimary, colorSecondary, newMods)
+        ctx.success('Culoare aplicată!', 4000)
+        TriggerClientEvent('tuning:client:colorApplied', source, a.colorPrimary, a.colorSecondary, newMods)
     else
-        TriggerClientEvent('switcore:notify', source, 'error', err or 'Eroare la vopsire.', 5000)
+        ctx.error(err or 'Eroare la vopsire.', 5000)
         TriggerClientEvent('tuning:client:modFailed', source, 'color', 0)
     end
 end)
 
-RegisterNetEvent('tuning:server:applyLivery', function(vehicleId, liveryIndex, paymentMethod, shopCode)
-    local source = source
+Sw.SecureEvent('tuning:server:applyLivery', {
+    character = true,
+    rateLimit = { max = 15, window = 3000 },
+    args = {
+        { name = 'vehicleId',     type = 'int', min = 1 },
+        { name = 'liveryIndex',   type = 'int', min = 0 },
+        { name = 'paymentMethod', type = 'string', minLen = 1, maxLen = 32 },
+        { name = 'shopCode',      type = 'string', minLen = 1, maxLen = 64 },
+    },
+}, function(ctx)
+    local source = ctx.source
+    local a = ctx.args
 
     local success, err, newMods = TuningManager.applyLivery(
-        source, vehicleId, liveryIndex, paymentMethod, shopCode
+        source, a.vehicleId, a.liveryIndex, a.paymentMethod, a.shopCode
     )
 
     if success then
-        TriggerClientEvent('switcore:notify', source, 'success', 'Liverie aplicată!', 4000)
-        TriggerClientEvent('tuning:client:liveryApplied', source, liveryIndex, newMods)
+        ctx.success('Liverie aplicată!', 4000)
+        TriggerClientEvent('tuning:client:liveryApplied', source, a.liveryIndex, newMods)
     else
-        TriggerClientEvent('switcore:notify', source, 'error', err or 'Eroare la liverie.', 5000)
-        TriggerClientEvent('tuning:client:modFailed', source, 'livery', liveryIndex)
+        ctx.error(err or 'Eroare la liverie.', 5000)
+        TriggerClientEvent('tuning:client:modFailed', source, 'livery', a.liveryIndex)
     end
 end)
 
 -- Procesează coșul secvențial; la prima eroare oprește (modificările deja aplicate rămân persistate).
-RegisterNetEvent('tuning:server:applyCart', function(vehicleId, cartItems, paymentMethod, shopCode)
-    local source = source
+Sw.SecureEvent('tuning:server:applyCart', {
+    character = true,
+    rateLimit = { max = 5, window = 3000 },
+    args = {
+        { name = 'vehicleId',     type = 'int', min = 1 },
+        { name = 'cartItems',     type = 'table' },
+        { name = 'paymentMethod', type = 'string', minLen = 1, maxLen = 32 },
+        { name = 'shopCode',      type = 'string', minLen = 1, maxLen = 64 },
+    },
+}, function(ctx)
+    local source    = ctx.source
+    local vehicleId = ctx.args.vehicleId
+    local cartItems = ctx.args.cartItems
+    local paymentMethod = ctx.args.paymentMethod
+    local shopCode  = ctx.args.shopCode
 
     if not cartItems or #cartItems == 0 then
-        TriggerClientEvent('switcore:notify', source, 'error', 'Coșul este gol.', 4000)
-        return
+        return ctx.error('Coșul este gol.', 4000)
     end
 
     local applied   = {}
@@ -122,26 +171,33 @@ RegisterNetEvent('tuning:server:applyCart', function(vehicleId, cartItems, payme
         else
             table.insert(applied, { category = item.category, tier = item.tier, success = false, err = err })
             TriggerClientEvent('tuning:client:cartApplied', source, applied, finalMods)
-            TriggerClientEvent('switcore:notify', source, 'error',
-                'Coș: eroare la ' .. tostring(item.category) .. ' - ' .. (err or 'eroare necunoscută'), 5000)
+            ctx.error('Coș: eroare la ' .. tostring(item.category) .. ' - ' .. (err or 'eroare necunoscută'), 5000)
             return
         end
     end
 
     TriggerClientEvent('tuning:client:cartApplied', source, applied, finalMods)
-    TriggerClientEvent('switcore:notify', source, 'success',
-        string.format('Coș: %d upgrade(uri) aplicate!', #applied), 4000)
+    ctx.success(string.format('Coș: %d upgrade(uri) aplicate!', #applied), 4000)
 end)
 
-RegisterNetEvent('tuning:server:resetMods', function(vehicleId, paymentMethod, shopCode)
-    local source = source
+Sw.SecureEvent('tuning:server:resetMods', {
+    character = true,
+    rateLimit = { max = 10, window = 3000 },
+    args = {
+        { name = 'vehicleId',     type = 'int', min = 1 },
+        { name = 'paymentMethod', type = 'string', minLen = 1, maxLen = 32 },
+        { name = 'shopCode',      type = 'string', minLen = 1, maxLen = 64 },
+    },
+}, function(ctx)
+    local source = ctx.source
+    local a = ctx.args
 
-    local success, err = TuningManager.resetMods(source, vehicleId, paymentMethod, shopCode)
+    local success, err = TuningManager.resetMods(source, a.vehicleId, a.paymentMethod, a.shopCode)
 
     if success then
-        TriggerClientEvent('switcore:notify', source, 'success', 'Mods resetate la stock!', 4000)
+        ctx.success('Mods resetate la stock!', 4000)
         TriggerClientEvent('tuning:client:modsReset', source)
     else
-        TriggerClientEvent('switcore:notify', source, 'error', err or 'Eroare la resetare.', 5000)
+        ctx.error(err or 'Eroare la resetare.', 5000)
     end
 end)
