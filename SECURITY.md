@@ -26,5 +26,5 @@ Doar ultima versiune de pe `main`. Fix-urile se publică ca release nou.
 - Credențiale (DB, JWT, parolă admin) în convars `server.cfg`, **nu** în fișiere committed.
 - JWT secret minim 32 caractere random (`openssl rand -hex 48`).
 - `switcore_panel_cors_origins` fără `*` în producție.
-- PostgreSQL doar pe `localhost` sau VPN — nu expus public.
+- PostgreSQL doar pe `localhost` sau VPN, nu expus public.
 - Update regulat.

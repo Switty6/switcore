@@ -1,0 +1,17 @@
+# Normalizeaza la LF in repo pentru fisierele text (opreste avertismentele
+# "LF will be replaced by CRLF" la commit pe Windows).
+* text=auto eol=lf
+
+# Fisiere binare: git nu le atinge.
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.svg  binary
+*.ico  binary
+*.ttf  binary
+*.woff  binary
+*.woff2 binary
+*.mp3  binary
+*.ogg  binary
+*.wav  binary

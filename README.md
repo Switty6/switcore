@@ -1,6 +1,6 @@
 # SwitCore
 
-Framework de roleplay pentru FiveM. PostgreSQL pentru date, Lua 5.4 pentru scripturi, Node.js pentru conectorul DB și panoul de setări. Toate setările trăiesc în baza de date — nu editezi `config.lua`.
+Framework de roleplay pentru FiveM. PostgreSQL pentru date, Lua 5.4 pentru scripturi, Node.js pentru conectorul DB și panoul de setări. Toate setările trăiesc în baza de date, nu editezi `config.lua`.
 
 ## Module
 
@@ -22,14 +22,13 @@ Framework de roleplay pentru FiveM. PostgreSQL pentru date, Lua 5.4 pentru scrip
 
 **1. PostgreSQL**
 
-Creezi DB-ul și user-ul:
-```sql
-CREATE DATABASE switcore;
-CREATE USER switcore_user WITH PASSWORD 'parola';
-GRANT ALL PRIVILEGES ON DATABASE switcore TO switcore_user;
+Pornește baza de date cu Docker:
+```bash
+cp .env.example .env   # schimbă parola
+docker compose up -d
 ```
 
-Asigură-te că PostgreSQL acceptă conexiuni de la `127.0.0.1` (`pg_hba.conf` cu `md5` sau `scram-sha-256`).
+Containerul creează singur baza și user-ul și acceptă conexiuni cu parolă, așa că nu ai nimic de configurat manual.
 
 **2. Clonează în `resources/`**
 
@@ -50,7 +49,7 @@ set switcore_postgres_user     "switcore_user"
 set switcore_postgres_password "parola"
 ```
 
-Alternative: `cp resources/[switcore]/postgres/config.local.js.example config.local.js`, sau env vars (`POSTGRES_HOST`, etc.).
+Parola trebuie să fie aceeași pe care ai pus-o în `.env`. Dacă preferi, poți folosi în loc env vars (`POSTGRES_HOST`, etc.) sau `cp resources/[switcore]/postgres/config.local.js.example config.local.js`.
 
 **4. Pornește framework-ul**
 
@@ -99,7 +98,7 @@ Setările trăiesc în tabela `settings`:
 local val = exports.settings:GetSetting('modul.cheie', 'implicit')
 ```
 
-Le modifici din panoul web sau direct în DB; reîncărci cu `exports.settings:ReloadSettings()` — fără restart.
+Le modifici din panoul web sau direct în DB; reîncărci cu `exports.settings:ReloadSettings()`, fără restart.
 
 ## Documentație
 
@@ -110,8 +109,8 @@ Le modifici din panoul web sau direct în DB; reîncărci cu `exports.settings:R
 
 ## Altele
 
-- [CONTRIBUTING.md](CONTRIBUTING.md) — cum trimiți un PR
-- [SECURITY.md](SECURITY.md) — raportare vulnerabilități (privat)
+- [CONTRIBUTING.md](CONTRIBUTING.md): cum trimiți un PR
+- [SECURITY.md](SECURITY.md): raportare vulnerabilități (privat)
 - [CHANGELOG.md](CHANGELOG.md)
 
 ## Licență

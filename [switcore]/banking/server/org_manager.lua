@@ -68,7 +68,7 @@ end
 function OrgManager.ensureOrgAccount(orgCode, bankCode)
     local org = BankingDatabase.getOrgByCode(orgCode)
     if not org then
-        print('[BANKING] ensureOrgAccount: organizatie negasita: ' .. orgCode)
+        exports.core:log('warn', 'BANKING', 'ensureOrgAccount: organizatie negasita: ' .. orgCode)
         return nil
     end
     local existing = BankingDatabase.getOrgAccountByOrg(org.id)
@@ -76,10 +76,10 @@ function OrgManager.ensureOrgAccount(orgCode, bankCode)
 
     local ok, err, account = OrgManager.createOrgAccount(orgCode, bankCode)
     if ok then
-        print(string.format('[BANKING] Cont organizatie creat: %s (%s)', orgCode, account.account_number))
+        exports.core:log('info', 'BANKING', string.format('Cont organizatie creat: %s (%s)', orgCode, account.account_number))
         return account
     else
-        print('[BANKING] Eroare creare cont org ' .. orgCode .. ': ' .. (err or ''))
+        exports.core:log('error', 'BANKING', 'Eroare creare cont org ' .. orgCode .. ': ' .. (err or ''))
         return nil
     end
 end

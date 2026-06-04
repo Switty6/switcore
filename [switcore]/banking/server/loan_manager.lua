@@ -30,7 +30,7 @@ function LoanManager.createLoan(characterId, bankId, loanType, principalAmount, 
 
     if monthlyRate > 0 then
         -- Formula anuitate: P * (r(1+r)^n) / ((1+r)^n - 1)
-        local factor = math.pow(1 + monthlyRate, termMonths)
+        local factor = (1 + monthlyRate) ^ termMonths
         monthlyPayment = principalAmount * (monthlyRate * factor) / (factor - 1)
     else
         monthlyPayment = principalAmount / termMonths
@@ -184,18 +184,7 @@ function LoanManager.makeLoanPayment(characterId, loanId, amount)
             
             local nextPaymentDate = loan.next_payment_date
             if newStatus == 'active' then
-                local dateParts = {}
-                dateParts.year = tonumber(loan.next_payment_date:sub(1, 4))
-                dateParts.month = tonumber(loan.next_payment_date:sub(6, 7))
-                dateParts.day = tonumber(loan.next_payment_date:sub(9, 10))
-                
-                dateParts.month = dateParts.month + 1
-                if dateParts.month > 12 then
-                    dateParts.month = 1
-                    dateParts.year = dateParts.year + 1
-                end
-                
-                nextPaymentDate = string.format('%04d-%02d-%02d', dateParts.year, dateParts.month, dateParts.day)
+                nextPaymentDate = BankingHelpers.advanceOneMonth(loan.next_payment_date)
             end
             
             BankingDatabase.updateLoan(loanId, {
@@ -237,7 +226,7 @@ function LoanManager.processOverdueLoans()
     )
     
     for _, loan in ipairs(result) do
-        print(string.format('[BANKING] Credit %d este restant pentru caracterul %d', loan.id, loan.character_id))
+        exports.core:log('warn', 'BANKING', string.format('Credit %d este restant pentru caracterul %d', loan.id, loan.character_id))
     end
 end
 

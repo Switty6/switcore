@@ -616,5 +616,27 @@ RegisterNetEvent('switcore:requestLocale', function(language)
     sendLocaleToClient(source, playerLanguage)
 end)
 
+exports('isRateLimited', function(identifier, action, maxRequests, windowSeconds)
+    if not exports.settings:GetSettingBool('core.ratelimit_enabled', true) then
+        return false
+    end
+    return RateLimit.isLimited(identifier, action, maxRequests, windowSeconds)
+end)
+
+exports('resetRateLimit', function(identifier, action)
+    RateLimit.reset(identifier, action)
+end)
+
+exports('log', function(level, tag, message)
+    Logger.log(level, tag, message)
+end)
+
+CreateThread(function()
+    while true do
+        Wait(60000)
+        RateLimit.sweep()
+    end
+end)
+
 print('[CORE] Server module loading...')
 

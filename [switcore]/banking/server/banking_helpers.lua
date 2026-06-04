@@ -64,8 +64,44 @@ function BankingHelpers.parseBalance(balance)
     if not balance or type(balance) ~= 'table' then
         balance = {}
     end
-    
+
     return balance
+end
+
+function BankingHelpers.lastDayOfMonth(year, month)
+    local daysPerMonth = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }
+    if month == 2 then
+        local isLeap = (year % 4 == 0 and year % 100 ~= 0) or (year % 400 == 0)
+        if isLeap then
+            return 29
+        end
+    end
+    return daysPerMonth[month]
+end
+
+-- Avanseaza o data 'YYYY-MM-DD' cu o luna, clampand ziua la ultima zi a lunii
+-- noi. Fara clamp, o scadenta pe 31 ar produce date imposibile (ex: 2026-02-31)
+-- pe care coloana DATE le respinge, blocand plata creditului.
+function BankingHelpers.advanceOneMonth(dateStr)
+    local year = tonumber(dateStr:sub(1, 4))
+    local month = tonumber(dateStr:sub(6, 7))
+    local day = tonumber(dateStr:sub(9, 10))
+    if not year or not month or not day then
+        return dateStr
+    end
+
+    month = month + 1
+    if month > 12 then
+        month = 1
+        year = year + 1
+    end
+
+    local maxDay = BankingHelpers.lastDayOfMonth(year, month)
+    if day > maxDay then
+        day = maxDay
+    end
+
+    return string.format('%04d-%02d-%02d', year, month, day)
 end
 
 return BankingHelpers
