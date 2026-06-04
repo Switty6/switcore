@@ -16,6 +16,7 @@ Format [Keep a Changelog](https://keepachangelog.com/ro/1.1.0/), versionare [Sem
 ### Schimbat
 
 - Modulul `clothing` migrat pe `Sw.SecureEvent` ca exemplu de referință (comportament identic).
+- Net events de server migrate pe `Sw.SecureEvent` în toate modulele cu interacțiuni client: `banking`, `characters`, `inventory`, `police`, `ems`, `government`, `admin`, plus familia vehicule (`vehicles`, `garages`, `showroom`, `tuning`), joburile (`jobs`, `mecanic`, `medical`, `taxi`, `garbage`), `mdt` și `shops`. Fiecare handler primește rate-limit, verificare personaj activ și validare argumente, păstrând logica de business, permisiunile și anti-cheat-ul existent.
 
 ---
 
