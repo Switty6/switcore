@@ -28,19 +28,19 @@
     <div class="panel-body">
       <nav class="sidebar">
         <button class="nav-btn active" data-tab="dashboard">
-          <span class="nav-icon">◈</span> Dashboard
+          <span class="nav-icon"><i data-lucide="layout-dashboard"></i></span> Dashboard
         </button>
         <button class="nav-btn" data-tab="laws">
           <span class="nav-icon"><i data-lucide="scale"></i></span> Legi
         </button>
         <button class="nav-btn" data-tab="budget">
-          <span class="nav-icon">◎</span> Buget
+          <span class="nav-icon"><i data-lucide="wallet"></i></span> Buget
         </button>
         <button class="nav-btn" data-tab="parties">
-          <span class="nav-icon">◉</span> Partide
+          <span class="nav-icon"><i data-lucide="users"></i></span> Partide
         </button>
         <button class="nav-btn" data-tab="elections">
-          <span class="nav-icon">◈</span> Alegeri
+          <span class="nav-icon"><i data-lucide="vote"></i></span> Alegeri
         </button>
       </nav>
 
@@ -103,6 +103,17 @@
               <div class="form-row two-col">
                 <input type="text" id="law-penalty" placeholder="Sancțiune (opțional)" maxlength="200">
                 <input type="number" id="law-fine" placeholder="Amendă (RON)" min="0">
+              </div>
+              <div class="form-row">
+                <select id="law-duration">
+                  <option value="5">Termen vot: 5 minute</option>
+                  <option value="30">Termen vot: 30 minute</option>
+                  <option value="60">Termen vot: 1 oră</option>
+                  <option value="360">Termen vot: 6 ore</option>
+                  <option value="1440" selected>Termen vot: 24 ore</option>
+                  <option value="2880">Termen vot: 48 ore</option>
+                  <option value="10080">Termen vot: 7 zile</option>
+                </select>
               </div>
               <div class="form-actions">
                 <button class="btn-secondary" id="btnCancelLaw">Anulează</button>
@@ -240,6 +251,21 @@
     <div class="laws-pub-footer">
       <span id="laws-pub-count"></span>
     </div>
+  </div>
+</div>
+
+<div id="vote-public" class="hidden">
+  <div class="laws-pub-overlay" id="vote-pub-overlay"></div>
+  <div class="laws-pub-panel">
+    <div class="laws-pub-header">
+      <div class="laws-pub-icon"><i data-lucide="vote"></i></div>
+      <div>
+        <div class="laws-pub-title">ALEGERI</div>
+        <div class="laws-pub-sub">Votează candidatul preferat</div>
+      </div>
+      <button class="laws-pub-close" id="btnCloseVote"><i data-lucide="x"></i></button>
+    </div>
+    <div id="vote-pub-list" class="laws-pub-list"></div>
   </div>
 </div>
 
