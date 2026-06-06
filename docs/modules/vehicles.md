@@ -39,7 +39,7 @@ exports.vehicles:getOwnedVehicle(vehicleId)                              → veh
 exports.vehicles:getOwnedVehicleByPlate(plate)                           → vehicle
 exports.vehicles:getCharacterVehicles(characterId)                       → vehicle[]
 exports.vehicles:saveVehicleState(vehicleId, state)                      → bool
-exports.vehicles:spawnVehicleForPlayer(source, vehicleId)                → bool
+exports.vehicles:spawnVehicleForPlayer(source, vehicleId, spawnPoint?)   → bool
 
 -- Chei
 exports.vehicles:giveVehicleKey(vehicleId, characterId, keyType)         → bool

@@ -27,8 +27,7 @@ function GaragesManager.parkVehicle(source, characterId, vehicleId, garageCode, 
         exports.vehicles:saveVehicleState(vehicleId, stateCopy)
     end
 
-    local fuel = state and state.fuel or nil
-    local ok   = GaragesDatabase.parkVehicleAtomic(vehicleId, characterId, garage.id, fuel)
+    local ok = GaragesDatabase.parkVehicleAtomic(vehicleId, characterId, garage.id)
     if not ok then
         return false, 'Eroare la parcarea vehiculului'
     end
@@ -65,7 +64,7 @@ function GaragesManager.retrieveVehicle(source, characterId, vehicleId, garageCo
         return false, 'Folosește interfața de sechestru pentru a elibera vehiculul'
     end
 
-    local ok, err = exports.vehicles:spawnVehicleForPlayer(source, vehicleId)
+    local ok, err = exports.vehicles:spawnVehicleForPlayer(source, vehicleId, garage.spawn_point)
     if not ok then return false, err end
 
     GaragesDatabase.logAction(vehicleId, characterId, garage.id, 'retrieved', tonumber(vehicle.fuel))
