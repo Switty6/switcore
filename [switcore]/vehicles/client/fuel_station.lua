@@ -3,6 +3,9 @@ local PUMP_MODELS = {
     'prop_gas_pump_old2', 'prop_gas_pump_old3', 'prop_vintage_pump',
 }
 
+local PUMP_HASHES = {}
+for _, m in ipairs(PUMP_MODELS) do PUMP_HASHES[#PUMP_HASHES + 1] = GetHashKey(m) end
+
 local NOZZLE_MODEL  = GetHashKey('prop_cs_fuel_nozle')
 local ATTACH_BONE   = 0xDEAD          -- hash SKEL_R_Hand
 local CABLE_MAX     = 6.0
@@ -36,10 +39,13 @@ local fillPricePerLitre = 8
 local playerBalance, playerCash, playerBank = 0, 0, 0
 local currencySymbol    = '$'
 
-local holdingNozzle      = false
-local nozzleInVehicle    = false
-local isHolding          = false
-local vehicleInteractId  = nil
+local holdingNozzle         = false
+local nozzleInVehicle       = false
+local isHolding             = false
+local vehicleInteractId     = nil
+local vehicleInteractEntity = nil
+local pumpInteractId        = nil
+local pumpInteractEntity    = nil
 
 local pendingPayment = nil
 
@@ -48,15 +54,18 @@ local function sendNUI(action, data)
     SendNUIMessage(data)
 end
 
-CreateThread(function()
-    Wait(1500)
-    for _, model in ipairs(PUMP_MODELS) do
-        exports.proximity:AddStaticModelInteraction(
-            model, 'Alimentează', 'fuel_pump', {}, PUMP_PROX_DIST
-        )
+local function FindClosestPump()
+    local pos = GetEntityCoords(PlayerPedId())
+    local best, bestDist
+    for _, hash in ipairs(PUMP_HASHES) do
+        local obj = GetClosestObjectOfType(pos.x, pos.y, pos.z, PUMP_PROX_DIST, hash, false, false, false)
+        if obj ~= 0 and DoesEntityExist(obj) then
+            local d = #(pos - GetEntityCoords(obj))
+            if not bestDist or d < bestDist then best, bestDist = obj, d end
+        end
     end
-    print('[FUEL-STATION] Proximity înregistrat pe ' .. #PUMP_MODELS .. ' modele de pompe')
-end)
+    return best, bestDist
+end
 
 local function PlayAnim(ped, dict, name)
     RequestAnimDict(dict)
@@ -143,6 +152,15 @@ local function CleanupVehicleInteraction()
         exports.proximity:RemoveInteraction(vehicleInteractId)
         vehicleInteractId = nil
     end
+    vehicleInteractEntity = nil
+end
+
+local function CleanupPumpInteraction()
+    if pumpInteractId then
+        exports.proximity:RemoveInteraction(pumpInteractId)
+        pumpInteractId = nil
+    end
+    pumpInteractEntity = nil
 end
 
 local function CleanupNozzle()
@@ -186,34 +204,75 @@ local function ReturnNozzleToPump()
     SetNuiFocus(false, false)
 end
 
--- Înregistrăm interacțiunea doar pe vehiculul cel mai apropiat (AddEntityInteraction nu acceptă multi-entity);
--- thread-ul de mai jos rescanează când jucătorul se mută la altă mașină.
+local function SnapNozzleInHand()
+    TriggerEvent('switcore:notify:local', 'error', 'Furtunul s-a rupt!', 3500)
+    CleanupNozzle()
+    CleanupRope()
+    CleanupVehicleInteraction()
+    CleanupPumpInteraction()
+    ClearPedTasks(PlayerPedId())
+    ResetState()
+    sendNUI('fuel:close', {})
+    SetNuiFocus(false, false)
+end
+
 local function RegisterVehicleInteraction()
     local ped = PlayerPedId()
     local pos = GetEntityCoords(ped)
     local veh = GetClosestVehicle(pos.x, pos.y, pos.z, VEHICLE_SEARCH, 0, 70)
-    if not DoesEntityExist(veh) then return false end
+    if veh == 0 or not DoesEntityExist(veh) then
+        CleanupVehicleInteraction()
+        return false
+    end
+    if vehicleInteractId and vehicleInteractEntity == veh then return true end
 
     CleanupVehicleInteraction()
     vehicleInteractId = exports.proximity:AddEntityInteraction(
         veh, 'Atașează furtunul la rezervor', 'fuel_vehicle_attach', {},
         nil, nil, nil, VEHICLE_PROX_DIST
     )
+    vehicleInteractEntity = veh
     return true
 end
 
 CreateThread(function()
     while true do
-        Wait(1500)
+        Wait(250)
+        local ped = PlayerPedId()
+        local snapped = false
+
         if holdingNozzle and not nozzleInVehicle then
-            local ped = PlayerPedId()
-            local pos = GetEntityCoords(ped)
-            local closest = GetClosestVehicle(pos.x, pos.y, pos.z, VEHICLE_SEARCH, 0, 70)
-            local cur = vehicleInteractId
-            if not cur or not DoesEntityExist(closest) then
-                if DoesEntityExist(closest) then
-                    RegisterVehicleInteraction()
+            if pumpEntityRef and DoesEntityExist(pumpEntityRef)
+               and #(GetEntityCoords(ped) - GetEntityCoords(pumpEntityRef)) >= CABLE_MAX then
+                SnapNozzleInHand()
+                snapped = true
+            else
+                RegisterVehicleInteraction()
+            end
+        elseif not holdingNozzle then
+            CleanupVehicleInteraction()
+        end
+
+        if not snapped then
+            local showPump = not IsPedInAnyVehicle(ped, false) and not nozzleInVehicle
+            if showPump and holdingNozzle then
+                local pos = GetEntityCoords(ped)
+                local veh = GetClosestVehicle(pos.x, pos.y, pos.z, VEHICLE_PROX_DIST, 0, 70)
+                if veh ~= 0 and DoesEntityExist(veh) then showPump = false end
+            end
+
+            if showPump then
+                local pump = FindClosestPump()
+                if pump and pumpInteractEntity ~= pump then
+                    CleanupPumpInteraction()
+                    pumpInteractId = exports.proximity:AddEntityInteraction(
+                        pump, 'Alimentează', 'fuel_pump', {}, nil, nil, nil, PUMP_PROX_DIST)
+                    pumpInteractEntity = pump
+                elseif not pump then
+                    CleanupPumpInteraction()
                 end
+            else
+                CleanupPumpInteraction()
             end
         end
     end
@@ -223,6 +282,7 @@ RegisterNetEvent('switcore:proximity:interact', function(interaction)
     if not interaction then return end
 
     if interaction.type == 'fuel_pump' then
+        if IsPedInAnyVehicle(PlayerPedId(), false) then return end
         if holdingNozzle or nozzleInVehicle then
             ReturnNozzleToPump()
             return
@@ -433,6 +493,7 @@ RegisterNUICallback('fuel:complete', function(_, cb) cb({}) end)
 
 AddEventHandler('onResourceStop', function(res)
     if res ~= GetCurrentResourceName() then return end
+    CleanupPumpInteraction()
     if holdingNozzle or nozzleInVehicle then
         CleanupNozzle()
         CleanupRope()
