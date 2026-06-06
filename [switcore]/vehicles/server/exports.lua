@@ -76,7 +76,7 @@ exports('saveVehicleComponents', function(vehicleId, components)
     return VehiclesManager.saveVehicleState(vehicleId, { components = components })
 end)
 
-exports('spawnVehicleForPlayer', function(source, vehicleId)
+exports('spawnVehicleForPlayer', function(source, vehicleId, spawnPoint)
     local character = exports.characters:getActiveCharacter(source)
     if not character then return false, 'No character' end
 
@@ -89,7 +89,18 @@ exports('spawnVehicleForPlayer', function(source, vehicleId)
 
     if vehicle.impounded then return false, 'Vehiculul este sechestrat' end
 
-    VehiclesDatabase.updateVehicleState(vehicleId, { stored = false })
+    local sp = spawnPoint
+    if type(sp) == 'string' then sp = json.decode(sp) end
+    if sp and sp.x then
+        vehicle.last_position = {
+            x = sp.x, y = sp.y, z = sp.z,
+            heading = sp.heading or sp.w or 0.0,
+        }
+        VehiclesDatabase.updateVehicleState(vehicleId, { stored = false, last_position = vehicle.last_position })
+    else
+        VehiclesDatabase.updateVehicleState(vehicleId, { stored = false })
+    end
+
     if vehicle.plate then
         TriggerClientEvent('vehicles:client:addOwnedPlate', source, vehicle.plate)
     end

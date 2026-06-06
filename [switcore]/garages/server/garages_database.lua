@@ -77,7 +77,7 @@ function GaragesDatabase.logAction(vehicleId, characterId, garageId, action, fue
     return success
 end
 
-function GaragesDatabase.parkVehicleAtomic(vehicleId, characterId, garageId, fuel)
+function GaragesDatabase.parkVehicleAtomic(vehicleId, characterId, garageId)
     if not ensurePostgres() then return false end
 
     local ok, result = pcall(function()
@@ -89,9 +89,9 @@ function GaragesDatabase.parkVehicleAtomic(vehicleId, characterId, garageId, fue
                 RETURNING id, fuel
             )
             INSERT INTO garage_logs (vehicle_id, character_id, garage_id, action, fuel_at_action)
-            SELECT $1, $2, $3, 'parked', COALESCE($4, fuel, 0) FROM parked
+            SELECT $1, $2, $3, 'parked', COALESCE(fuel, 0) FROM parked
             RETURNING id
-        ]], { vehicleId, characterId, garageId, tonumber(fuel) })
+        ]], { vehicleId, characterId, garageId })
     end)
 
     if not ok or not result then return false end

@@ -69,7 +69,7 @@ function ImpoundManager.releaseVehicle(source, characterId, vehicleId)
     local impoundCode = exports.settings:GetSetting('garages.impound_garage_code', 'IMPOUND_LSIA')
     local garage = GaragesDatabase.getGarageByCode(impoundCode)
 
-    local ok, err = exports.vehicles:spawnVehicleForPlayer(source, vehicleId)
+    local ok, err = exports.vehicles:spawnVehicleForPlayer(source, vehicleId, garage and garage.spawn_point)
     if not ok then
         return false, 'Plată efectuată dar eroare la spawn: ' .. (err or '')
     end
