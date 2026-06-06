@@ -5,6 +5,7 @@ CreateThread(function()
 
     local seeds = {
         { 'government.vote_quorum', '3',          'Numar minim de voturi DA pentru adoptarea unei legi' },
+        { 'government.vote_duration_minutes', '1440', 'Termen implicit de vot pentru o propunere (minute)' },
         { 'government.org_code',    'government', 'Codul organizatiei guvernamentale in sistemul banking' },
         { 'government.org_name',    'Guvernul Romaniei', 'Numele oficial al organizatiei' },
     }
@@ -15,9 +16,10 @@ CreateThread(function()
         )
     end
 
-    local orgName = exports.settings:GetSetting('government.org_name', 'Guvernul Romaniei')
+    -- Asigura contul bancar al organizatiei guvernamentale (cod 'gov', seedat in banking).
+    -- Semnatura corecta: ensureOrgAccount(orgCode, bankCode).
     pcall(function()
-        exports.banking:ensureOrgAccount(1, orgName, 'BCR', 'RON')
+        exports.banking:ensureOrgAccount('gov', 'MAZE')
     end)
 
     print('[Government] Sistem guvernamental initializat.')

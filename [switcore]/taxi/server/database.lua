@@ -48,7 +48,7 @@ end
 
 function TaxiDB.startOrder(orderId, dropoffCoords)
     local ok = pcall(function()
-        pg():execute(
+        pg():query(
             [[UPDATE taxi_orders SET status = 'in_progress', dropoff_coords = $2
               WHERE id = $1]],
             { orderId, dropoffCoords and json.encode(dropoffCoords) or nil }
@@ -59,7 +59,7 @@ end
 
 function TaxiDB.completeOrder(orderId, payAmount, distanceKm)
     local ok = pcall(function()
-        pg():execute(
+        pg():query(
             [[UPDATE taxi_orders
               SET status = 'completed', pay_amount = $2, distance_km = $3, completed_at = NOW()
               WHERE id = $1]],
@@ -71,7 +71,7 @@ end
 
 function TaxiDB.cancelOrder(orderId)
     local ok = pcall(function()
-        pg():execute(
+        pg():query(
             [[UPDATE taxi_orders SET status = 'cancelled'
               WHERE id = $1 AND status IN ('waiting','accepted','in_progress')]],
             { orderId }
@@ -98,7 +98,7 @@ end
 
 function TaxiDB.upsertStats(charId, tripsAdd, earnedAdd)
     local ok = pcall(function()
-        pg():execute(
+        pg():query(
             [[INSERT INTO taxi_stats (character_id, total_trips, total_earned)
               VALUES ($1, $2, $3)
               ON CONFLICT (character_id) DO UPDATE SET

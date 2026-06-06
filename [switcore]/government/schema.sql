@@ -14,6 +14,9 @@ CREATE TABLE IF NOT EXISTS government_law_proposals (
     created_at   TIMESTAMPTZ  NOT NULL DEFAULT NOW()
 );
 
+-- Termen de vot (deadline). La expirare: daca s-a atins cvorumul de DA -> adoptata, altfel -> respinsa automat.
+ALTER TABLE government_law_proposals ADD COLUMN IF NOT EXISTS voting_ends_at TIMESTAMPTZ;
+
 CREATE TABLE IF NOT EXISTS government_law_votes (
     id           BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     proposal_id  BIGINT       NOT NULL REFERENCES government_law_proposals(id) ON DELETE CASCADE,

@@ -14,14 +14,29 @@ function nuiFetch(action, data = {}) {
     }).catch(() => {});
 }
 
+// Un tabel Lua gol se serializeaza ca {} (obiect), nu ca [] (lista). Fortam
+// campurile-lista sa fie mereu array-uri ca render-ul (.slice/.map/.length) sa nu crape.
+function asArray(v) {
+    return Array.isArray(v) ? v : [];
+}
+
+function normalizeData(d) {
+    if (!d || typeof d !== 'object') return d;
+    ['proposals', 'laws', 'budgetLog', 'parties', 'elections', 'closedElections', 'officials'].forEach(k => {
+        d[k] = asArray(d[k]);
+    });
+    d.elections.forEach(el => { if (el) el.candidates = asArray(el.candidates); });
+    return d;
+}
+
 window.addEventListener('message', (event) => {
     const msg = event.data;
     if (msg.action === 'open') {
-        state.data = msg.data;
+        state.data = normalizeData(msg.data);
         app.classList.remove('hidden');
         renderAll();
     } else if (msg.action === 'update') {
-        state.data = msg.data;
+        state.data = normalizeData(msg.data);
         renderAll();
     } else if (msg.action === 'close') {
         app.classList.add('hidden');
@@ -151,11 +166,12 @@ btnCancelLaw.addEventListener('click', () => {
 });
 btnSubmitLaw.addEventListener('click', () => {
     const data = {
-        title:       document.getElementById('law-title').value.trim(),
-        category:    document.getElementById('law-category').value,
-        description: document.getElementById('law-desc').value.trim(),
-        penalty:     document.getElementById('law-penalty').value.trim(),
-        fine_amount: parseInt(document.getElementById('law-fine').value) || 0,
+        title:           document.getElementById('law-title').value.trim(),
+        category:        document.getElementById('law-category').value,
+        description:     document.getElementById('law-desc').value.trim(),
+        penalty:         document.getElementById('law-penalty').value.trim(),
+        fine_amount:     parseInt(document.getElementById('law-fine').value) || 0,
+        duration_minutes: parseInt(document.getElementById('law-duration').value) || 1440,
     };
     if (!data.title || !data.category || !data.description) return;
     nuiFetch('proposeLaw', data);
@@ -190,34 +206,34 @@ function renderProposals(d) {
     list.innerHTML = proposals.map(p => {
         const yesVotes = p.yes_votes || 0;
         const noVotes  = p.no_votes  || 0;
-        const voteBar  = `<span class="vote-yes">▲${yesVotes}</span> / <span class="vote-no">▼${noVotes}</span> - cvorum: ${quorum} Da`;
-        const actions  = canVote ? `
-            <button class="btn-success vote-btn" data-id="${p.id}" data-vote="yes">▲ Da</button>
-            <button class="btn-danger vote-btn"  data-id="${p.id}" data-vote="no">▼ Nu</button>
-            <button class="btn-warn reject-btn"  data-id="${p.id}"><i data-lucide="x"></i> Respinge</button>
-            <span class="vote-count">${voteBar}</span>
-        ` : `<span class="vote-count">${voteBar}</span>`;
+        const tally = `<span class="vote-tally"><span class="vote-yes">${yesVotes}</span> Da · <span class="vote-no">${noVotes}</span> Nu · cvorum ${quorum}</span>`;
+        const footer = canVote ? `
+            <div class="proposal-vote">
+                <button class="vote-btn vote-btn-yes" data-id="${p.id}" data-vote="yes">Da</button>
+                <button class="vote-btn vote-btn-no"  data-id="${p.id}" data-vote="no">Nu</button>
+            </div>
+            ${tally}
+        ` : tally;
 
         return `<div class="proposal-card">
             <div class="proposal-header">
                 <span class="proposal-title">${p.title}</span>
                 ${catBadge(p.category)}
             </div>
-            <div class="proposal-meta">Propus de ${p.proposed_by_name || '-'} · ${fmtDate(p.created_at)}</div>
+            <div class="proposal-sub">
+                <span>Propus de ${p.proposed_by_name || '-'}</span>
+                <span>${fmtDate(p.created_at)}</span>
+                ${p.voting_ends_at ? `<span>Termen vot: ${fmtDate(p.voting_ends_at)}</span>` : ''}
+            </div>
             <div class="proposal-desc">${p.description}</div>
-            ${p.penalty ? `<div class="law-penalty"><i data-lucide="alert-triangle"></i> ${p.penalty}${p.fine_amount ? ' · Amendă: ' + fmt(p.fine_amount) : ''}</div>` : ''}
-            <div class="proposal-actions">${actions}</div>
+            ${(p.penalty || p.fine_amount) ? `<div class="proposal-penalty">${p.penalty || ''}${p.fine_amount ? (p.penalty ? ' · ' : '') + 'Amendă: ' + fmt(p.fine_amount) : ''}</div>` : ''}
+            <div class="proposal-footer">${footer}</div>
         </div>`;
     }).join('');
 
     list.querySelectorAll('.vote-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             nuiFetch('voteLaw', { proposalId: parseInt(btn.dataset.id), vote: btn.dataset.vote });
-        });
-    });
-    list.querySelectorAll('.reject-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            nuiFetch('rejectProposal', { proposalId: parseInt(btn.dataset.id) });
         });
     });
 }
@@ -292,13 +308,16 @@ function renderBudget(d) {
     log.innerHTML = txs.map(tx => {
         const sign = tx.type === 'income' ? '+' : '-';
         const cls  = tx.type === 'income' ? 'tx-income' : 'tx-expense';
-        const type = tx.type === 'income' ? 'Venit' : 'Cheltuială';
-        return `<div class="tx-row">
-            <span class="tx-row-type ${cls}">${type}</span>
-            <span class="tx-row-cat badge badge-gray">${tx.category || 'Altele'}</span>
-            <span class="tx-row-amount ${cls}">${sign}${fmt(tx.amount)}</span>
-            <span class="tx-row-by">${tx.created_by_name || 'Auto'}</span>
-            <span class="tx-row-date">${fmtDate(tx.created_at)}</span>
+        const desc = tx.description || (tx.type === 'income' ? 'Venit' : 'Cheltuială');
+        return `<div class="tx-row tx-row-${tx.type === 'income' ? 'income' : 'expense'}">
+            <div class="tx-main">
+                <span class="badge badge-gray">${tx.category || 'Altele'}</span>
+                <span class="tx-desc-full">${desc}</span>
+            </div>
+            <div class="tx-side">
+                <span class="tx-amount ${cls}">${sign}${fmt(tx.amount)}</span>
+                <span class="tx-meta">${tx.created_by_name || 'Auto'} · ${fmtDate(tx.created_at)}</span>
+            </div>
         </div>`;
     }).join('');
 }
@@ -560,6 +579,69 @@ function renderElections(d) {
     document.querySelector('.laws-pub-overlay').addEventListener('click', () => {
         lawsPub.classList.add('hidden');
         nuiFetch('closeLaws');
+    });
+})();
+
+// Vot public la alegeri (comanda /vot) - orice cetatean poate vota, fara restul panoului.
+(function () {
+    const votePub     = document.getElementById('vote-public');
+    const votePubList = document.getElementById('vote-pub-list');
+
+    function renderVote(elections) {
+        const list = Array.isArray(elections) ? elections : [];
+        if (list.length === 0) {
+            votePubList.innerHTML = '<div class="empty-state">Nicio alegere activă în acest moment</div>';
+            return;
+        }
+        votePubList.innerHTML = list.map(el => {
+            const candidates = Array.isArray(el.candidates) ? el.candidates : [];
+            const candRows = candidates.length === 0
+                ? '<div style="color:var(--text-dim);font-size:11px">Niciun candidat înscris</div>'
+                : candidates.map(c => `
+                    <div class="candidate-row">
+                        <span class="candidate-name">${c.char_name}</span>
+                        ${c.party_name ? `<span class="candidate-party" style="color:${c.party_color || 'var(--text-dim)'}">● ${c.party_name}</span>` : ''}
+                        <span class="candidate-votes">${c.votes} vot${c.votes !== 1 ? 'uri' : ''}</span>
+                        <button class="btn-primary vote-cand" style="padding:3px 8px;font-size:11px" data-eid="${el.id}" data-cid="${c.id}">Votează</button>
+                    </div>
+                `).join('');
+            return `<div class="election-card">
+                <div class="election-header">
+                    <span class="election-position">${el.position}</span>
+                    <span class="badge badge-success">Activ</span>
+                </div>
+                ${el.description ? `<div class="election-desc">${el.description}</div>` : ''}
+                <div class="candidates-grid">${candRows}</div>
+            </div>`;
+        }).join('');
+
+        votePubList.querySelectorAll('.vote-cand').forEach(btn => {
+            btn.addEventListener('click', () => {
+                nuiFetch('voteElection', { electionId: parseInt(btn.dataset.eid), candidateId: parseInt(btn.dataset.cid), fromVote: true });
+            });
+        });
+        if (window.lucide) lucide.createIcons();
+    }
+
+    function close() {
+        votePub.classList.add('hidden');
+        nuiFetch('closeVote');
+    }
+
+    window.addEventListener('message', (event) => {
+        const msg = event.data;
+        if (msg.action === 'openVote') {
+            votePub.classList.remove('hidden');
+            renderVote(msg.elections);
+        } else if (msg.action === 'closeVote') {
+            votePub.classList.add('hidden');
+        }
+    });
+
+    document.getElementById('btnCloseVote').addEventListener('click', close);
+    document.getElementById('vote-pub-overlay').addEventListener('click', close);
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !votePub.classList.contains('hidden')) close();
     });
 })();
 

@@ -279,12 +279,25 @@ Sw.SecureEvent('government:server:voteElection', {
     local src  = ctx.source
     local char = ctx.character
     local electionId, candidateId = ctx.args[1], ctx.args[2]
-    if not hasAnyGovPerm(src) then return end
+    local fromVote = ctx.args[3] == true
+    -- Votul la alegeri e public: orice cetatean poate vota.
     local ok = GovManager.voteElection(src, char.id, electionId, candidateId)
     if ok then
-        local updated = GovManager.buildFullData(src)
-        TriggerClientEvent('government:client:update', src, updated)
+        -- Reimprospatam exact vederea din care s-a votat, nu in functie de permisiuni:
+        -- vot din /vot -> overlay public; vot din panoul /guv -> panou complet.
+        if fromVote then
+            TriggerClientEvent('government:client:openVote', src, GovManager.buildPublicElections())
+        elseif hasAnyGovPerm(src) then
+            TriggerClientEvent('government:client:update', src, GovManager.buildFullData(src))
+        end
     end
+end)
+
+-- Vot public: orice jucator poate cere lista alegerilor active si vota (candidatura ramane doar pentru membri).
+Sw.SecureEvent('government:server:getPublicElections', {
+    rateLimit = { max = 10, window = 3000 },
+}, function(ctx)
+    TriggerClientEvent('government:client:openVote', ctx.source, GovManager.buildPublicElections())
 end)
 
 Sw.SecureEvent('government:server:closeElection', {
@@ -305,6 +318,23 @@ Sw.SecureEvent('government:server:closeElection', {
             if hasAnyGovPerm(s) then
                 local d = GovManager.buildFullData(s)
                 TriggerClientEvent('government:client:update', s, d)
+            end
+        end
+    end
+end)
+
+-- Verifica periodic propunerile al caror termen de vot a expirat si le finalizeaza
+-- (adoptate la cvorum, altfel respinse). Reimprospateaza panourile membrilor online.
+CreateThread(function()
+    while true do
+        Wait(30000)
+        local changed = GovManager.finalizeExpiredProposals()
+        if changed then
+            for _, playerId in ipairs(GetPlayers()) do
+                local s = tonumber(playerId)
+                if hasAnyGovPerm(s) then
+                    TriggerClientEvent('government:client:update', s, GovManager.buildFullData(s))
+                end
             end
         end
     end
