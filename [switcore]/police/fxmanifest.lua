@@ -35,6 +35,14 @@ client_scripts {
     'client/vehicles.lua'
 }
 
+ui_page 'ui/index.html'
+
+files {
+    'ui/index.html',
+    'ui/style.css',
+    'ui/script.js'
+}
+
 exports {
     'IsPlayerJailed',
     'JailCharacter',

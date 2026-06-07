@@ -235,7 +235,11 @@ Sw.SecureEvent('police:server:takeArmoryItem', {
     if isWeapon then
         cfg = findArmoryWeapon(itemName)
         if not cfg then return end
-        exports.inventory:AddItem(invId, cfg.itemName, 1, nil)
+        local ok = exports.inventory:AddItem(invId, cfg.itemName, 1, nil)
+        if not ok then
+            notify(src, 'error', 'Armament', 'Nu am putut adauga ' .. cfg.label .. ' (inventar plin sau item neinregistrat).')
+            return
+        end
         if cfg.ammoItem and cfg.ammoAmount and cfg.ammoAmount > 0 then
             exports.inventory:AddItem(invId, cfg.ammoItem, cfg.ammoAmount, nil)
         end
@@ -243,7 +247,11 @@ Sw.SecureEvent('police:server:takeArmoryItem', {
     else
         cfg = findArmoryEquipment(itemName)
         if not cfg then return end
-        exports.inventory:AddItem(invId, cfg.itemName, cfg.amount, nil)
+        local ok = exports.inventory:AddItem(invId, cfg.itemName, cfg.amount, nil)
+        if not ok then
+            notify(src, 'error', 'Armament', 'Nu am putut adauga ' .. cfg.label .. ' (inventar plin sau item neinregistrat).')
+            return
+        end
         amount = cfg.amount
     end
 

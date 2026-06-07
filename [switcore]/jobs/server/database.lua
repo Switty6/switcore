@@ -209,3 +209,8 @@ function JobsDatabase.claimSalaryBatch(intervalSecs)
                   c.last_name       AS last_name
     ]], { intervalSecs })
 end
+
+function JobsDatabase.getOnDutyCharacterIds()
+    if not ensurePg() then return {} end
+    return pg():queryAll('SELECT character_id FROM character_jobs WHERE is_on_duty = TRUE', {})
+end

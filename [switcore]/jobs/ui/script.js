@@ -88,7 +88,7 @@ function renderMyJob() {
 
     document.getElementById('jobLabel').textContent   = esc(job.label   || '-');
     document.getElementById('gradeLabel').textContent = esc(job.gradeLabel || '-');
-    document.getElementById('salaryLabel').textContent = job.salary > 0 ? '$' + fmt(job.salary) + ' / tură' : 'Neplătit';
+    document.getElementById('salaryLabel').textContent = job.salary > 0 ? fmt(job.salary) + ' ' + (job.currencySymbol || '$') + ' / tură' : 'Neplătit';
 
     const typeBadge = document.getElementById('typeBadge');
     const typeMap   = { whitelisted: 'Legal', self_serve: 'Liber', illegal: 'Ilegal' };
