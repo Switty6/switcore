@@ -184,7 +184,7 @@
 <div id="armory-panel" class="hidden">
     <div class="mdt-header">
         <span class="mdt-title">Armament</span>
-        <button class="mdt-close" onclick="postNUI('closeArmory')"><i data-lucide="x"></i></button>
+        <button class="mdt-close" onclick="closeArmory()"><i data-lucide="x"></i></button>
     </div>
     <div class="armory-body">
         <div class="armory-section">
@@ -201,7 +201,7 @@
 <div id="garage-panel" class="hidden">
     <div class="mdt-header">
         <span class="mdt-title">Garaj Politie</span>
-        <button class="mdt-close" onclick="postNUI('closeGarage')"><i data-lucide="x"></i></button>
+        <button class="mdt-close" onclick="closeGaragePanel()"><i data-lucide="x"></i></button>
     </div>
     <div id="active-vehicle-bar" class="hidden">
         <div class="active-veh-info">
@@ -227,14 +227,14 @@
 <div id="cloakroom-panel" class="hidden">
     <div class="mdt-header">
         <span class="mdt-title">Vestiar</span>
-        <button class="mdt-close" onclick="postNUI('closeCloakroom')"><i data-lucide="x"></i></button>
+        <button class="mdt-close" onclick="closeCloakroom()"><i data-lucide="x"></i></button>
     </div>
     <div class="cloakroom-body">
-        <button class="outfit-btn" onclick="postNUI('wearUniform')">
+        <button class="outfit-btn" onclick="wearUniform()">
             <span class="outfit-icon"><i data-lucide="shield"></i></span>
             <span>Uniforma Politie</span>
         </button>
-        <button class="outfit-btn civilian" onclick="postNUI('wearCivilian')">
+        <button class="outfit-btn civilian" onclick="wearCivilian()">
             <span class="outfit-icon"><i data-lucide="shirt"></i></span>
             <span>Tinuta Civila</span>
         </button>

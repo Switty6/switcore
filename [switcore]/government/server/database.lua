@@ -107,9 +107,17 @@ function GovDB.getBudgetLog(limit)
 end
 
 function GovDB.addBudgetEntry(type, amount, currencyCode, description, category, characterId)
+    if characterId then
+        return pg():query(
+            'INSERT INTO government_budget_log (type,amount,currency_code,description,category,created_by) VALUES ($1,$2,$3,$4,$5,$6)',
+            { type, amount, currencyCode, description, category, characterId }
+        )
+    end
+    -- Tranzactii de sistem (ex: salarii) => fara created_by, ramane NULL.
+    -- Necesar pentru ca Lua taie nil-ul de la coada tabelului si pg ar primi 5 parametri in loc de 6.
     return pg():query(
-        'INSERT INTO government_budget_log (type,amount,currency_code,description,category,created_by) VALUES ($1,$2,$3,$4,$5,$6)',
-        { type, amount, currencyCode, description, category, characterId }
+        'INSERT INTO government_budget_log (type,amount,currency_code,description,category) VALUES ($1,$2,$3,$4,$5)',
+        { type, amount, currencyCode, description, category }
     )
 end
 

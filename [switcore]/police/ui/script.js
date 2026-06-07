@@ -275,8 +275,28 @@ function takeItem(itemName, isWeapon) {
     postNUI('takeArmoryItem', { itemName, isWeapon });
 }
 
+function closeArmory() {
+    document.getElementById('armory-panel').classList.add('hidden');
+    postNUI('closeArmory');
+}
+
 function openCloakroom(gender) {
     document.getElementById('cloakroom-panel').classList.remove('hidden');
+}
+
+function closeCloakroom() {
+    document.getElementById('cloakroom-panel').classList.add('hidden');
+    postNUI('closeCloakroom');
+}
+
+function wearUniform() {
+    document.getElementById('cloakroom-panel').classList.add('hidden');
+    postNUI('wearUniform');
+}
+
+function wearCivilian() {
+    document.getElementById('cloakroom-panel').classList.add('hidden');
+    postNUI('wearCivilian');
 }
 
 let garageCurrentId = null;
@@ -345,6 +365,7 @@ function checkoutVehicle(vehicleId) {
 
 function closeGaragePanel() {
     document.getElementById('garage-panel').classList.add('hidden');
+    postNUI('closeGarage');
 }
 
 function onVehicleCheckedOut(data) {

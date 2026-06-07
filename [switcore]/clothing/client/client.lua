@@ -5,10 +5,17 @@ local equippedComponents = {}
 local tryOnCam         = nil
 local isAutoRotating   = false
 local isInTryOn        = false
+local storeBlips       = {}
+local interactionsSet  = false
+
+local BLIP_SPRITE = 73   -- t-shirt
+local BLIP_COLOR  = 4    -- alb
+local BLIP_SCALE  = 0.8
 
 RegisterNetEvent('clothing:receiveStores', function(storesData)
     stores = storesData or {}
     SetupStoreInteractions()
+    SetupStoreBlips()
 end)
 
 RegisterNetEvent('clothing:applyComponents', function(components)
@@ -30,6 +37,9 @@ function ApplyAllComponents(components, targetPed)
 end
 
 function SetupStoreInteractions()
+    -- proximity nu permite stergerea interactiunilor statice; le adaugam o singura data
+    if interactionsSet then return end
+    interactionsSet = true
     for _, store in ipairs(stores) do
         local coords = store.shop_coords
         if type(coords) == 'string' then coords = json.decode(coords) end
@@ -40,6 +50,29 @@ function SetupStoreInteractions()
                 'clothing_store',
                 {storeName = store.name}
             )
+        end
+    end
+end
+
+function SetupStoreBlips()
+    for _, blip in ipairs(storeBlips) do
+        if DoesBlipExist(blip) then RemoveBlip(blip) end
+    end
+    storeBlips = {}
+
+    for _, store in ipairs(stores) do
+        local coords = store.shop_coords
+        if type(coords) == 'string' then coords = json.decode(coords) end
+        if coords then
+            local blip = AddBlipForCoord(coords.x, coords.y, coords.z)
+            SetBlipSprite(blip, BLIP_SPRITE)
+            SetBlipColour(blip, BLIP_COLOR)
+            SetBlipScale(blip, BLIP_SCALE)
+            SetBlipAsShortRange(blip, true)
+            BeginTextCommandSetBlipName('STRING')
+            AddTextComponentString(store.label or 'Magazin haine')
+            EndTextCommandSetBlipName(blip)
+            storeBlips[#storeBlips + 1] = blip
         end
     end
 end
@@ -252,4 +285,21 @@ CreateThread(function()
             CloseClothingStore()
         end
     end
+end)
+
+-- Fallback: daca am ratat switcore:characterLoaded (restart de resource
+-- sau race la pornire), cerem singuri lista de magazine.
+CreateThread(function()
+    Wait(2000)
+    if #stores == 0 then
+        TriggerServerEvent('clothing:requestStores')
+    end
+end)
+
+AddEventHandler('onResourceStop', function(resourceName)
+    if resourceName ~= GetCurrentResourceName() then return end
+    for _, blip in ipairs(storeBlips) do
+        if DoesBlipExist(blip) then RemoveBlip(blip) end
+    end
+    storeBlips = {}
 end)

@@ -58,6 +58,13 @@ INSERT INTO jobs (name, label, type, blip_sprite, blip_color) VALUES
     ('lost_mc',    'Lost MC',   'illegal',       74,   27)
 ON CONFLICT (name) DO NOTHING;
 
+-- Sedii joburi (punct de proximitate pentru tableta + tura de serviciu).
+-- Idempotent: completeaza doar daca nu a fost setat deja (serverele noi il primesc tot prin acest UPDATE).
+-- Fara coordonate aici, jobul nu are punct de sediu => tableta nu se poate deschide si nu se poate intra in tura.
+UPDATE jobs SET blip_coords = '{"x":441.7,"y":-978.3,"z":30.67}'
+    WHERE name = 'police'
+      AND (blip_coords IS NULL OR blip_coords = '{"x":428.0,"y":-981.0,"z":30.7}'::jsonb);
+
 INSERT INTO job_grades (job_name, grade, label, salary, can_manage, permissions) VALUES
     ('unemployed', 0, 'Fără loc de muncă', 0,    false, '[]'),
 

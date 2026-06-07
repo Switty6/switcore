@@ -49,6 +49,13 @@ function RegisterPoliceBlips()
 
     addBlip(PoliceConfig.stationBlip)
     addBlip(PoliceConfig.jailBlip)
+
+    -- Facilitatile interne se vad doar daca esti politist
+    if myJob and myJob.name == 'police' then
+        addBlip(PoliceConfig.armoryBlip)
+        addBlip(PoliceConfig.cloakroomBlip)
+        addBlip(PoliceConfig.garageBlip)
+    end
 end
 
 function RegisterPoliceZones()
@@ -91,6 +98,7 @@ end
 
 RegisterNetEvent('jobs:client:jobUpdated', function(job)
     myJob = job
+    RegisterPoliceBlips()
     RegisterPoliceZones()
 end)
 

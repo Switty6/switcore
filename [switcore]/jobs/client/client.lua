@@ -45,12 +45,13 @@ local function registerJobProximity(job)
 
     local c      = job.blipCoords
     local coords = vector3(c.x, c.y, c.z)
-    proximityId  = 'job_base_' .. job.name
 
-    exports.proximity:AddInteraction(
+    -- AddInteraction returneaza un id numeric; il capturam ca sa-l putem sterge corect
+    -- (altfel se acumuleaza duplicate la fiecare refresh de job).
+    proximityId = exports.proximity:AddInteraction(
         coords,
         job.label .. ' - Sediu',
-        proximityId,
+        'job_base_' .. job.name,
         {},
         function()
             if not isUIOpen then

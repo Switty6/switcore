@@ -4,8 +4,40 @@ CreateThread(function()
         Wait(500)
     end
     JobsDatabase.ensureSalarySchema()
+    ClearStaleDuty()
     print('[JOBS] Sistem joburi inițializat')
     StartSalaryLoop()
+end)
+
+-- Curata tura ramasa TRUE pentru personaje care nu sunt online (crash / deconectare necurata).
+-- La pornirea serverului nimeni nu e online => sterge toate turele ramase agatate.
+function ClearStaleDuty()
+    local online = {}
+    for _, playerId in ipairs(GetPlayers()) do
+        local src = tonumber(playerId)
+        local ok, ch = pcall(function() return exports.characters:getActiveCharacter(src) end)
+        if ok and ch and ch.id then online[ch.id] = true end
+    end
+    local cleared = 0
+    for _, r in ipairs(JobsDatabase.getOnDutyCharacterIds() or {}) do
+        local cid = tonumber(r.character_id)
+        if cid and not online[cid] then
+            JobsDatabase.atomicClockOut(cid)
+            cleared = cleared + 1
+        end
+    end
+    if cleared > 0 then
+        print(('[JOBS] Tura curatata pentru %d personaje offline.'):format(cleared))
+    end
+end
+
+-- La deconectare scoatem automat din tura (altfel is_on_duty ramane TRUE si ar primi salariu offline).
+AddEventHandler('playerDropped', function()
+    local src = source
+    local ok, ch = pcall(function() return exports.characters:getActiveCharacter(src) end)
+    if ok and ch and ch.id then
+        JobsDatabase.atomicClockOut(ch.id)
+    end
 end)
 
 function StartSalaryLoop()
@@ -28,6 +60,30 @@ local function sourceForCharacterId(charId)
     end
 end
 
+local cachedPrimaryCurrency = nil
+local function getPrimaryCurrency()
+    if cachedPrimaryCurrency then return cachedPrimaryCurrency end
+    local ok, currencies = pcall(function() return exports.banking:getActiveCurrencies() end)
+    if ok and type(currencies) == 'table' and #currencies > 0 then
+        -- Valuta principala = cea cu id-ul cel mai mic (prima creata)
+        local primary = currencies[1]
+        for _, c in ipairs(currencies) do
+            if tonumber(c.id) and tonumber(primary.id) and tonumber(c.id) < tonumber(primary.id) then
+                primary = c
+            end
+        end
+        if primary and primary.id then
+            cachedPrimaryCurrency = { id = tonumber(primary.id), symbol = primary.symbol or '$' }
+        end
+    end
+    return cachedPrimaryCurrency
+end
+
+local function getPrimaryCurrencySymbol()
+    local c = getPrimaryCurrency()
+    return (c and c.symbol) or '$'
+end
+
 function PaySalaries()
     local intervalMs   = exports.settings:GetSettingNumber('jobs.salary_interval', 1800000)
     local intervalSecs = math.max(1, math.floor((intervalMs * 0.9) / 1000))
@@ -35,30 +91,36 @@ function PaySalaries()
     if not toPay or #toPay == 0 then return end
 
     for _, row in ipairs(toPay) do
-        local salary    = tonumber(row.salary) or 0
-        local jobLabel  = row.job_label or row.job_name
-        local charLabel = (row.first_name or '') .. ' ' .. (row.last_name or '')
-
-        local okExp, errExp = pcall(function()
-            exports.government:AddExpense(salary, 'RON',
-                'Salariu ' .. jobLabel .. ' - ' .. charLabel, 'Salarii')
-        end)
-        if not okExp then
-            print(('[JOBS] AddExpense eroare pentru %s: %s'):format(charLabel, tostring(errExp)))
-        end
-
-        local okPay, errPay = pcall(function()
-            exports.banking:addCash(row.character_id, salary, 'Salariu - ' .. jobLabel)
-        end)
-        if not okPay then
-            print(('[JOBS] addCash eroare pentru char %d: %s'):format(row.character_id, tostring(errPay)))
-        end
-
+        -- Nu plati jucatori offline. claimSalaryBatch le-a marcat deja last_salary_at,
+        -- deci nu primesc salariu retroactiv pentru timpul cat au fost deconectati.
         local src = sourceForCharacterId(row.character_id)
         if src then
+            local salary    = tonumber(row.salary) or 0
+            local jobLabel  = row.job_label or row.job_name
+            local charLabel = (row.first_name or '') .. ' ' .. (row.last_name or '')
+
+            local okExp, errExp = pcall(function()
+                exports.government:AddExpense(salary, 'RON',
+                    'Salariu ' .. jobLabel .. ' - ' .. charLabel, 'Salarii')
+            end)
+            if not okExp then
+                print(('[JOBS] AddExpense eroare pentru %s: %s'):format(charLabel, tostring(errExp)))
+            end
+
+            local cur        = getPrimaryCurrency()
+            local currencyId = (cur and cur.id) or 1
+            local curSymbol  = (cur and cur.symbol) or '$'
+
+            local okPay, errPay = pcall(function()
+                exports.banking:addCharacterCash(row.character_id, currencyId, salary)
+            end)
+            if not okPay then
+                print(('[JOBS] addCharacterCash eroare pentru char %d: %s'):format(row.character_id, tostring(errPay)))
+            end
+
             TriggerClientEvent('notifications:client:send', src, {
                 type = 'success', title = 'Salariu',
-                message = 'Ai primit $' .. salary .. ' salariu.',
+                message = 'Ai primit ' .. salary .. ' ' .. curSymbol .. ' salariu.',
                 duration = 5000
             })
         end
@@ -88,6 +150,7 @@ function BuildJobPayload(job)
         blipSprite  = job.blip_sprite,
         blipColor   = job.blip_color,
         blipCoords  = coords,
+        currencySymbol = getPrimaryCurrencySymbol(),
     }
 end
 

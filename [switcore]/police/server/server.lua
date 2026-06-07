@@ -190,6 +190,9 @@ AddEventHandler('onResourceStart', function(resourceName)
         PoliceSettings.mdtKey          = exports.settings:GetSetting('police.mdt_key', 'F6')
         PoliceSettings.stationBlip     = exports.settings:GetSettingJSON('police.station_blip',     {})
         PoliceSettings.jailBlip        = exports.settings:GetSettingJSON('police.jail_blip',        {})
+        PoliceSettings.armoryBlip      = exports.settings:GetSettingJSON('police.armory_blip',      {})
+        PoliceSettings.cloakroomBlip   = exports.settings:GetSettingJSON('police.cloakroom_blip',   {})
+        PoliceSettings.garageBlip      = exports.settings:GetSettingJSON('police.garage_blip',      {})
         PoliceSettings.garageCoords    = exports.settings:GetSettingJSON('police.garage_coords',    { x = 0, y = 0, z = 0, heading = 0 })
         PoliceSettings.garageRadius    = exports.settings:GetSettingNumber('police.garage_radius',  5.0)
         PoliceSettings.garageSpawn     = exports.settings:GetSettingJSON('police.garage_spawn',     { x = 0, y = 0, z = 0, heading = 0 })
@@ -243,6 +246,9 @@ RegisterNetEvent('switcore:characterLoaded', function(character)
         handcuffDist    = PoliceSettings.handcuffDist,
         stationBlip     = PoliceSettings.stationBlip,
         jailBlip        = PoliceSettings.jailBlip,
+        armoryBlip      = PoliceSettings.armoryBlip,
+        cloakroomBlip   = PoliceSettings.cloakroomBlip,
+        garageBlip      = PoliceSettings.garageBlip,
     })
 
     if character then
