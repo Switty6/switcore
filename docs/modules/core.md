@@ -8,11 +8,14 @@
 
 | Fișier | Rol |
 |--------|-----|
+| `server/ratelimit.lua` | Limitator de cereri (vezi [`lib.md`](lib.md)) |
+| `server/secure.lua` | `Sw.SecureEvent` (vezi [`lib.md`](lib.md)) |
 | `server/player_cache.lua` | Cache în memorie pentru toți jucătorii online |
 | `server/database.lua` | CRUD PostgreSQL (players, identifiers, groups, bans, warns) |
 | `server/playtime.lua` | Tracking timp online per jucător |
 | `server/groups.lua` | CRUD grupuri + inițializare defaults |
 | `server/permissions.lua` | Verificare + reload permissions din cache |
+| `server/logger.lua` | Logging centralizat filtrat pe `core.log_level` |
 | `server/moderation.lua` | Ban, warn, kick logic |
 | `server/commands.lua` | Comenzi admin (`/ban`, `/warn`, `/kick`, etc.) |
 | `server/localization.lua` | Sistem i18n server-side |
@@ -80,6 +83,37 @@ exports.core:getPlayerBansByDbId(dbId, includeInactive)       → bans[]
 exports.core:getPlayerWarns(target, includeInactive)          → warns[]
 exports.core:getPlayerWarnsByDbId(dbId, includeInactive)      → warns[]
 ```
+
+### Logging & Rate-limit
+```lua
+exports.core:log(level, tag, message)                 -- 'debug'|'info'|'warn'|'error'
+exports.core:checkRateLimit(source, key, max, window) → bool  -- fereastră glisantă (ms)
+exports.core:isRateLimited(identifier, action, max, windowSeconds) → bool
+exports.core:resetRateLimit(identifier, action)       -- action nil = toate cheile
+```
+
+---
+
+## Logging
+
+`server/logger.lua` oferă un logging centralizat, controlat de setarea `core.log_level`. Un mesaj se afișează doar dacă nivelul lui e cel puțin cel configurat, deci pe producție pui `'warn'` și consola rămâne curată fără să scoți apelurile din cod.
+
+```lua
+exports.core:log('debug', 'BANKING', 'cont creat pentru ' .. charId)
+exports.core:log('error', 'CORE', 'conexiune DB pierdută')
+-- afișează: [BANKING] [DEBUG] cont creat pentru 42
+```
+
+Ordinea nivelurilor: `debug < info < warn < error`. La `core.log_level = 'warn'`, doar `warn` și `error` ajung în consolă. Nivel necunoscut sau lipsă cade pe `info`.
+
+---
+
+## Rate-limit
+
+Două layere, ambele în `server/ratelimit.lua`:
+
+- **`checkRateLimit(source, key, max, window)`** - fereastră glisantă per `(source, cheie)`, măsurată în ms cu `GetGameTimer`, curățată automat la `playerDropped`. E layerul folosit de `Sw.SecureEvent` prin `opts.rateLimit`. Vezi [`lib.md`](lib.md).
+- **`isRateLimited` / `resetRateLimit`** - layer pe ferestre fixe (secunde), indexat pe orice `identifier` (nu doar `source`), util pentru limitări care depășesc durata unei sesiuni. Respectă setarea `core.ratelimit_enabled` (dacă e `false`, `isRateLimited` întoarce mereu `false`).
 
 ---
 

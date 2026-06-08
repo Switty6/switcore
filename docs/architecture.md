@@ -59,14 +59,15 @@ settings-panel ← independent (Node.js)                                    │
 
 - **`Sw`** (`core/shared/lib.lua`) - utilitare pure (string, numeric, table, format bani) plus motorul de validare `Sw.ValidateArgs`. Shared client + server, zero stare.
 - **`Sw.SecureEvent`** (`core/server/secure.lua`) - înlocuiește boilerplate-ul repetat din handlerele de server (rate-limit, permisiune, fetch personaj, validare argumente, notificare la eroare) cu o singură declarație și un `ctx` curat.
-- **Rate limiter** (`core/server/ratelimit.lua`) - fereastră glisantă per `(source, cheie)`, expus ca `exports.core:checkRateLimit`, curățat la `playerDropped`.
+- **Rate limiter** (`core/server/ratelimit.lua`) - fereastră glisantă per `(source, cheie)`, expus ca `exports.core:checkRateLimit`, curățat la `playerDropped`. Plus un layer pe ferestre fixe (`isRateLimited`/`resetRateLimit`) pentru limitări care depășesc o sesiune.
+- **Logger** (`core/server/logger.lua`) - logging centralizat filtrat pe `core.log_level`, expus ca `exports.core:log(level, tag, message)`. Detalii în [`docs/modules/core.md`](modules/core.md).
 
 Un modul adoptă layerul adăugând în manifest:
 ```lua
 shared_scripts { '@core/shared/lib.lua', 'config.lua' }
 server_scripts { '@core/server/secure.lua', ... }
 ```
-Adopția e incrementală - modulele care nu includ aceste fișiere funcționează neschimbat.
+Adopția e incrementală - modulele care nu includ aceste fișiere funcționează neschimbat. La v1.0.0 marea majoritate a modulelor de gameplay și-au migrat handlerele pe `Sw.SecureEvent` (20 de module includ `secure.lua`). Excepții intenționate: evenimentele de lifecycle (`switcore:characterLoaded`) rămân `RegisterNetEvent` brut fiindcă sunt interne, nu acțiuni de user; iar `settings` nu poate include `@core` din cauza dependenței circulare (`core` depinde de `settings`).
 
 ---
 
@@ -207,6 +208,8 @@ exports.postgres:query(
 |-------|---------|-----------|
 | `core.playtime_update_interval` | `60` | Secunde între update-uri playtime |
 | `core.default_language` | `'ro'` | Limbă implicită server |
+| `core.log_level` | `'info'` | Prag logging (`debug`/`info`/`warn`/`error`) |
+| `core.ratelimit_enabled` | `true` | Activează rate-limit-ul pe ferestre fixe |
 | `jobs.salary_interval` | `1800000` | ms între plăți salarii (30 min) |
 | `vehicles.default_fuel` | `100` | Combustibil implicit vehicul nou |
 | `vehicles.fuel_consumption_rate` | `0.02` | % combustibil/secundă |
