@@ -23,26 +23,12 @@ set onesync on
 set sv_scriptHookAllowed 0
 
 # =============================================================================
-# CONVARS SWITCORE - completeaza inainte de prima pornire
+# BAZA DE DATE SI PANOU SWITCORE
+# Ruleaza setup.bat din resources/ inainte de prima pornire. El face npm install
+# si creeaza config.local.js pentru:
+#   resources/[switcore]/postgres/config.local.js         (conexiune baza de date)
+#   resources/[switcore]/settings-panel/config.local.js   (panou web de setari)
 # =============================================================================
-
-# --- Conector PostgreSQL (modulul postgres) ---
-# Modulul postgres NU isi ia credentialele de aici. Configureaza baza de date in:
-#   resources/[switcore]/postgres/config.local.js
-# Cel mai simplu: ruleaza setup.bat din resources/ (face npm install + config.local.js).
-
-# --- Panou de setari web (modulul settings-panel) ---
-# setup.bat configureaza panoul in settings-panel/config.local.js (are prioritate).
-# Convarurile de mai jos sunt alternativa: decomenteaza-le daca preferi sa-l setezi de aici.
-#set switcore_panel_jwt_secret      "GENEREAZA_STRING_RANDOM_LUNG_AICI_MINIM_32_CARACTERE"
-#set switcore_panel_admin_username  "admin"
-#set switcore_panel_admin_password  "PAROLA_PUTERNICA_AICI"
-#set switcore_panel_db_host         "localhost"
-#set switcore_panel_db_port         "5432"
-#set switcore_panel_db_name         "switcore"
-#set switcore_panel_db_user         "switcore_user"
-#set switcore_panel_db_password     "PAROLA_DB_AICI"
-#set switcore_panel_cors_origins    "http://localhost:8080"
 
 # =============================================================================
 # SISTEM - resurse Cfx.re implicite (pornesc primele)
