@@ -1,4 +1,4 @@
-version     '1.0.0'
+version     '1.1.0'
 description 'Sistem de joburi pentru SwitCore. Joburi legale, facțiuni ilegale și joburi libere.'
 author      'Switty'
 

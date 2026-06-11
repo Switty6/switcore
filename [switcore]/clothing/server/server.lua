@@ -157,6 +157,13 @@ RegisterNetEvent('switcore:characterLoaded', function(character)
     end)
 end)
 
+RegisterNetEvent('clothing:requestStores', function()
+    local src = source
+    ClothingDB.getStores(function(stores)
+        if stores then TriggerClientEvent('clothing:receiveStores', src, stores) end
+    end)
+end)
+
 AddEventHandler('playerDropped', function()
     local character = exports.characters:getActiveCharacter(source)
     if character then

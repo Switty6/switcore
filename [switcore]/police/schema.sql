@@ -90,9 +90,9 @@ INSERT INTO settings (key, value, description) VALUES
 -- Locatii
 ('police.jail_cell',         '{"x":1651.0,"y":2570.0,"z":45.5,"heading":90.0}',  'Coordonate celula inchisoare (x,y,z,heading)'),
 ('police.jail_release',      '{"x":1845.0,"y":2586.0,"z":45.7,"heading":270.0}', 'Coordonate iesire inchisoare (x,y,z,heading)'),
-('police.armory_coords',     '{"x":462.5,"y":-993.6,"z":26.7}',                  'Coordonate dulap armament'),
+('police.armory_coords',     '{"x":461.2,"y":-982.6,"z":30.65}',                 'Coordonate dulap armament'),
 ('police.armory_radius',     '1.5',                                               'Raza de interactiune cu armamentul (metri)'),
-('police.cloakroom_coords',  '{"x":458.8,"y":-1000.2,"z":26.7}',                 'Coordonate vestiar politie'),
+('police.cloakroom_coords',  '{"x":461.2,"y":-987.4,"z":30.65}',                 'Coordonate vestiar politie'),
 ('police.cloakroom_radius',  '1.5',                                               'Raza de interactiune cu vestiarul (metri)'),
 
 -- Gameplay
@@ -119,11 +119,11 @@ INSERT INTO settings (key, value, description) VALUES
 
 -- Garaj vehicule
 ('police.garage_coords',
- '{"x":453.2,"y":-989.3,"z":30.7,"heading":355.0}',
+ '{"x":454.6,"y":-1017.4,"z":28.4,"heading":90.0}',
  'Coordonate garaj politie (x,y,z,heading)'),
 ('police.garage_radius',  '5.0', 'Raza de interactiune garaj politie (metri)'),
 ('police.garage_spawn',
- '{"x":453.2,"y":-994.3,"z":30.7,"heading":355.0}',
+ '{"x":447.6,"y":-1022.0,"z":28.4,"heading":90.0}',
  'Punct de spawn vehicule garaj politie (x,y,z,heading)'),
 
 -- Modele flota vehicule (definesc ce modele pot fi in flota)
@@ -144,6 +144,48 @@ INSERT INTO settings (key, value, description) VALUES
  'Configurare blip sectie de politie (JSON)'),
 ('police.jail_blip',
  '{"x":1651.0,"y":2570.0,"z":45.5,"sprite":123,"color":3,"scale":0.8,"label":"Inchisoare"}',
- 'Configurare blip inchisoare (JSON)')
+ 'Configurare blip inchisoare (JSON)'),
+
+-- Blip-uri facilitati interne (vizibile doar pentru politisti). Label-uri fara diacritice.
+('police.armory_blip',
+ '{"x":461.2,"y":-982.6,"z":30.65,"sprite":110,"color":29,"scale":0.7,"label":"Armament"}',
+ 'Configurare blip armament (JSON)'),
+('police.cloakroom_blip',
+ '{"x":461.2,"y":-987.4,"z":30.65,"sprite":73,"color":29,"scale":0.7,"label":"Vestiar"}',
+ 'Configurare blip vestiar (JSON)'),
+('police.garage_blip',
+ '{"x":454.6,"y":-1017.4,"z":28.4,"sprite":357,"color":29,"scale":0.7,"label":"Garaj Politie"}',
+ 'Configurare blip garaj politie (JSON)')
 
 ON CONFLICT (key) DO NOTHING;
+
+-- ==================== MIGRATII COORDONATE (servere existente) ====================
+-- INSERT-ul de mai sus nu suprascrie cheile existente (ON CONFLICT DO NOTHING),
+-- asa ca mutam coordonatele de la valorile vechi (subsol, z=26.7) la parter.
+-- Conditia "value = <vechi>" => NU suprascrie daca ai modificat deja din panoul de settings.
+UPDATE settings SET value = '{"x":461.2,"y":-982.6,"z":30.65}'
+    WHERE key = 'police.armory_coords'    AND value = '{"x":462.5,"y":-993.6,"z":26.7}';
+UPDATE settings SET value = '{"x":461.2,"y":-987.4,"z":30.65}'
+    WHERE key = 'police.cloakroom_coords' AND value = '{"x":458.8,"y":-1000.2,"z":26.7}';
+UPDATE settings SET value = '{"x":454.6,"y":-1017.4,"z":28.4,"heading":90.0}'
+    WHERE key = 'police.garage_coords'    AND value = '{"x":453.2,"y":-989.3,"z":30.7,"heading":355.0}';
+UPDATE settings SET value = '{"x":447.6,"y":-1022.0,"z":28.4,"heading":90.0}'
+    WHERE key = 'police.garage_spawn'     AND value = '{"x":453.2,"y":-994.3,"z":30.7,"heading":355.0}';
+
+-- ==================== ITEMS ARMAMENT POLITIE ====================
+-- Item-urile cerute de armament trebuie sa existe in registrul `items` (inventory),
+-- altfel AddItem respinge cu "Invalid item" si nu se adauga nimic in inventar.
+-- weapon_pistol exista deja in seed-ul inventory; restul le adaugam aici.
+INSERT INTO items (name, label, weight, type, usable, stackable, description) VALUES
+('weapon_stungun',      'Taser',             1.0,  'weapon',  TRUE,  FALSE, 'Arma cu electrosocuri pentru imobilizare.'),
+('weapon_nightstick',   'Baston',            0.8,  'weapon',  TRUE,  FALSE, 'Baston de cauciuc pentru autoaparare.'),
+('weapon_smg',          'SMG',               2.5,  'weapon',  TRUE,  FALSE, 'Pistol-mitraliera. Necesita munitie SMG.'),
+('weapon_carbinerifle', 'Carabina',          3.5,  'weapon',  TRUE,  FALSE, 'Pusca de asalt. Necesita munitie de pusca.'),
+('ammo_pistol',         'Munitie Pistol',    0.01, 'ammo',    FALSE, TRUE,  'Cartuse pentru pistol.'),
+('ammo_smg',            'Munitie SMG',       0.01, 'ammo',    FALSE, TRUE,  'Cartuse pentru pistol-mitraliera.'),
+('ammo_rifle',          'Munitie Pusca',     0.02, 'ammo',    FALSE, TRUE,  'Cartuse pentru pusca.'),
+('handcuffs',           'Catuse',            0.3,  'misc',    TRUE,  FALSE, 'Catuse metalice pentru imobilizarea suspectilor.'),
+('police_radio',        'Statie Radio',      0.4,  'misc',    TRUE,  TRUE,  'Statie radio pentru comunicatii politie.'),
+('police_badge',        'Legitimatie',       0.1,  'misc',    TRUE,  TRUE,  'Legitimatie de politist.'),
+('first_aid_kit',       'Trusa Prim-Ajutor', 0.8,  'medical', TRUE,  FALSE, 'Trusa de prim-ajutor.')
+ON CONFLICT (name) DO NOTHING;

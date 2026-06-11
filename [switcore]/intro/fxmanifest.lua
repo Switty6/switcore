@@ -5,7 +5,7 @@ lua54 'yes'
 name        'SwitCore - Intro Cinematic'
 description 'First-join cinematic overlay cu logo reveal si tagline'
 author      'Switty'
-version     '1.0.0'
+version     '1.1.0'
 
 dependencies { 'core' }
 

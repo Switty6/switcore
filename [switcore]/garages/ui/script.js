@@ -53,12 +53,21 @@ function close() {
 function open(data) {
     state = { ...state, ...data };
     titleEl.textContent = data.garage?.name || 'Garaj';
+    applyGarageType(data.garage?.type);
     render();
     app.classList.remove('hidden');
     tabs.forEach(t => t.classList.remove('active'));
     panes.forEach(p => p.classList.remove('active'));
     tabs[0].classList.add('active');
     document.getElementById('tab-garage').classList.add('active');
+}
+
+function applyGarageType(type) {
+    const isImpound = type === 'impound';
+    const impoundTab  = document.querySelector('.tab[data-tab="impound"]');
+    const impoundPane = document.getElementById('tab-impound');
+    if (impoundTab)  impoundTab.style.display  = isImpound ? '' : 'none';
+    if (impoundPane && !isImpound) impoundPane.classList.remove('active');
 }
 
 function updateData(data) {

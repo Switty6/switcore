@@ -1,4 +1,4 @@
-version     '1.0.0'
+version     '1.1.0'
 description 'Sistem de tuning pentru SwitCore. Upgrade motor, frâne, suspensie, culori și mai mult.'
 author      'Switty'
 

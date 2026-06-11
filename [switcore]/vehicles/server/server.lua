@@ -82,11 +82,26 @@ local function registerVehicleKeyUsable()
     end
 end
 
+local function parkVehiclesLeftOut()
+    local ok, result = pcall(function()
+        return exports.postgres:query(
+            'UPDATE owned_vehicles SET stored = true, updated_at = NOW() WHERE stored = false AND impounded = false'
+        )
+    end)
+    if ok then
+        local count = (result and result.rowCount) or 0
+        print(string.format('[VEHICLES] Vehicule rămase afară parcate automat după restart: %d', count))
+    else
+        print('[VEHICLES] Avertisment: eroare la parcarea vehiculelor rămase afară')
+    end
+end
+
 function initialize()
     seedSettings()
     exports.postgres:query('CREATE SEQUENCE IF NOT EXISTS plate_number_seq START WITH 1 INCREMENT BY 1')
     seedVehicleKeyItem()
     registerVehicleKeyUsable()
+    parkVehiclesLeftOut()
     print('[VEHICLES] Sistemul de vehicule a fost inițializat cu succes!')
 end
 

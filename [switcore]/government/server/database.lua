@@ -17,11 +17,22 @@ function GovDB.getProposals()
     ]])
 end
 
-function GovDB.createProposal(title, description, category, penalty, fineAmount, characterId)
+function GovDB.createProposal(title, description, category, penalty, fineAmount, characterId, durationMinutes)
     return pg():queryOne(
-        'INSERT INTO government_law_proposals (title,description,category,penalty,fine_amount,proposed_by) VALUES ($1,$2,$3,$4,$5,$6) RETURNING *',
-        { title, description, category, penalty, fineAmount, characterId }
+        [[INSERT INTO government_law_proposals
+              (title,description,category,penalty,fine_amount,proposed_by,voting_ends_at)
+          VALUES ($1,$2,$3,$4,$5,$6, NOW() + make_interval(mins => $7))
+          RETURNING *]],
+        { title, description, category, penalty, fineAmount, characterId, durationMinutes }
     )
+end
+
+-- Propuneri al caror termen de vot a expirat si inca sunt 'pending'.
+function GovDB.getExpiredProposals()
+    return pg():queryAll([[
+        SELECT * FROM government_law_proposals
+        WHERE status = 'pending' AND voting_ends_at IS NOT NULL AND voting_ends_at <= NOW()
+    ]])
 end
 
 function GovDB.getProposal(id)
@@ -44,14 +55,14 @@ function GovDB.countYesVotes(proposalId)
 end
 
 function GovDB.addVote(proposalId, characterId, vote)
-    return pg():execute(
+    return pg():query(
         'INSERT INTO government_law_votes (proposal_id,character_id,vote) VALUES ($1,$2,$3) ON CONFLICT (proposal_id,character_id) DO UPDATE SET vote=$3, voted_at=NOW()',
         { proposalId, characterId, vote }
     )
 end
 
 function GovDB.setProposalStatus(proposalId, status)
-    return pg():execute(
+    return pg():query(
         'UPDATE government_law_proposals SET status=$2 WHERE id=$1',
         { proposalId, status }
     )
@@ -79,7 +90,7 @@ function GovDB.createLaw(proposalId, title, description, category, penalty, fine
 end
 
 function GovDB.repealLaw(lawId, characterId)
-    return pg():execute(
+    return pg():query(
         'UPDATE government_laws SET is_active=FALSE, repealed_at=NOW(), repealed_by=$2 WHERE id=$1',
         { lawId, characterId }
     )
@@ -96,9 +107,17 @@ function GovDB.getBudgetLog(limit)
 end
 
 function GovDB.addBudgetEntry(type, amount, currencyCode, description, category, characterId)
-    return pg():execute(
-        'INSERT INTO government_budget_log (type,amount,currency_code,description,category,created_by) VALUES ($1,$2,$3,$4,$5,$6)',
-        { type, amount, currencyCode, description, category, characterId }
+    if characterId then
+        return pg():query(
+            'INSERT INTO government_budget_log (type,amount,currency_code,description,category,created_by) VALUES ($1,$2,$3,$4,$5,$6)',
+            { type, amount, currencyCode, description, category, characterId }
+        )
+    end
+    -- Tranzactii de sistem (ex: salarii) => fara created_by, ramane NULL.
+    -- Necesar pentru ca Lua taie nil-ul de la coada tabelului si pg ar primi 5 parametri in loc de 6.
+    return pg():query(
+        'INSERT INTO government_budget_log (type,amount,currency_code,description,category) VALUES ($1,$2,$3,$4,$5)',
+        { type, amount, currencyCode, description, category }
     )
 end
 
@@ -132,14 +151,14 @@ function GovDB.createParty(name, color, characterId)
 end
 
 function GovDB.updateManifesto(partyId, manifesto)
-    return pg():execute(
+    return pg():query(
         'UPDATE government_parties SET manifesto=$2 WHERE id=$1',
         { partyId, manifesto }
     )
 end
 
 function GovDB.dissolveParty(partyId)
-    return pg():execute(
+    return pg():query(
         'UPDATE government_parties SET is_active=FALSE WHERE id=$1',
         { partyId }
     )
@@ -165,21 +184,21 @@ function GovDB.getCharacterParty(characterId)
 end
 
 function GovDB.joinParty(partyId, characterId, role)
-    return pg():execute(
+    return pg():query(
         'INSERT INTO government_party_members (party_id,character_id,role) VALUES ($1,$2,$3) ON CONFLICT (party_id,character_id) DO NOTHING',
         { partyId, characterId, role or 'member' }
     )
 end
 
 function GovDB.leaveParty(partyId, characterId)
-    return pg():execute(
+    return pg():query(
         'DELETE FROM government_party_members WHERE party_id=$1 AND character_id=$2',
         { partyId, characterId }
     )
 end
 
 function GovDB.setMemberRole(partyId, characterId, role)
-    return pg():execute(
+    return pg():query(
         'UPDATE government_party_members SET role=$3 WHERE party_id=$1 AND character_id=$2',
         { partyId, characterId, role }
     )
@@ -221,9 +240,18 @@ function GovDB.getElectionCandidates(electionId)
 end
 
 function GovDB.addCandidate(electionId, characterId, partyId)
-    return pg():execute(
-        'INSERT INTO government_election_candidates (election_id,character_id,party_id) VALUES ($1,$2,$3) ON CONFLICT DO NOTHING',
-        { electionId, characterId, partyId }
+    -- party_id poate fi nil (candidat independent). In Lua un nil pe ultima
+    -- pozitie din tabel ar fi eliminat si query-ul ar primi mai putini parametri,
+    -- deci alegem varianta de query in functie de existenta partidului.
+    if partyId then
+        return pg():query(
+            'INSERT INTO government_election_candidates (election_id,character_id,party_id) VALUES ($1,$2,$3) ON CONFLICT (election_id,character_id) DO NOTHING',
+            { electionId, characterId, partyId }
+        )
+    end
+    return pg():query(
+        'INSERT INTO government_election_candidates (election_id,character_id) VALUES ($1,$2) ON CONFLICT (election_id,character_id) DO NOTHING',
+        { electionId, characterId }
     )
 end
 
@@ -236,11 +264,11 @@ function GovDB.hasVotedElection(electionId, voterId)
 end
 
 function GovDB.voteElection(electionId, voterId, candidateId)
-    pg():execute(
+    pg():query(
         'INSERT INTO government_election_votes (election_id,voter_id,candidate_id) VALUES ($1,$2,$3)',
         { electionId, voterId, candidateId }
     )
-    pg():execute(
+    pg():query(
         'UPDATE government_election_candidates SET votes=votes+1 WHERE id=$1',
         { candidateId }
     )
@@ -252,7 +280,7 @@ function GovDB.closeElection(electionId, characterId)
         WHERE election_id=$1 ORDER BY votes DESC LIMIT 1
     ]], { electionId })
     local winnerId = winner and winner.character_id or nil
-    pg():execute(
+    pg():query(
         'UPDATE government_elections SET status=$2, ended_at=NOW(), winner_character_id=$3 WHERE id=$1',
         { electionId, 'closed', winnerId }
     )

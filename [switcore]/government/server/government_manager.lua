@@ -1,6 +1,6 @@
 GovManager = {}
 
-local GOV_ORG_CODE = 'government'
+local GOV_ORG_CODE = 'gov'  -- codul organizatiei seedate in banking (organizations.code)
 local currencyCache = nil
 
 local function getCurrencyId()
@@ -68,12 +68,17 @@ function GovManager.proposeLaw(source, characterId, data)
     local penalty     = tostring(data.penalty or ''):sub(1, 200)
     local fineAmount  = math.max(0, tonumber(data.fine_amount) or 0)
 
+    -- Termen de vot in minute: din formular, cu fallback pe setarea globala. Limitat intre 5 min si 7 zile.
+    local defaultMin = exports.settings:GetSettingNumber('government.vote_duration_minutes', 1440)
+    local duration   = math.floor(tonumber(data.duration_minutes) or defaultMin)
+    duration = math.max(5, math.min(duration, 10080))
+
     if #title < 3 or #description < 5 or #category < 2 then
         notify(source, 'error', 'Completeaza toate campurile obligatorii.')
         return
     end
 
-    local proposal = GovDB.createProposal(title, description, category, penalty, fineAmount, characterId)
+    local proposal = GovDB.createProposal(title, description, category, penalty, fineAmount, characterId, duration)
     if not proposal then
         notify(source, 'error', 'Eroare la crearea propunerii.')
         return
@@ -81,6 +86,27 @@ function GovManager.proposeLaw(source, characterId, data)
 
     notifyGovMembers('info', 'Propunere noua: ' .. title .. ' - voteaza in panoul de guvern.')
     return proposal
+end
+
+-- Finalizeaza propunerile al caror termen a expirat: adoptate daca au atins cvorumul, altfel respinse.
+-- Intoarce true daca s-a schimbat ceva (ca apelantul sa reimprospateze panourile).
+function GovManager.finalizeExpiredProposals()
+    local expired = GovDB.getExpiredProposals() or {}
+    if #expired == 0 then return false end
+
+    local quorum = getQuorum()
+    for _, p in ipairs(expired) do
+        local yesVotes = GovDB.countYesVotes(p.id)
+        if yesVotes >= quorum then
+            GovDB.setProposalStatus(p.id, 'passed')
+            GovDB.createLaw(p.id, p.title, p.description, p.category, p.penalty, p.fine_amount, p.proposed_by)
+            notifyGovMembers('success', 'Legea "' .. p.title .. '" a fost adoptata la finalul votului (' .. yesVotes .. '/' .. quorum .. ').')
+        else
+            GovDB.setProposalStatus(p.id, 'rejected')
+            notifyGovMembers('warning', 'Propunerea "' .. p.title .. '" a fost respinsa - voturi insuficiente (' .. yesVotes .. '/' .. quorum .. ').')
+        end
+    end
+    return true
 end
 
 function GovManager.voteLaw(source, characterId, proposalId, vote)
@@ -300,10 +326,14 @@ function GovManager.candidateElection(source, characterId, electionId)
     local myParty = GovDB.getCharacterParty(characterId)
     local partyId = myParty and myParty.party_id or nil
 
-    local ok, err = pcall(function()
-        GovDB.addCandidate(electionId, characterId, partyId)
+    local ok, res = pcall(function()
+        return GovDB.addCandidate(electionId, characterId, partyId)
     end)
     if not ok then
+        notify(source, 'error', 'Eroare la inscrierea ca si candidat.')
+        return
+    end
+    if res and tonumber(res.rowCount) == 0 then
         notify(source, 'error', 'Esti deja inscris ca si candidat.')
         return
     end
@@ -359,6 +389,15 @@ function GovManager.closeElection(source, characterId, electionId)
     return true
 end
 
+-- Payload restrans pentru votul public (cetateni): doar alegerile active + candidatii.
+function GovManager.buildPublicElections()
+    local elections = GovDB.getActiveElections() or {}
+    for _, el in ipairs(elections) do
+        el.candidates = GovDB.getElectionCandidates(el.id) or {}
+    end
+    return elections
+end
+
 function GovManager.buildFullData(source)
     local balance    = GovManager.getTreasuryBalance()
     local proposals  = GovDB.getProposals() or {}
@@ -380,9 +419,11 @@ function GovManager.buildFullData(source)
         if exports.core:hasPermission(src, 'government.access')
             or exports.core:hasPermission(src, 'government.all')
             or exports.core:hasPermission(src, 'admin.all') then
+            local char = exports.characters:getActiveCharacter(src)
+            local name = char and char.first_name and ((char.first_name or '') .. ' ' .. (char.last_name or ''))
             table.insert(officials, {
                 id   = src,
-                name = GetPlayerName(src) or 'Unknown',
+                name = name or GetPlayerName(src) or 'Unknown',
                 dbId = pd and pd.dbId,
             })
         end

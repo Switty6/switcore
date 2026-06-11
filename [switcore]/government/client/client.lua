@@ -1,5 +1,6 @@
 local isUIOpen   = false
 local isLawsOpen = false
+local isVoteOpen = false
 
 local function OpenGov()
     if isUIOpen then return end
@@ -45,6 +46,24 @@ RegisterNUICallback('closeLaws', function(_, cb)
     isLawsOpen = false
     SetNuiFocus(false, false)
     SendNUIMessage({ action = 'closeLaws' })
+    cb('ok')
+end)
+
+RegisterCommand('vot', function()
+    if isVoteOpen then return end
+    TriggerServerEvent('government:server:getPublicElections')
+end, false)
+
+RegisterNetEvent('government:client:openVote', function(elections)
+    isVoteOpen = true
+    SetNuiFocus(true, true)
+    SendNUIMessage({ action = 'openVote', elections = elections })
+end)
+
+RegisterNUICallback('closeVote', function(_, cb)
+    isVoteOpen = false
+    SetNuiFocus(false, false)
+    SendNUIMessage({ action = 'closeVote' })
     cb('ok')
 end)
 
@@ -114,7 +133,7 @@ RegisterNUICallback('candidateElection', function(data, cb)
 end)
 
 RegisterNUICallback('voteElection', function(data, cb)
-    TriggerServerEvent('government:server:voteElection', data.electionId, data.candidateId)
+    TriggerServerEvent('government:server:voteElection', data.electionId, data.candidateId, data.fromVote == true)
     cb('ok')
 end)
 

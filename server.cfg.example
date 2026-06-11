@@ -9,7 +9,7 @@
 sv_hostname "SwitCore Server"          # Numele serverului in lista FiveM
 sv_maxclients 32                        # Nr. maxim de jucatori
 
-# TODO: cheia ta de licenta FiveM (https://keymaster.fivem.net/)
+# TODO: cheia ta de licenta FiveM (https://portal.cfx.re/)
 sv_licenseKey "YOUR_LICENSE_KEY_HERE"
 
 # TODO: endpoint public daca serverul este online
@@ -23,29 +23,12 @@ set onesync on
 set sv_scriptHookAllowed 0
 
 # =============================================================================
-# CONVARS SWITCORE - completeaza inainte de prima pornire
+# BAZA DE DATE SI PANOU SWITCORE
+# Ruleaza setup.bat din resources/ inainte de prima pornire. El face npm install
+# si creeaza config.local.js pentru:
+#   resources/[switcore]/postgres/config.local.js         (conexiune baza de date)
+#   resources/[switcore]/settings-panel/config.local.js   (panou web de setari)
 # =============================================================================
-
-# --- Conector PostgreSQL (modulul postgres) ---
-# TODO: completeaza credentialele bazei tale de date
-set switcore_postgres_host     "localhost"
-set switcore_postgres_port     "5432"
-set switcore_postgres_database "switcore"
-set switcore_postgres_user     "switcore_user"
-set switcore_postgres_password "PAROLA_DB_AICI"
-
-# --- Panou de setari web (modulul settings-panel) ---
-# TODO: schimba toate valorile. JWT secret minim 32 caractere random.
-# Genereaza random: openssl rand -hex 48
-set switcore_panel_jwt_secret      "GENEREAZA_STRING_RANDOM_LUNG_AICI_MINIM_32_CARACTERE"
-set switcore_panel_admin_username  "admin"
-set switcore_panel_admin_password  "PAROLA_PUTERNICA_AICI"
-set switcore_panel_db_host         "localhost"
-set switcore_panel_db_port         "5432"
-set switcore_panel_db_name         "switcore"
-set switcore_panel_db_user         "switcore_user"
-set switcore_panel_db_password     "PAROLA_DB_AICI"
-set switcore_panel_cors_origins    "http://localhost:8080"
 
 # =============================================================================
 # SISTEM - resurse Cfx.re implicite (pornesc primele)

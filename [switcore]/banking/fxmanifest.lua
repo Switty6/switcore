@@ -1,4 +1,4 @@
-version '1.0.0'
+version '1.1.0'
 description 'Sistem de banking/economie pentru SwitCore. Suport pentru conturi bancare multiple, valute, credite și inflație automată.'
 author 'Switty'
 
@@ -108,4 +108,3 @@ exports {
 }
 
 lua54 'yes'
-
