@@ -1,4 +1,4 @@
-version '1.0.0'
+version '1.1.0'
 description 'Sistem de caractere pentru SwitCore. Extensie pentru Core.'
 author 'Switty'
 
@@ -49,4 +49,3 @@ exports {
 }
 
 lua54 'yes'
-

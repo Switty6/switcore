@@ -6,6 +6,10 @@ Format [Keep a Changelog](https://keepachangelog.com/ro/1.1.0/), versionare [Sem
 
 ## [Nelansat]
 
+---
+
+## [1.1.0] - 2026-06-12
+
 ### Adăugat
 
 - **Bibliotecă shared `Sw`** (`core/shared/lib.lua`) - utilitare pure (string, numeric, table, `FormatMoney`) plus motor de validare `Sw.ValidateArgs`, disponibile client + server prin `@core/shared/lib.lua`.
@@ -15,11 +19,13 @@ Format [Keep a Changelog](https://keepachangelog.com/ro/1.1.0/), versionare [Sem
 - **Logging centralizat** controlat de setarea `core.log_level` (`exports.core:log`).
 - Teste de logică (busted) pentru `banking` și `core`, rulate în CI pe Lua 5.4.
 - `docker-compose.yml` pentru PostgreSQL, fără configurare manuală.
+- **`setup.bat`** pentru instalare rapidă pe Windows: rulează `npm install` pentru `postgres` și `settings-panel` și creează `config.local.js` pentru ambele module (date de conectare la bază plus JWT secret generat automat pentru panou).
 - `.editorconfig` și `.gitattributes` pentru consistență de formatare și EOL.
 - Documentație: [docs/modules/lib.md](docs/modules/lib.md).
 
 ### Schimbat
 
+- `server.cfg.example`: scoase convarurile `switcore_postgres_*` și `switcore_panel_*` (configurarea bazei și a panoului se face din `config.local.js`, generat de `setup.bat`); URL-ul de licență actualizat la `portal.cfx.re`.
 - Modulul `clothing` migrat pe `Sw.SecureEvent` ca exemplu de referință (comportament identic).
 - Net events de server migrate pe `Sw.SecureEvent` în toate modulele cu interacțiuni client: `banking`, `characters`, `inventory`, `police`, `ems`, `government`, `admin`, plus familia vehicule (`vehicles`, `garages`, `showroom`, `tuning`), joburile (`jobs`, `mecanic`, `medical`, `taxi`, `garbage`), `mdt` și `shops`. Fiecare handler primește rate-limit, verificare personaj activ și validare argumente, păstrând logica de business, permisiunile și anti-cheat-ul existent.
 

@@ -1,4 +1,4 @@
-version     '1.0.0'
+version     '1.1.0'
 description 'Sistem de vehicule pentru SwitCore. Ownership, chei, combustibil, mileage și persistență stare.'
 author      'Switty'
 
