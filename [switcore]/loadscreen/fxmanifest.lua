@@ -4,7 +4,7 @@ lua54 'yes'
 
 description 'Loading screen custom pentru SwitCore.'
 author 'Switty'
-version '1.0.0'
+version '1.1.0'
 
 loadscreen 'ui/index.html'
 loadscreen_manual_shutdown 'yes'

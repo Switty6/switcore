@@ -4,7 +4,7 @@ lua54 'yes'
 
 description 'Sistem medical SwitCore - boli, simptome, medicamente, rani, transmitere.'
 author 'Switty'
-version '1.0.0'
+version '1.1.0'
 
 dependencies {
     'core',

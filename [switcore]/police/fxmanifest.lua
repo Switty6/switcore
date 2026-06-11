@@ -1,4 +1,4 @@
-version     '1.0.0'
+version     '1.1.0'
 description 'Sistem de politie pentru SwitCore - arest, inchisoare, MDT, armament, vestiar.'
 author      'Switty'
 

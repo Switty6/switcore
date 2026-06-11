@@ -4,7 +4,7 @@ lua54 'yes'
 
 description 'Sistem EMS SwitCore - inconștiență, 112, targă, MDT medical, ambulanță.'
 author 'Switty'
-version '1.0.0'
+version '1.1.0'
 
 dependencies {
     'core',
