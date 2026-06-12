@@ -5,6 +5,38 @@ local FivemEnv = {}
 
 local settingsStore = {}
 
+-- Sw.T/Sw.TP cu lookup real in locales/ro.lua al modulului (dedus din primul
+-- segment al cheii), ca asertiile din specuri sa vada textul final, nu cheia.
+local localeCache = {}
+
+local function loadLocaleNamespace(ns)
+    if localeCache[ns] ~= nil then return localeCache[ns] end
+    local chunk = loadfile(('[switcore]/%s/locales/ro.lua'):format(ns))
+    local ok, data = false, nil
+    if chunk then ok, data = pcall(chunk) end
+    localeCache[ns] = (ok and type(data) == 'table') and data or false
+    return localeCache[ns]
+end
+
+local function translateKey(key, ...)
+    local ns = tostring(key):match('^([^.]+)')
+    local data = ns and loadLocaleNamespace(ns)
+    if not data then return key end
+
+    local node = data
+    for part in tostring(key):gmatch('[^.]+') do
+        if type(node) ~= 'table' then return key end
+        node = node[part]
+    end
+    if type(node) ~= 'string' then return key end
+
+    local args = {...}
+    for i, arg in ipairs(args) do
+        node = node:gsub('{' .. i .. '}', function() return tostring(arg) end)
+    end
+    return node
+end
+
 local function resolveSetting(key, default)
     local value = settingsStore[key]
     if value == nil then return default end
@@ -19,6 +51,11 @@ function FivemEnv.install()
     _G.BankingManager = {}
 
     _G.TriggerEvent = function() end
+
+    _G.Sw = {
+        T = translateKey,
+        TP = function(_, key, ...) return translateKey(key, ...) end,
+    }
 
     -- decode e suprascris per-test (parseBalance), ca sa nu depindem de un parser real.
     _G.json = {

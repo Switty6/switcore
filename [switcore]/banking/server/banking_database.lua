@@ -205,7 +205,7 @@ function BankingDatabase.getCharacterCash(characterId, currencyId)
 end
 
 function BankingDatabase.setCharacterCash(characterId, currencyId, amount)
-    if not amount or amount < 0 then return false, 'amount invalid' end
+    if not amount or amount < 0 then return false, Sw.T('banking.error_invalid_amount') end
     return safeDB('setCharacterCash', function()
         db():query(
             [[
@@ -220,7 +220,7 @@ function BankingDatabase.setCharacterCash(characterId, currencyId, amount)
 end
 
 function BankingDatabase.addCharacterCash(characterId, currencyId, amount)
-    if not amount or amount < 0 then return false, 'amount invalid' end
+    if not amount or amount < 0 then return false, Sw.T('banking.error_invalid_amount') end
     return safeDB('addCharacterCash', function()
         db():query(
             [[
@@ -316,9 +316,9 @@ function BankingDatabase.atomicDepositSameCurrency(characterId, accountId, curre
         ]],
         {characterId, currencyId, key, totalDeduct, amount, accountId}
     )
-    if not row then return false, 'eroare DB' end
-    if not row.cash_ok then return false, 'Fonduri insuficiente' end
-    if not row.bal_ok then return false, 'Cont inexistent' end
+    if not row then return false, Sw.T('banking.error_database') end
+    if not row.cash_ok then return false, Sw.T('banking.error_insufficient_funds') end
+    if not row.bal_ok then return false, Sw.T('banking.error_account_missing') end
     return true
 end
 
@@ -351,8 +351,8 @@ function BankingDatabase.atomicWithdrawSameCurrency(characterId, accountId, curr
         ]],
         {characterId, currencyId, key, accountId, totalDeduct, amount}
     )
-    if not row then return false, 'eroare DB' end
-    if not row.bal_ok then return false, 'Fonduri insuficiente' end
+    if not row then return false, Sw.T('banking.error_database') end
+    if not row.bal_ok then return false, Sw.T('banking.error_insufficient_funds') end
     return true
 end
 
@@ -377,12 +377,12 @@ function BankingDatabase.atomicExchangeInAccount(accountId, currencyFromId, curr
         ]],
         {accountId, keyFrom, keyTo, fromAmount, toAmount}
     )
-    if not row then return false, 'Fonduri insuficiente sau cont inexistent' end
+    if not row then return false, Sw.T('banking.error_insufficient_or_missing_account') end
     return true
 end
 
 function BankingDatabase.atomicTransferSameCurrency(fromAccountId, toAccountId, currencyId, amount, fee)
-    if fromAccountId == toAccountId then return false, 'Conturi identice' end
+    if fromAccountId == toAccountId then return false, Sw.T('banking.error_same_accounts') end
     local key = tostring(currencyId)
     local totalDeduct = amount + (fee or 0)
     local row = db():queryOne(
@@ -415,9 +415,9 @@ function BankingDatabase.atomicTransferSameCurrency(fromAccountId, toAccountId, 
         ]],
         {fromAccountId, toAccountId, key, totalDeduct, amount}
     )
-    if not row then return false, 'eroare DB' end
-    if not row.src_ok then return false, 'Fonduri insuficiente' end
-    if not row.dst_ok then return false, 'Cont destinatie inexistent' end
+    if not row then return false, Sw.T('banking.error_database') end
+    if not row.src_ok then return false, Sw.T('banking.error_insufficient_funds') end
+    if not row.dst_ok then return false, Sw.T('banking.error_recipient_account_missing') end
     return true
 end
 

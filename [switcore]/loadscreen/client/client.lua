@@ -1,3 +1,23 @@
+-- Trimite limba serverului către NUI-ul de loadscreen cât mai devreme.
+-- sw_locale e un convar replicat (setr), deci e disponibil pe client și în
+-- timpul încărcării, înainte să existe switcore:localeData. JS-ul pornește
+-- cu fallback 'ro' până ajunge mesajul.
+local function PushLocale()
+    SendLoadingScreenMessage(json.encode({
+        action = 'sw:i18n:lang',
+        lang = GetConvar('sw_locale', 'ro')
+    }))
+end
+
+PushLocale()
+
+-- Retrimitem o dată, în caz că NUI-ul nu era gata la primul mesaj
+-- (setLang e idempotent pentru aceeași limbă).
+CreateThread(function()
+    Wait(1000)
+    PushLocale()
+end)
+
 -- Închide loadscreen-ul când jucătorul este activ în sesiunea de rețea.
 -- Acesta este cel mai fiabil indicator că resursele s-au terminat de încărcat.
 

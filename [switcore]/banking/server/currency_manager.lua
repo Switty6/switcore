@@ -5,12 +5,12 @@ local cacheExpiry = 300 -- 5 minute
 
 function CurrencyManager.createCurrency(code, name, symbol)
     if not code or not name or not symbol then
-        return false, 'Parametri invalizi'
+        return false, Sw.T('banking.error_invalid_parameters')
     end
     
     local currency = BankingDatabase.createCurrency(code, name, symbol)
     if not currency then
-        return false, 'Eroare la crearea valutei'
+        return false, Sw.T('banking.currency_creation_failed')
     end
     
     exchangeRateCache = {}
@@ -32,25 +32,25 @@ end
 
 function CurrencyManager.setExchangeRate(currencyFromId, currencyToId, rate)
     if not currencyFromId or not currencyToId or not rate then
-        return false, 'Parametri invalizi'
+        return false, Sw.T('banking.error_invalid_parameters')
     end
     
     if currencyFromId == currencyToId then
-        return false, 'Nu poți seta cursul între aceeași valută'
+        return false, Sw.T('banking.exchange_rate_same_currency')
     end
     
     local currencyFrom = BankingDatabase.getCurrencyById(currencyFromId)
     local currencyTo = BankingDatabase.getCurrencyById(currencyToId)
     
     if not currencyFrom or not currencyTo then
-        return false, 'Valută nu există'
+        return false, Sw.T('banking.error_currency_not_found')
     end
     
     local success1 = BankingDatabase.addExchangeRate(currencyFromId, currencyToId, rate)
     local success2 = BankingDatabase.addExchangeRate(currencyToId, currencyFromId, 1.0 / rate)
     
     if not success1 or not success2 then
-        return false, 'Eroare la salvarea cursului'
+        return false, Sw.T('banking.exchange_rate_save_failed')
     end
     
     exchangeRateCache = {}
@@ -152,7 +152,7 @@ end
 
 function CurrencyManager.exchangeCurrency(amount, currencyFromId, currencyToId)
     if amount <= 0 then
-        return false, 'Sumă invalidă', 0.0
+        return false, Sw.T('banking.error_invalid_amount'), 0.0
     end
     
     if currencyFromId == currencyToId then
@@ -161,7 +161,7 @@ function CurrencyManager.exchangeCurrency(amount, currencyFromId, currencyToId)
     
     local rate = CurrencyManager.getExchangeRate(currencyFromId, currencyToId)
     if not rate then
-        return false, 'Nu s-a putut calcula cursul de schimb', 0.0
+        return false, Sw.T('banking.exchange_rate_calculation_failed'), 0.0
     end
     
     local convertedAmount = amount * rate

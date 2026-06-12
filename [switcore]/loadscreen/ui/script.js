@@ -1,3 +1,56 @@
+// i18n inline: in timpul incarcarii nu ne putem baza pe nui://core/ui/i18n.js
+// (resursa core poate sa nu fie inca pornita), asa ca logica t()/apply() e
+// copiata local din core/ui/i18n.js, iar dictionarele se citesc din
+// ui/locales/<lang>.json. Limba vine de la client/client.lua prin
+// SendLoadingScreenMessage({ action: 'sw:i18n:lang', lang }); pana atunci
+// folosim fallback-ul 'ro'.
+const I18N = (() => {
+    let dict   = {};
+    let lang   = null;
+    let reqId  = 0;
+
+    const get = (key) => String(key)
+        .split('.')
+        .reduce((obj, part) => (obj != null ? obj[part] : undefined), dict);
+
+    const t = (key, ...args) => {
+        let value = get(key);
+        if (typeof value !== 'string') return key;
+        args.forEach((arg, i) => {
+            // split/join in loc de replace, ca argumentele cu caractere speciale sa ramana literale
+            value = value.split('{' + (i + 1) + '}').join(String(arg));
+        });
+        return value;
+    };
+
+    const apply = (root = document) => {
+        root.querySelectorAll('[data-i18n]').forEach((el) => {
+            const value = t(el.dataset.i18n);
+            if (value !== el.dataset.i18n) el.textContent = value;
+        });
+    };
+
+    async function setLang(next) {
+        if (next !== 'ro' && next !== 'en') next = 'ro';
+        if (next === lang) return;
+        const id = ++reqId;
+        try {
+            const res  = await fetch(`locales/${next}.json`);
+            const data = await res.json();
+            if (id !== reqId) return; // a venit intre timp o cerere mai noua
+            dict = data;
+            lang = next;
+        } catch (e) {
+            // dictionar absent/invalid: pastram textul fallback din HTML/JS
+            return;
+        }
+        document.documentElement.lang = lang;
+        apply();
+        document.dispatchEvent(new CustomEvent('sw:i18n', { detail: dict }));
+    }
+
+    return { t, apply, setLang };
+})();
 
 const ICONS = {
     interact: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>`,
@@ -11,14 +64,14 @@ const ICONS = {
 };
 
 const TIPS = [
-    { icon: 'interact', text: 'Apasă E pentru a interacționa cu lumea din jurul tău.' },
-    { icon: 'bag',      text: 'Apasă TAB pentru a deschide inventarul.' },
-    { icon: 'terminal', text: 'Folosește /help pentru a vedea comenzile disponibile.' },
-    { icon: 'bank',     text: 'Accesează un ATM sau o bancă pentru a-ți gestiona fondurile.' },
-    { icon: 'person',   text: 'Alege-ți cu grijă personajul - personalitatea contează!' },
-    { icon: 'chat',     text: 'Comunicarea RP cu alți jucători îmbunătățește experiența tuturor.' },
-    { icon: 'shield',   text: 'Respectă regulile serverului pentru o experiență plăcută.' },
-    { icon: 'discord',  text: 'Găsești ajutor și actualizări pe Discord-ul comunității noastre.' },
+    { icon: 'interact', key: 'loadscreen.tips.interact' },
+    { icon: 'bag',      key: 'loadscreen.tips.inventory' },
+    { icon: 'terminal', key: 'loadscreen.tips.help_command' },
+    { icon: 'bank',     key: 'loadscreen.tips.banking' },
+    { icon: 'person',   key: 'loadscreen.tips.character' },
+    { icon: 'chat',     key: 'loadscreen.tips.rp_chat' },
+    { icon: 'shield',   key: 'loadscreen.tips.rules' },
+    { icon: 'discord',  key: 'loadscreen.tips.discord' },
 ];
 
 const SEGMENT_COUNT = 32;
@@ -177,19 +230,34 @@ function typeWrite(text, speed = 32) {
     }, speed);
 }
 
+function showCurrentTip() {
+    setIcon(TIPS[tipIndex].icon);
+    typeWrite(I18N.t(TIPS[tipIndex].key));
+}
+
 function rotateTip() {
     clearInterval(typeTimer);
     elTip.textContent = '';
     tipIndex = (tipIndex + 1) % TIPS.length;
-    setTimeout(() => {
-        setIcon(TIPS[tipIndex].icon);
-        typeWrite(TIPS[tipIndex].text);
-    }, 300);
+    setTimeout(showCurrentTip, 300);
 }
 
-setIcon(TIPS[tipIndex].icon);
-typeWrite(TIPS[tipIndex].text);
-setInterval(rotateTip, 6000);
+// Statusul curent de progres; tinem cheia ca apply() si schimbarea de limba
+// sa re-randeze textul corect, nu fallback-ul initial din HTML.
+function setStatus(key) {
+    elStatus.dataset.i18n = key;
+    elStatus.textContent  = I18N.t(key);
+}
+
+// Pornim sfaturile dupa prima incarcare a dictionarului (fetch local, rapid),
+// ca primul tip sa nu apara ca o cheie netradusa. Daca mesajul de limba
+// ajunge ulterior, evenimentul sw:i18n re-randeaza sfatul curent; statusul
+// e acoperit de apply() prin data-i18n.
+I18N.setLang('ro').then(() => {
+    showCurrentTip();
+    setInterval(rotateTip, 6000);
+    document.addEventListener('sw:i18n', showCurrentTip);
+});
 
 // Evenimentele oficiale FiveM pentru loadscreen:
 // - loadProgress      → loadFraction (0.0–1.0) - progresul principal
@@ -213,11 +281,16 @@ window.addEventListener('message', function (e) {
         elPct.textContent = pct + '%';
         setSegments(segAmt);
 
-        if      (pct < 25)  elStatus.textContent = 'Se inițializează...';
-        else if (pct < 60)  elStatus.textContent = 'Se încarcă resursele...';
-        else if (pct < 90)  elStatus.textContent = 'Aproape gata...';
-        else if (pct < 100) elStatus.textContent = 'Finalizare...';
-        else                elStatus.textContent = 'Gata!';
+        if      (pct < 25)  setStatus('loadscreen.status.initializing');
+        else if (pct < 60)  setStatus('loadscreen.status.loading');
+        else if (pct < 90)  setStatus('loadscreen.status.almost_done');
+        else if (pct < 100) setStatus('loadscreen.status.finalizing');
+        else                setStatus('loadscreen.status.ready');
+    }
+
+    // ── Limba serverului, trimisa din client/client.lua ─────────────────
+    if (d.action === 'sw:i18n:lang' && d.lang) {
+        I18N.setLang(d.lang);
     }
 
     // ── Numele funcției/resursei curente ────────────────────────────────

@@ -12,10 +12,6 @@ AddEventHandler('switcore:introFinished', function()
     CharacterSelection.open()
 end)
 
-RegisterNetEvent('switcore:charactersLocale', function(locale)
-    SendNUIMessage({ action = 'setLocale', locale = locale })
-end)
-
 RegisterNetEvent('switcore:charactersList', function(characters)
     CharacterSelection.setCharacters(characters)
     if not characters or #characters == 0 then

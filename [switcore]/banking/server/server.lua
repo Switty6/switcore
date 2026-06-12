@@ -1,10 +1,8 @@
+exports.core:registerModuleLocales(GetCurrentResourceName())
+
 CreateThread(function()
     while not exports.postgres:isReady() do Wait(100) end
     while not exports.settings:IsReady() do Wait(100) end
-
-    local resourceName = GetCurrentResourceName()
-    exports.core:loadLocaleFile(resourceName, 'ro', 'locales/ro.lua')
-    exports.core:loadLocaleFile(resourceName, 'en', 'locales/en.lua')
 
     InitializeBankingSystem()
 end)

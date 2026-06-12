@@ -21,38 +21,38 @@ end
 
 function BankingManager.createAccount(characterId, bankId, accountType, interestRate, depositTermDays)
     if not characterId or not bankId or not accountType then
-        return false, 'Parametri invalizi'
+        return false, Sw.T('banking.error_invalid_parameters')
     end
 
     characterId = tonumber(characterId)
     bankId = tonumber(bankId)
     if not characterId or characterId <= 0 or not bankId or bankId <= 0 then
-        return false, 'ID-uri invalide'
+        return false, Sw.T('banking.error_invalid_ids')
     end
     
     if accountType ~= 'current' and accountType ~= 'savings' and accountType ~= 'deposit' then
-        return false, 'Tip cont invalid'
+        return false, Sw.T('banking.account_type_invalid')
     end
     
     if accountType == 'deposit' then
         if not depositTermDays then
-            return false, 'Termen depozit necesar'
+            return false, Sw.T('banking.deposit_term_required')
         end
         local minTerm = exports.settings:GetSettingNumber('banking.min_deposit_term_days', 30)
         local maxTerm = exports.settings:GetSettingNumber('banking.max_deposit_term_days', 365)
         if depositTermDays < minTerm or depositTermDays > maxTerm then
-            return false, 'Termen depozit invalid'
+            return false, Sw.T('banking.deposit_term_invalid')
         end
     end
     
     local bank = BankingDatabase.getBankById(bankId)
     if not bank then
-        return false, 'Bancă nu există'
+        return false, Sw.T('banking.error_bank_not_found')
     end
     
     local accountNumber = BankingManager.generateAccountNumber(bank.code)
     if not accountNumber then
-        return false, 'Eroare la generarea numărului de cont'
+        return false, Sw.T('banking.account_number_generation_failed')
     end
     
     if not interestRate then
@@ -69,7 +69,7 @@ function BankingManager.createAccount(characterId, bankId, accountType, interest
     )
     
     if not account then
-        return false, 'Eroare la crearea contului'
+        return false, Sw.T('banking.account_creation_failed')
     end
     
     TriggerEvent('banking:accountCreated', characterId, account.id, accountNumber)
@@ -122,7 +122,7 @@ end
 
 function BankingManager.deposit(characterId, accountId, amount, currencyId)
     if not characterId or not accountId or not amount or amount <= 0 or not currencyId then
-        return false, 'Parametri invalizi'
+        return false, Sw.T('banking.error_invalid_parameters')
     end
 
     local valid, err, charId, accId, currId = BankingHelpers.validateIds(characterId, accountId, currencyId)
@@ -144,7 +144,7 @@ function BankingManager.deposit(characterId, accountId, amount, currencyId)
         if not ok then return false, depErr end
     else
         if not BankingDatabase.atomicSubtractCharacterCash(characterId, feeCurrencyId, fee) then
-            return false, 'Fonduri insuficiente pentru comision'
+            return false, Sw.T('banking.error_insufficient_funds_fee')
         end
         local ok, depErr = BankingDatabase.atomicDepositSameCurrency(characterId, accountId, currencyId, amount, 0)
         if not ok then
@@ -156,7 +156,7 @@ function BankingManager.deposit(characterId, accountId, amount, currencyId)
     BankingDatabase.createTransaction(
         characterId, 'deposit', nil, accountId,
         amount, currencyId, fee, feeCurrencyId,
-        'Depunere în cont', {account_number = account.account_number}
+        Sw.T('banking.tx.deposit_desc'), {account_number = account.account_number}
     )
 
     TriggerEvent('banking:transactionCompleted', characterId, 'deposit', accountId, amount, currencyId)
@@ -165,7 +165,7 @@ end
 
 function BankingManager.withdraw(characterId, accountId, amount, currencyId)
     if not characterId or not accountId or not amount or amount <= 0 or not currencyId then
-        return false, 'Parametri invalizi'
+        return false, Sw.T('banking.error_invalid_parameters')
     end
 
     local valid, err, charId, accId, currId = BankingHelpers.validateIds(characterId, accountId, currencyId)
@@ -191,14 +191,14 @@ function BankingManager.withdraw(characterId, accountId, amount, currencyId)
         if not BankingDatabase.atomicSubtractCharacterCash(characterId, feeCurrencyId, fee) then
             BankingDatabase.atomicSubtractCharacterCash(characterId, currencyId, amount)
             BankingDatabase.atomicAddAccountBalance(accountId, currencyId, amount)
-            return false, 'Fonduri insuficiente pentru comision'
+            return false, Sw.T('banking.error_insufficient_funds_fee')
         end
     end
 
     BankingDatabase.createTransaction(
         characterId, 'withdrawal', accountId, nil,
         amount, currencyId, fee, feeCurrencyId,
-        'Retragere din cont', {account_number = account.account_number}
+        Sw.T('banking.tx.withdrawal_desc'), {account_number = account.account_number}
     )
 
     TriggerEvent('banking:transactionCompleted', characterId, 'withdrawal', accountId, amount, currencyId)
@@ -207,7 +207,7 @@ end
 
 function BankingManager.transfer(characterId, fromAccountId, toAccountId, amount, currencyId)
     if not characterId or not fromAccountId or not toAccountId or not amount or amount <= 0 or not currencyId then
-        return false, 'Parametri invalizi'
+        return false, Sw.T('banking.error_invalid_parameters')
     end
 
     characterId = tonumber(characterId)
@@ -215,20 +215,20 @@ function BankingManager.transfer(characterId, fromAccountId, toAccountId, amount
     toAccountId = tonumber(toAccountId)
     currencyId = tonumber(currencyId)
     if not characterId or characterId <= 0 or not fromAccountId or fromAccountId <= 0 or not toAccountId or toAccountId <= 0 or not currencyId or currencyId <= 0 then
-        return false, 'ID-uri invalide'
+        return false, Sw.T('banking.error_invalid_ids')
     end
 
     local amountValid, amountErr = BankingHelpers.validateTransactionAmount(amount)
     if not amountValid then return false, amountErr end
 
     if fromAccountId == toAccountId then
-        return false, 'Nu poți transfera în același cont'
+        return false, Sw.T('banking.transfer_same_account')
     end
 
     local fromAccount = BankingDatabase.getAccountById(fromAccountId)
     local toAccount = BankingDatabase.getAccountById(toAccountId)
     if not fromAccount or not toAccount then
-        return false, 'Cont nu există'
+        return false, Sw.T('banking.error_account_not_found')
     end
 
     local ownershipValid, ownershipErr = BankingHelpers.validateAccountOwnership(fromAccount, characterId)
@@ -246,14 +246,14 @@ function BankingManager.transfer(characterId, fromAccountId, toAccountId, amount
         if not BankingDatabase.atomicSubtractCharacterCash(characterId, feeCurrencyId, fee) then
             BankingDatabase.atomicSubtractAccountBalance(toAccountId, currencyId, amount)
             BankingDatabase.atomicAddAccountBalance(fromAccountId, currencyId, amount)
-            return false, 'Fonduri insuficiente pentru comision'
+            return false, Sw.T('banking.error_insufficient_funds_fee')
         end
     end
 
     BankingDatabase.createTransaction(
         characterId, 'transfer', fromAccountId, toAccountId,
         amount, currencyId, fee, feeCurrencyId,
-        'Transfer între conturi',
+        Sw.T('banking.tx.transfer_desc'),
         {from_account_number = fromAccount.account_number, to_account_number = toAccount.account_number}
     )
 
@@ -263,7 +263,7 @@ end
 
 function BankingManager.exchangeCurrency(characterId, accountId, amount, currencyFromId, currencyToId)
     if not characterId or not accountId or not amount or amount <= 0 or not currencyFromId or not currencyToId then
-        return false, 'Parametri invalizi'
+        return false, Sw.T('banking.error_invalid_parameters')
     end
 
     local valid, err, charId, accId, currFromId = BankingHelpers.validateIds(characterId, accountId, currencyFromId)
@@ -272,14 +272,14 @@ function BankingManager.exchangeCurrency(characterId, accountId, amount, currenc
 
     currencyToId = tonumber(currencyToId)
     if not currencyToId or currencyToId <= 0 then
-        return false, 'ID-uri invalide'
+        return false, Sw.T('banking.error_invalid_ids')
     end
 
     local amountValid, amountErr = BankingHelpers.validateTransactionAmount(amount)
     if not amountValid then return false, amountErr end
 
     if currencyFromId == currencyToId then
-        return false, 'Nu poți schimba aceeași valută'
+        return false, Sw.T('banking.currency_exchange_same')
     end
 
     local account = BankingDatabase.getAccountById(accountId)
@@ -288,7 +288,7 @@ function BankingManager.exchangeCurrency(characterId, accountId, amount, currenc
 
     local exchangeOk, exchangeErr, convertedAmount = CurrencyManager.exchangeCurrency(amount, currencyFromId, currencyToId)
     if not exchangeOk then
-        return false, exchangeErr or 'Eroare la calcularea cursului'
+        return false, exchangeErr or Sw.T('banking.exchange_rate_calculation_failed')
     end
 
     local fee, feeCurrencyId = FeeManager.calculateCurrencyExchangeFee(account.bank_id, amount, currencyFromId)
@@ -302,14 +302,14 @@ function BankingManager.exchangeCurrency(characterId, accountId, amount, currenc
         if not BankingDatabase.atomicSubtractAccountBalance(accountId, feeCurrencyId, fee) then
             BankingDatabase.atomicAddAccountBalance(accountId, currencyFromId, amount)
             BankingDatabase.atomicSubtractAccountBalance(accountId, currencyToId, convertedAmount)
-            return false, 'Fonduri insuficiente pentru comision'
+            return false, Sw.T('banking.error_insufficient_funds_fee')
         end
     end
 
     BankingDatabase.createTransaction(
         characterId, 'currency_exchange', accountId, accountId,
         amount, currencyFromId, fee, feeCurrencyId,
-        'Schimb valutar',
+        Sw.T('banking.tx.exchange_desc'),
         {currency_to_id = currencyToId, converted_amount = convertedAmount, exchange_rate = convertedAmount / amount}
     )
 

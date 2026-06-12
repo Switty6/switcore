@@ -1,4 +1,22 @@
 
+// Traducere cu fallback pe textul romanesc, pana soseste dictionarul sw:i18n
+function tt(key, fallback, ...args) {
+    let value;
+    if (window.SwI18n) {
+        value = SwI18n.get(key);
+    }
+    if (typeof value !== 'string') value = fallback;
+    args.forEach((arg, i) => {
+        value = value.split('{' + (i + 1) + '}').join(String(arg));
+    });
+    return value;
+}
+
+function accountTypeLabel(type) {
+    const fallbacks = { current: 'Curent', savings: 'Economii', deposit: 'Depozit' };
+    return tt('banking.account_type_' + type, fallbacks[type] || type);
+}
+
 let atmAccounts = [];
 let atmCash = 0;
 
@@ -32,14 +50,14 @@ function renderATMAccounts() {
     if (!list) return;
 
     if (atmAccounts.length === 0) {
-        list.innerHTML = '<div class="atm-account-item"><span class="atm-account-name" style="color: rgba(180,220,255,0.4);">Nu există conturi</span></div>';
+        list.innerHTML = '<div class="atm-account-item"><span class="atm-account-name" style="color: rgba(180,220,255,0.4);">' + tt('banking.atm.no_accounts', 'Nu există conturi') + '</span></div>';
         return;
     }
 
     list.innerHTML = atmAccounts.map(acc => `
         <div class="atm-account-item">
             <div>
-                <div class="atm-account-name">${acc.bankName} - ${acc.accountType === 'current' ? 'Curent' : acc.accountType === 'savings' ? 'Economii' : 'Depozit'}</div>
+                <div class="atm-account-name">${acc.bankName} - ${accountTypeLabel(acc.accountType)}</div>
                 <div class="atm-account-number">${acc.accountNumber}</div>
             </div>
             <div class="atm-account-balance">${formatMoney(acc.balance)}</div>
@@ -74,7 +92,7 @@ function atmWithdraw() {
     const accountId = document.getElementById('atm-withdraw-account').value;
     const amount = parseFloat(document.getElementById('atm-withdraw-amount').value);
     if (!accountId || !amount || amount <= 0) {
-        showToast('Completează toate câmpurile', 'error');
+        showToast(tt('banking.ui.fill_all_fields', 'Completează toate câmpurile'), 'error');
         return;
     }
     fetch('https://banking/withdraw', {
@@ -88,7 +106,7 @@ function atmDeposit() {
     const accountId = document.getElementById('atm-deposit-account').value;
     const amount = parseFloat(document.getElementById('atm-deposit-amount').value);
     if (!accountId || !amount || amount <= 0) {
-        showToast('Completează toate câmpurile', 'error');
+        showToast(tt('banking.ui.fill_all_fields', 'Completează toate câmpurile'), 'error');
         return;
     }
     fetch('https://banking/deposit', {
@@ -103,7 +121,7 @@ function atmTransfer() {
     const toAccountNumber = document.getElementById('atm-transfer-to').value;
     const amount = parseFloat(document.getElementById('atm-transfer-amount').value);
     if (!fromAccountId || !toAccountNumber || !amount || amount <= 0) {
-        showToast('Completează toate câmpurile', 'error');
+        showToast(tt('banking.ui.fill_all_fields', 'Completează toate câmpurile'), 'error');
         return;
     }
     fetch('https://banking/transfer', {

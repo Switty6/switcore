@@ -1,3 +1,5 @@
+exports.core:registerModuleLocales(GetCurrentResourceName())
+
 local function getNotifSettings()
     return {
         maxNotifications = exports.settings:GetSettingNumber('notifications.max_notifications', 5),

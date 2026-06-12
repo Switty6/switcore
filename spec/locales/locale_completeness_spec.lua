@@ -6,12 +6,13 @@ local LANGS = { 'ro', 'en' }
 
 -- Module migrate pe sistemul de localizare (au locales/ro.lua + locales/en.lua).
 -- Adauga aici fiecare modul pe masura ce e migrat.
+-- loadscreen nu apare aici: foloseste ui/locales/*.json (ruleaza inainte de
+-- sincronizarea normala a localelor), nu locales/*.lua
 local MIGRATED = {
     'core',
     'notifications',
     'characters',
     'banking',
-    'loadscreen',
 }
 
 -- Toate modulele din [switcore]; folosit ca un modul cu locales/ dar absent

@@ -5,16 +5,25 @@ const CONFIG = {
 };
 
 const TYPE_META = {
-    'success':     { icon: '<i data-lucide="check"></i>',          title: 'Succes' },
-    'error':       { icon: '<i data-lucide="x"></i>',              title: 'Eroare' },
-    'info':        { icon: 'i',                                     title: 'Informație' },
-    'warning':     { icon: '!',                                     title: 'Atenție' },
-    'cash-add':    { icon: '+',                                     title: 'Fonduri primite' },
-    'cash-remove': { icon: '−',                                     title: 'Fonduri deduse' }
+    'success':     { icon: '<i data-lucide="check"></i>',          key: 'notifications.types.success',     title: 'Succes' },
+    'error':       { icon: '<i data-lucide="x"></i>',              key: 'notifications.types.error',       title: 'Eroare' },
+    'info':        { icon: 'i',                                     key: 'notifications.types.info',        title: 'Informație' },
+    'warning':     { icon: '!',                                     key: 'notifications.types.warning',     title: 'Atenție' },
+    'cash-add':    { icon: '+',                                     key: 'notifications.types.cash_add',    title: 'Fonduri primite' },
+    'cash-remove': { icon: '−',                                     key: 'notifications.types.cash_remove', title: 'Fonduri deduse' }
 };
 
 let notifId = 0;
 const container = document.getElementById('notifications-container');
+
+// Traducere cu fallback pe textul romanesc, pana soseste dictionarul sw:i18n
+function t(key, fallback) {
+    if (window.SwI18n) {
+        const value = SwI18n.t(key);
+        if (value !== key) return value;
+    }
+    return fallback;
+}
 
 function escapeHtml(str) {
     const d = document.createElement('div');
@@ -63,10 +72,10 @@ function createNotif(type, message, duration) {
         <div class="notif-body">
             <div class="notif-icon">${meta.icon}</div>
             <div class="notif-content">
-                <div class="notif-title">${meta.title}</div>
+                <div class="notif-title" data-i18n="${meta.key}">${t(meta.key, meta.title)}</div>
                 <div class="notif-message">${escapeHtml(message)}</div>
             </div>
-            <button class="notif-close" aria-label="Închide"><i data-lucide="x"></i></button>
+            <button class="notif-close" aria-label="${t('notifications.close', 'Închide')}"><i data-lucide="x"></i></button>
         </div>
         <div class="notif-progress">
             <div class="notif-progress-bar"></div>
@@ -94,7 +103,7 @@ function createCashNotif(amount, currency, isAdd, duration) {
     const dur  = duration || CONFIG.defaultDuration;
     const type = isAdd ? 'cash-add' : 'cash-remove';
     const sign = isAdd ? '+' : '−';
-    const label = isAdd ? 'Fonduri primite' : 'Fonduri deduse';
+    const meta = TYPE_META[type];
 
     const visible = container.querySelectorAll('.notification:not([data-leaving])');
     if (visible.length >= CONFIG.maxNotifications) {
@@ -113,9 +122,9 @@ function createCashNotif(amount, currency, isAdd, duration) {
             <div class="notif-icon">${sign}</div>
             <div class="notif-content">
                 <div class="notif-cash-amount">${sign}${escapeHtml(currency)}${formatAmount(amount)}</div>
-                <div class="notif-cash-label">${label}</div>
+                <div class="notif-cash-label" data-i18n="${meta.key}">${t(meta.key, meta.title)}</div>
             </div>
-            <button class="notif-close" aria-label="Închide"><i data-lucide="x"></i></button>
+            <button class="notif-close" aria-label="${t('notifications.close', 'Închide')}"><i data-lucide="x"></i></button>
         </div>
         <div class="notif-progress">
             <div class="notif-progress-bar"></div>
