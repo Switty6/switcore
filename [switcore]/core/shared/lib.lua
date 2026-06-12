@@ -59,6 +59,35 @@ function Sw.DeepCopy(orig)
     return copy
 end
 
+local isServerContext = type(IsDuplicityVersion) == 'function' and IsDuplicityVersion() or false
+
+-- Traducere cu limba activa (server: limba serverului, client: limba curenta).
+-- Cade pe cheie daca core nu e inca pornit. Ex: Sw.T('banking.deposit_success', suma)
+function Sw.T(key, ...)
+    local ok, res = pcall(function(...)
+        return exports.core:t(key, ...)
+    end, ...)
+    if ok and res ~= nil then return res end
+    return key
+end
+
+if isServerContext then
+    -- Traducere adresata unui jucator anume. Pe public e identica cu Sw.T;
+    -- pe premium foloseste limba aleasa de jucator (Config.ALLOW_PLAYER_LANGUAGE).
+    -- Foloseste-o pentru orice mesaj trimis unui source, ca migrarea sa fie gratuita.
+    function Sw.TP(source, key, ...)
+        local ok, res = pcall(function(...)
+            return exports.core:tp(source, key, ...)
+        end, ...)
+        if ok and res ~= nil then return res end
+        return key
+    end
+else
+    function Sw.TP(_, key, ...)
+        return Sw.T(key, ...)
+    end
+end
+
 local function validateOne(rule, value)
     local t = rule.type or 'any'
 
@@ -66,51 +95,51 @@ local function validateOne(rule, value)
         if rule.optional then
             return true, rule.default
         end
-        return false, ('Lipseste campul obligatoriu "%s".'):format(rule.name or '?')
+        return false, Sw.T('core.validation.required_field', rule.name or '?')
     end
 
     if t == 'int' then
         local n = tonumber(value)
         if not n or n ~= math.floor(n) then
-            return false, ('Campul "%s" trebuie sa fie un numar intreg.'):format(rule.name or '?')
+            return false, Sw.T('core.validation.field_int', rule.name or '?')
         end
         if rule.min and n < rule.min then
-            return false, ('Campul "%s" trebuie sa fie cel putin %s.'):format(rule.name or '?', rule.min)
+            return false, Sw.T('core.validation.field_min', rule.name or '?', rule.min)
         end
         if rule.max and n > rule.max then
-            return false, ('Campul "%s" trebuie sa fie cel mult %s.'):format(rule.name or '?', rule.max)
+            return false, Sw.T('core.validation.field_max', rule.name or '?', rule.max)
         end
         return true, n
     elseif t == 'number' then
         local n = tonumber(value)
         if not n then
-            return false, ('Campul "%s" trebuie sa fie un numar.'):format(rule.name or '?')
+            return false, Sw.T('core.validation.field_number', rule.name or '?')
         end
         if rule.min and n < rule.min then
-            return false, ('Campul "%s" trebuie sa fie cel putin %s.'):format(rule.name or '?', rule.min)
+            return false, Sw.T('core.validation.field_min', rule.name or '?', rule.min)
         end
         if rule.max and n > rule.max then
-            return false, ('Campul "%s" trebuie sa fie cel mult %s.'):format(rule.name or '?', rule.max)
+            return false, Sw.T('core.validation.field_max', rule.name or '?', rule.max)
         end
         return true, n
     elseif t == 'string' then
         if type(value) ~= 'string' then
-            return false, ('Campul "%s" trebuie sa fie text.'):format(rule.name or '?')
+            return false, Sw.T('core.validation.field_string', rule.name or '?')
         end
         local s = value
         if rule.maxLen then s = s:sub(1, rule.maxLen) end
         if rule.minLen and #Sw.Trim(s) < rule.minLen then
-            return false, ('Campul "%s" e prea scurt.'):format(rule.name or '?')
+            return false, Sw.T('core.validation.field_too_short', rule.name or '?')
         end
         return true, s
     elseif t == 'boolean' then
         if type(value) ~= 'boolean' then
-            return false, ('Campul "%s" trebuie sa fie boolean.'):format(rule.name or '?')
+            return false, Sw.T('core.validation.field_boolean', rule.name or '?')
         end
         return true, value
     elseif t == 'table' then
         if type(value) ~= 'table' then
-            return false, ('Campul "%s" trebuie sa fie un tabel.'):format(rule.name or '?')
+            return false, Sw.T('core.validation.field_table', rule.name or '?')
         end
         return true, value
     end
@@ -130,7 +159,7 @@ function Sw.ValidateArgs(rawArgs, schema)
         if rule.name then cleaned[rule.name] = result end
 
         if rule.oneOf and result ~= nil and not Sw.TableContains(rule.oneOf, result) then
-            return false, ('Valoare invalida pentru "%s".'):format(rule.name or '?')
+            return false, Sw.T('core.validation.invalid_value', rule.name or '?')
         end
     end
     return true, cleaned

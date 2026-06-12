@@ -119,19 +119,6 @@ local function findOrCreatePlayer(source, identifiers, name)
     return nil
 end
 
-local function sendLocaleToClient(source, language)
-    local locale = LocalizationServer.getLocaleData(language)
-    if locale then
-        TriggerClientEvent('switcore:localeData', source, language, locale)
-    else
-        local defaultLanguage = exports.settings:GetSetting('core.default_language', 'ro') or 'ro'
-        local defaultLocale = LocalizationServer.getLocaleData(defaultLanguage)
-        if defaultLocale then
-            TriggerClientEvent('switcore:localeData', source, defaultLanguage, defaultLocale)
-        end
-    end
-end
-
 AddEventHandler('playerConnecting', function(name, setKickReason, deferrals)
     local source = source
     
@@ -193,15 +180,17 @@ AddEventHandler('playerConnecting', function(name, setKickReason, deferrals)
         
         local groups = Database.getPlayerGroups(playerData.dbId)
         local permissions = Database.getPlayerPermissions(playerData.dbId)
-        local playerLanguage = playerData.language or exports.settings:GetSetting('core.default_language', 'ro') or 'ro'
+        -- pe public toti primesc limba serverului; per-jucator doar pe premium
+        local playerLanguage = (Config.ALLOW_PLAYER_LANGUAGE and playerData.language)
+            or LocalizationServer.getLanguage()
         PlayerCache.updateInCache(source, {
             groups = groups,
             permissions = permissions,
             language = playerLanguage
         })
-        
+
         TriggerClientEvent('switcore:languageChanged', source, playerLanguage)
-        sendLocaleToClient(source, playerLanguage)
+        LocalizationServer.sendLocaleToClient(source, playerLanguage)
         
         PlaytimeTracker.startTracking(source)
 
@@ -558,9 +547,9 @@ end)
 exports('setPlayerLanguage', function(source, language)
     local player = PlayerCache.getFromCache(source)
     if not player then
-        return false, 'Player not found'
+        return false, Localize('errors.player_not_found')
     end
-    
+
     local availableLocales = LocalizationServer.getAvailableLocales()
     local isValid = false
     for _, lang in ipairs(availableLocales) do
@@ -569,51 +558,65 @@ exports('setPlayerLanguage', function(source, language)
             break
         end
     end
-    
+
     if not isValid then
-        return false, 'Language not available: ' .. tostring(language)
+        return false, Localize('language.not_available', tostring(language))
     end
-    
+
     PlayerCache.updateInCache(source, {language = language})
     Database.updatePlayerLanguage(player.dbId, language)
-    
+
     return true
 end)
 
 exports('getPlayerLanguage', function(source)
-    local player = PlayerCache.getFromCache(source)
-    if player and player.language then
-        return player.language
-    end
-    return exports.settings:GetSetting('core.default_language', 'ro') or 'ro'
+    return LocalizationServer.resolvePlayerLanguage(tonumber(source))
 end)
 
-RegisterNetEvent('switcore:setLanguage', function(language)
-    local source = source
-    local success, error = exports.core:setPlayerLanguage(source, language)
-    
+Sw.SecureEvent('switcore:setLanguage', {
+    rateLimit = { max = 5, window = 10000 },
+    args = {
+        { name = 'language', type = 'string', minLen = 2, maxLen = 8 },
+    },
+}, function(ctx)
+    local source = ctx.source
+    local language = ctx.args.language
+
+    -- pe public limba e unica pe server; selectia per-jucator e feature de premium
+    if not Config.ALLOW_PLAYER_LANGUAGE then
+        TriggerClientEvent('switcore:languageError', source, Localize('language.not_allowed', source))
+        return
+    end
+
+    local success, err = exports.core:setPlayerLanguage(source, language)
+
     if success then
         TriggerClientEvent('switcore:languageChanged', source, language)
-        sendLocaleToClient(source, language)
-        
+        LocalizationServer.sendLocaleToClient(source, language)
+
         local message = Localize('language.changed', source, language)
         TriggerClientEvent('switcore:localizedMessage', source, message)
     else
-        TriggerClientEvent('switcore:languageError', source, error or 'Unknown error')
+        TriggerClientEvent('switcore:languageError', source, err or Localize('errors.unknown', source))
     end
 end)
 
-RegisterNetEvent('switcore:getLocalizedMessage', function(key, ...)
-    local source = source
-    local message = Localize(key, source, ...)
-    TriggerClientEvent('switcore:localizedMessage', source, message)
+Sw.SecureEvent('switcore:getLocalizedMessage', {
+    silent = true,
+    rateLimit = { max = 20, window = 10000 },
+}, function(ctx)
+    local key = ctx.args[1]
+    if type(key) ~= 'string' then return end
+    local message = Localize(key, ctx.source, table.unpack(ctx.args, 2))
+    TriggerClientEvent('switcore:localizedMessage', ctx.source, message)
 end)
 
-RegisterNetEvent('switcore:requestLocale', function(language)
-    local source = source
-    local player = PlayerCache.getFromCache(source)
-    local playerLanguage = language or (player and player.language) or exports.settings:GetSetting('core.default_language', 'ro') or 'ro'
-    sendLocaleToClient(source, playerLanguage)
+Sw.SecureEvent('switcore:requestLocale', {
+    silent = true,
+    rateLimit = { max = 10, window = 10000 },
+}, function(ctx)
+    local source = ctx.source
+    LocalizationServer.sendLocaleToClient(source, LocalizationServer.resolvePlayerLanguage(source))
 end)
 
 exports('isRateLimited', function(identifier, action, maxRequests, windowSeconds)

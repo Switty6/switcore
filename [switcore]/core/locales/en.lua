@@ -98,7 +98,32 @@ return {
     },
     language = {
         changed = 'Language changed to {1}',
-        invalid = 'Invalid language. Available: ro, en'
+        invalid = 'Invalid language. Available: ro, en',
+        not_available = 'Language not available: {1}',
+        not_allowed = 'Changing the language is not allowed on this server.',
+        usage = 'Usage: /language [ro|en]',
+        current = 'Current language: {1}',
+        available = 'Available languages: ro (Romanian), en (English)',
+        changing = 'Changing language to: {1}...'
+    },
+    core = {
+        validation = {
+            required_field = 'Missing required field "{1}".',
+            field_int = 'Field "{1}" must be an integer.',
+            field_min = 'Field "{1}" must be at least {2}.',
+            field_max = 'Field "{1}" must be at most {2}.',
+            field_number = 'Field "{1}" must be a number.',
+            field_string = 'Field "{1}" must be text.',
+            field_too_short = 'Field "{1}" is too short.',
+            field_boolean = 'Field "{1}" must be a boolean.',
+            field_table = 'Field "{1}" must be a table.',
+            invalid_value = 'Invalid value for "{1}".'
+        },
+        secure = {
+            rate_limited = 'Too many requests. Wait a moment.',
+            no_permission = 'You do not have the required permission.',
+            no_character = 'You do not have an active character.'
+        }
     }
 }
 
