@@ -204,7 +204,7 @@ local function startCarryAndDropoff(wpIndex, bagIndex, bag)
             DeleteObject(bag.prop)
             bag.prop = nil
         end
-        notify('warning', 'Camion absent', 'Sacul a fost aruncat.')
+        notify('warning', Sw.T('garbage.title_no_truck'), Sw.T('garbage.bag_tossed'))
         finalizeBagAfterDrop(wpIndex, bagIndex)
         return
     end
@@ -216,7 +216,7 @@ local function startCarryAndDropoff(wpIndex, bagIndex, bag)
     SetBlipScale(dropBlip, 0.9)
     SetBlipAsMissionCreatorBlip(dropBlip, true)
     BeginTextCommandSetBlipName('STRING')
-    AddTextComponentString('Arunca sacul in camion')
+    AddTextComponentString(Sw.T('garbage.drop_bag_truck'))
     EndTextCommandSetBlipName(dropBlip)
 
     -- Suspenda ruta GPS curenta; se reia dupa drop
@@ -246,15 +246,15 @@ local function startCarryAndDropoff(wpIndex, bagIndex, bag)
 
     carryState.dropProxId = exports.proximity:AddEntityInteraction(
         spawnedVehicle,
-        'Arunca sacul in camion',
+        Sw.T('garbage.drop_bag_truck'),
         'garbage_drop',
         {},
         function()
             if not carryState or carryState.bag ~= bag then return end
 
             if not isPedBehindTruck(PlayerPedId(), spawnedVehicle) then
-                notify('warning', 'Pozitionare gresita',
-                    'Trebuie sa stai in spatele camionului ca sa arunci sacul.')
+                notify('warning', Sw.T('garbage.title_wrong_position'),
+                    Sw.T('garbage.must_be_behind_truck'))
                 return
             end
 
@@ -277,7 +277,7 @@ local function startCarryAndDropoff(wpIndex, bagIndex, bag)
         nil, nil, 7.0  -- maxDistance override: camion lung, default 2m e insuficient
     )
 
-    notify('info', 'Arunca sacul', 'Mergi in spatele camionului si apasa ALT.')
+    notify('info', Sw.T('garbage.title_toss_bag'), Sw.T('garbage.toss_bag_instruction'))
 end
 
 local function onBagCollect(wpIndex, bagIndex)
@@ -363,8 +363,8 @@ local function spawnBagsForWaypoint(wpIndex, wp)
                 local capturedWp  = wpIndex
                 local capturedBag = i
                 local label       = isHeavy
-                    and 'Gunoi Greu ' .. i .. '/' .. bagCount
-                    or  'Culege Punga ' .. i .. '/' .. bagCount
+                    and Sw.T('garbage.bag_heavy', i, bagCount)
+                    or  Sw.T('garbage.bag_light', i, bagCount)
 
                 local proxId = exports.proximity:AddEntityInteraction(
                     prop,
@@ -442,7 +442,7 @@ local function spawnAllBlips()
             waypointBlips[i] = createMissionBlip(
                 vector3(wp.x, wp.y, wp.z),
                 318, 5, 0.9,
-                'Container ' .. i .. ' (Salubritate)',
+                Sw.T('garbage.container_blip', i),
                 false
             )
         end
@@ -478,7 +478,7 @@ function setNextWaypointGPS()
         depotReturnBlip = createMissionBlip(
             vector3(c.x, c.y, c.z),
             318, 2, 1.0,
-            'Returneaza la Depou',
+            Sw.T('garbage.prox_return_depot'),
             false
         )
     end
@@ -518,9 +518,8 @@ AddEventHandler('garbage:route:start', function(data)
                 totalBags = totalBags + #bags
             end
 
-            notify('info', 'Ruta Incepe: ' .. data.route.name,
-                string.format('%d containere · %d saci total. Urmeaza GPS-ul!',
-                    #data.route.waypoints, totalBags))
+            notify('info', Sw.T('garbage.title_route_start', data.route.name),
+                Sw.T('garbage.route_start_detail', #data.route.waypoints, totalBags))
         end)
     end)
 end)
@@ -534,12 +533,11 @@ AddEventHandler('garbage:route:pointConfirmed', function(data)
 
     local remaining = data.total - data.collected
     if remaining > 0 then
-        notify('success', 'Container Colectat',
-            string.format('%d/%d containere (mai raman %d).',
-                data.collected, data.total, remaining))
+        notify('success', Sw.T('garbage.title_container_collected'),
+            Sw.T('garbage.container_collected_detail', data.collected, data.total, remaining))
     else
-        notify('success', 'Toate containerele colectate!',
-            'Intoarce-te la depou pentru plata.')
+        notify('success', Sw.T('garbage.title_all_collected'),
+            Sw.T('garbage.return_to_depot'))
     end
 end)
 

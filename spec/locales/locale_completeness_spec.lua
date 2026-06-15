@@ -28,6 +28,14 @@ local MIGRATED = {
     'police',
     'ems',
     'medical',
+    'taxi',
+    'mecanic',
+    'garbage',
+    'hud',
+    'intro',
+    'welcome',
+    'needs',
+    'proximity',
 }
 
 -- Toate modulele din [switcore]; folosit ca un modul cu locales/ dar absent

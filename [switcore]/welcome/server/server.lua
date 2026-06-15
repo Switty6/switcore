@@ -1,3 +1,5 @@
+exports.core:registerModuleLocales(GetCurrentResourceName())
+
 -- Personajul e considerat „nou" (declanșează cinematic) dacă playtime < prag SAU dacă a fost creat în ultimele 5 min.
 -- Dublul check există pentru că playtime poate fi 0 fără ca personajul să fie chiar nou (ex: prim login după restore din backup).
 local NEW_PLAYER_THRESHOLD_SECONDS = 300

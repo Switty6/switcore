@@ -1,3 +1,5 @@
+exports.core:registerModuleLocales(GetCurrentResourceName())
+
 local playerNeeds = {}
 
 local function clamp(val, min, max)
@@ -60,14 +62,14 @@ CreateThread(function()
         if not playerNeeds[source] then return end
         playerNeeds[source].hunger = clamp(playerNeeds[source].hunger + 25.0, 0.0, 100.0)
         syncNeeds(source)
-        TriggerClientEvent('switcore:notify', source, 'success', 'Ai mâncat o bucată de pâine. (+25 hunger)', 3000)
+        TriggerClientEvent('switcore:notify', source, 'success', Sw.TP(source, 'needs.ate_bread', 25), 3000)
     end)
 
     exports.inventory:RegisterUsableItem('water', function(source)
         if not playerNeeds[source] then return end
         playerNeeds[source].thirst = clamp(playerNeeds[source].thirst + 35.0, 0.0, 100.0)
         syncNeeds(source)
-        TriggerClientEvent('switcore:notify', source, 'info', 'Ai băut apă. (+35 thirst)', 3000)
+        TriggerClientEvent('switcore:notify', source, 'info', Sw.TP(source, 'needs.drank_water', 35), 3000)
     end)
 
     exports.inventory:RegisterUsableItem('burger', function(source)
@@ -75,7 +77,7 @@ CreateThread(function()
         playerNeeds[source].hunger = clamp(playerNeeds[source].hunger + 50.0, 0.0, 100.0)
         playerNeeds[source].thirst = clamp(playerNeeds[source].thirst + 15.0, 0.0, 100.0)
         syncNeeds(source)
-        TriggerClientEvent('switcore:notify', source, 'success', 'Ai mâncat un burger. (+50 hunger, +15 thirst)', 3000)
+        TriggerClientEvent('switcore:notify', source, 'success', Sw.TP(source, 'needs.ate_burger', 50, 15), 3000)
     end)
 
     while true do

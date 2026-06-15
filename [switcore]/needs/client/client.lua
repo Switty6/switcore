@@ -18,11 +18,11 @@ end)
 
 RegisterNetEvent('switcore:needsUpdate', function(hunger, thirst)
     if hunger <= WARNING_THRESHOLD and lastHunger > WARNING_THRESHOLD then
-        TriggerEvent('switcore:notify:local', 'warning', 'Ți-e foame! Mănâncă ceva.', 4000)
+        TriggerEvent('switcore:notify:local', 'warning', Sw.T('needs.warn_hunger'), 4000)
     end
 
     if thirst <= WARNING_THRESHOLD and lastThirst > WARNING_THRESHOLD then
-        TriggerEvent('switcore:notify:local', 'warning', 'Ți-e sete! Bea ceva.', 4000)
+        TriggerEvent('switcore:notify:local', 'warning', Sw.T('needs.warn_thirst'), 4000)
     end
 
     if hunger <= 10.0 and thirst <= 10.0 then

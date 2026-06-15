@@ -91,8 +91,8 @@ CreateThread(function()
            and not notifiedThresholds[key] then
             notifiedThresholds[key] = true
             TriggerEvent('notifications:client:send', {
-                type='warning', title='Ulei Motor',
-                message='Nivelul de ulei este scazut! Mergi la mecanic.', duration=8000
+                type='warning', title=Sw.T('mecanic.warn.oil_low_title'),
+                message=Sw.T('mecanic.warn.oil_low_msg'), duration=8000
             })
         end
 
@@ -101,8 +101,8 @@ CreateThread(function()
            and not notifiedThresholds[keyOilCrit] then
             notifiedThresholds[keyOilCrit] = true
             TriggerEvent('notifications:client:send', {
-                type='error', title='URGENT - Ulei Motor!',
-                message='Motorul pierde ulei! Mergi IMEDIAT la mecanic!', duration=10000
+                type='error', title=Sw.T('mecanic.warn.oil_crit_title'),
+                message=Sw.T('mecanic.warn.oil_crit_msg'), duration=10000
             })
         end
 
@@ -112,8 +112,8 @@ CreateThread(function()
            and not notifiedThresholds[keyBattery] then
             notifiedThresholds[keyBattery] = true
             TriggerEvent('notifications:client:send', {
-                type='warning', title='Baterie Slaba',
-                message='Bateria masinii este descarcata. Mergi la mecanic.', duration=8000
+                type='warning', title=Sw.T('mecanic.warn.battery_low_title'),
+                message=Sw.T('mecanic.warn.battery_low_msg'), duration=8000
             })
         end
 
@@ -123,8 +123,8 @@ CreateThread(function()
            and not notifiedThresholds[keyBrakes] then
             notifiedThresholds[keyBrakes] = true
             TriggerEvent('notifications:client:send', {
-                type='warning', title='Placute Frana',
-                message='Placutele de frana sunt uzate. Mergi la mecanic.', duration=8000
+                type='warning', title=Sw.T('mecanic.warn.brakes_title'),
+                message=Sw.T('mecanic.warn.brakes_msg'), duration=8000
             })
         end
 
@@ -134,8 +134,8 @@ CreateThread(function()
             if val <= 0 and not notifiedThresholds[keyTire] then
                 notifiedThresholds[keyTire] = true
                 TriggerEvent('notifications:client:send', {
-                    type='error', title='Roata Sparta!',
-                    message='Roata ' .. pos:upper() .. ' este sparta! Suna un mecanic.', duration=8000
+                    type='error', title=Sw.T('mecanic.warn.tire_flat_title'),
+                    message=Sw.T('mecanic.warn.tire_flat_msg', pos:upper()), duration=8000
                 })
             end
         end
@@ -205,7 +205,7 @@ RegisterNetEvent('mecanic:client:vehicleRepaired', function(data)
     end
 
     TriggerEvent('notifications:client:send', {
-        type='success', title='Vehicul reparat',
-        message='Reparatia a fost efectuata cu succes.', duration=6000
+        type='success', title=Sw.T('mecanic.warn.vehicle_repaired_title'),
+        message=Sw.T('mecanic.warn.vehicle_repaired_msg'), duration=6000
     })
 end)

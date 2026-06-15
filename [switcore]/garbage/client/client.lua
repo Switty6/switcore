@@ -10,6 +10,12 @@ local function notify(notifType, title, message)
     TriggerEvent('switcore:notify:local', notifType, title .. ': ' .. message, 5000)
 end
 
+local function pushI18n()
+    SendNUIMessage({ action = 'sw:i18n', dict = exports.core:getLocaleDict() })
+end
+
+AddEventHandler('switcore:client:localeUpdated', pushI18n)
+
 RegisterNetEvent('jobs:client:jobUpdated')
 AddEventHandler('jobs:client:jobUpdated', function(job)
     myJob     = job
@@ -44,7 +50,7 @@ function SetupHiringBlip()
     SetBlipScale(hiringBlip, 0.85)
     SetBlipAsShortRange(hiringBlip, true)
     BeginTextCommandSetBlipName('STRING')
-    AddTextComponentString('Depoul Salubritate')
+    AddTextComponentString(Sw.T('garbage.depot_blip'))
     EndTextCommandSetBlipName(hiringBlip)
 end
 
@@ -58,11 +64,11 @@ function SetupHiringProximity()
 
     local label
     if not isGarbage then
-        label = 'Angajeaza-te la Salubritate'
+        label = Sw.T('garbage.prox_hire')
     elseif not isOnDuty then
-        label = 'Intra in tura (Salubritate)'
+        label = Sw.T('garbage.prox_clock_in')
     else
-        label = 'Deschide Tableta Salubritate'
+        label = Sw.T('garbage.prox_open_tablet')
     end
 
     hiringProxId = exports.proximity:AddInteraction(
@@ -96,7 +102,7 @@ RegisterNetEvent('garbage:client:routeStarted', function(data)
     local c = Config.HiringCoords
     returnProxId = exports.proximity:AddInteraction(
         vector3(c.x, c.y, c.z),
-        'Returneaza la Depou',
+        Sw.T('garbage.prox_return_depot'),
         'default',
         {},
         function()
@@ -116,10 +122,9 @@ RegisterNetEvent('garbage:client:routeCompleted', function(data)
         returnProxId = nil
     end
     SetupHiringProximity()
-    local bonusText = data.isComplete and ' + bonus' or ''
-    notify('success', 'Ruta Finalizata!',
-        string.format('Ai castigat %d lei (%d/%d containere%s).',
-            data.pay, data.collected, data.total, bonusText))
+    local bonusText = data.isComplete and Sw.T('garbage.bonus_suffix') or ''
+    notify('success', Sw.T('garbage.title_route_complete'),
+        Sw.T('garbage.route_complete_pay', data.pay, data.collected, data.total, bonusText))
     Wait(2000)
     TriggerServerEvent('garbage:server:openTablet')
 end)
@@ -132,16 +137,17 @@ RegisterNetEvent('garbage:client:routeAbandoned', function(data)
     end
     SetupHiringProximity()
     if data.pay and data.pay > 0 then
-        notify('warning', 'Ruta Abandonata',
-            string.format('Plata partiala: %d lei (%d containere).', data.pay, data.collected or 0))
+        notify('warning', Sw.T('garbage.title_route_abandoned'),
+            Sw.T('garbage.route_abandoned_partial', data.pay, data.collected or 0))
     else
-        notify('info', 'Ruta Abandonata', 'Nicio plata (niciun container colectat).')
+        notify('info', Sw.T('garbage.title_route_abandoned'), Sw.T('garbage.route_abandoned_none'))
     end
 end)
 
 RegisterNetEvent('garbage:client:tabletData', function(data)
     isUIOpen = true
     SetNuiFocus(true, true)
+    pushI18n()
     SendNUIMessage({
         action     = 'open',
         stats      = data.stats,

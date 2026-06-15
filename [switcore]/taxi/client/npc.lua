@@ -27,29 +27,20 @@ local NPC_PED_MODELS = {
     'a_f_y_bevhills_01', 'a_m_y_bevhills_01', 'a_f_m_prolhost_01',
 }
 
+-- Chei de locale; textul se rezolva la runtime cu Sw.T (suporta {1} pentru destinatie)
 local PICKUP_NORMAL = {
-    'Multumesc! Poti sa ma duci la %s?',
-    'In sfarsit un taxi! Trebuie sa ajung la %s.',
-    'Buna! Destinatia mea este %s.',
-    'Buna ziua! Poti sa ma duci la %s?',
-    'Am asteptat mult. Ma poti duce la %s?',
+    'taxi.npc_pickup_1', 'taxi.npc_pickup_2', 'taxi.npc_pickup_3',
+    'taxi.npc_pickup_4', 'taxi.npc_pickup_5',
 }
 local PICKUP_URGENT = {
-    'Urgent! Trebuie sa ajung la %s cat mai repede!',
-    'Va rog, ma grabesc! %s, acum!',
-    'Este o urgenta! Poti sa accelerezi spre %s?',
+    'taxi.npc_pickup_urgent_1', 'taxi.npc_pickup_urgent_2', 'taxi.npc_pickup_urgent_3',
 }
 local DROPOFF_NORMAL = {
-    'Multumesc pentru cursa!',
-    'Excelent! La revedere!',
-    'Chiar apreciez ajutorul!',
-    'O zi buna iti doresc!',
-    'Grozav, multumesc mult!',
+    'taxi.npc_dropoff_1', 'taxi.npc_dropoff_2', 'taxi.npc_dropoff_3',
+    'taxi.npc_dropoff_4', 'taxi.npc_dropoff_5',
 }
 local DROPOFF_FAST = {
-    'Ai condus excelent, iti las un bacsis!',
-    'Impresionant! Meriti un bacsis!',
-    'Ai ajuns repede, multumesc cu bacsis!',
+    'taxi.npc_dropoff_fast_1', 'taxi.npc_dropoff_fast_2', 'taxi.npc_dropoff_fast_3',
 }
 
 local MAX_NPC_FARES  = 2
@@ -60,7 +51,7 @@ local npcOnDuty = false
 
 local function notify(t, msg)
     TriggerEvent('notifications:client:send', {
-        type = t, title = 'Taxi', message = msg, duration = 5000
+        type = t, title = Sw.T('taxi.notify_title'), message = msg, duration = 5000
     })
 end
 
@@ -134,10 +125,10 @@ local function onNpcDropoff(npc)
     if elapsedSec < fastThreshold then
         local tip = math.random(10, 25) / 100
         multiplier = multiplier + tip
-        local msg = DROPOFF_FAST[math.random(#DROPOFF_FAST)]
-        notify('success', msg .. string.format(' (+%.0f%%)', tip * 100))
+        local msg = Sw.T(DROPOFF_FAST[math.random(#DROPOFF_FAST)])
+        notify('success', msg .. Sw.T('taxi.npc_tip_suffix', string.format('%.0f', tip * 100)))
     else
-        notify('info', DROPOFF_NORMAL[math.random(#DROPOFF_NORMAL)])
+        notify('info', Sw.T(DROPOFF_NORMAL[math.random(#DROPOFF_NORMAL)]))
     end
 
     TriggerServerEvent('taxi:server:npcRideComplete', distKm, multiplier)
@@ -157,7 +148,7 @@ local function onNpcPickup(npc)
 
     local driving, veh = isDriverOfTaxi()
     if not driving then
-        notify('warning', 'Trebuie sa fii la volanul masinii de taxi.')
+        notify('warning', Sw.T('taxi.npc_must_be_driving'))
         return
     end
 
@@ -176,11 +167,11 @@ local function onNpcPickup(npc)
     SetBlockingOfNonTemporaryEvents(npc.ped, false)
     TaskEnterVehicle(npc.ped, veh, ENTER_TIMEOUT, 0, 2.0, 1, 0)
 
-    local template = npc.isUrgent
+    local templateKey = npc.isUrgent
         and PICKUP_URGENT[math.random(#PICKUP_URGENT)]
         or  PICKUP_NORMAL[math.random(#PICKUP_NORMAL)]
     notify(npc.isUrgent and 'warning' or 'info',
-        string.format(template, npc.dest.label))
+        Sw.T(templateKey, npc.dest.label))
 
     CreateThread(function()
         local elapsed = 0
@@ -199,7 +190,7 @@ local function onNpcPickup(npc)
                 local destProxId  = 'taxi_npc_dest_' .. npc.ped
                 exports.proximity:AddInteraction(
                     vector3(npc.dest.x, npc.dest.y, npc.dest.z),
-                    'Coboara Pasager - ' .. npc.dest.label,
+                    Sw.T('taxi.prox_drop_passenger', npc.dest.label),
                     destProxId,
                     {},
                     function() onNpcDropoff(capturedNpc) end
@@ -265,7 +256,7 @@ local function spawnNpc(spawnData)
     SetBlipScale(blip, isUrgent and 0.7 or 0.55)
     SetBlipAsShortRange(blip, true)
     BeginTextCommandSetBlipName('STRING')
-    AddTextComponentString((isUrgent and '[URGENT] ' or '') .. 'Pasager NPC - ' .. spawnData.name)
+    AddTextComponentString((isUrgent and Sw.T('taxi.urgent_prefix') or '') .. Sw.T('taxi.blip_npc_passenger', spawnData.name))
     EndTextCommandSetBlipName(blip)
 
     local dest = NPC_DESTINATIONS[math.random(#NPC_DESTINATIONS)]
@@ -288,7 +279,7 @@ local function spawnNpc(spawnData)
     local proxId      = 'taxi_npc_' .. tostring(ped)
     exports.proximity:AddInteraction(
         vector3(spawnData.x, spawnData.y, spawnData.z),
-        (isUrgent and '[URGENT] ' or '') .. 'Ridica Pasager - ' .. spawnData.name,
+        (isUrgent and Sw.T('taxi.urgent_prefix') or '') .. Sw.T('taxi.prox_pickup_passenger', spawnData.name),
         proxId,
         {},
         function() onNpcPickup(capturedNpc) end

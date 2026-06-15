@@ -86,13 +86,13 @@
                 <canvas id="speed-canvas" width="160" height="150"></canvas>
                 <div id="speed-center">
                     <span id="speed-value">0</span>
-                    <span id="speed-unit">KM/H</span>
+                    <span id="speed-unit" data-i18n="hud.speedometer.unit">KM/H</span>
                 </div>
             </div>
             <div id="vehicle-side">
                 <div id="gear-display">
                     <span id="speed-gear">N</span>
-                    <span class="gear-label">GEAR</span>
+                    <span class="gear-label" data-i18n="hud.speedometer.gear">GEAR</span>
                 </div>
                 <div class="veh-divider"></div>
                 <div id="fuel-section">
@@ -102,14 +102,14 @@
                             <path d="M9 5h1.5a1 1 0 011 1v3a.5.5 0 001 0V5.5L11 4" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/>
                             <path d="M4 7h3" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
                         </svg>
-                        <span class="fuel-label">Fuel</span>
+                        <span class="fuel-label" data-i18n="hud.speedometer.fuel">Fuel</span>
                         <span id="fuel-pct">100%</span>
                     </div>
                     <div class="fuel-track"><div id="bar-fuel"></div></div>
                 </div>
                 <div class="veh-divider"></div>
                 <div id="odo-section">
-                    <span class="odo-label">ODO</span>
+                    <span class="odo-label" data-i18n="hud.speedometer.odo">ODO</span>
                     <span id="odo-value">- km</span>
                 </div>
                 <div class="veh-divider"></div>
@@ -134,6 +134,7 @@
 
     </div>
 
+    <script src="nui://core/ui/i18n.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

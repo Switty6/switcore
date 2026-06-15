@@ -18,8 +18,8 @@ RegisterNetEvent('taxi:client:newOrder', function(orderData)
     end
     table.insert(pendingOrders, 1, orderData)
 
-    notify('info', 'Cerere Taxi Noua',
-        'Pasager: ' .. (orderData.passenger_name or '?') .. ' - Accepta din tableta.')
+    notify('info', Sw.T('taxi.new_order_title'),
+        Sw.T('taxi.new_order_message', orderData.passenger_name or '?'))
 
     SendNUIMessage({ action = 'newOrder', order = orderData })
 end)
@@ -54,7 +54,7 @@ AddEventHandler('taxi:dispatch:orderAccepted', function(orderData)
 
     exports.proximity:AddInteraction(
         vector3(c.x, c.y, c.z),
-        'Confirma Pickup Pasager',
+        Sw.T('taxi.prox_confirm_pickup'),
         pickupProxId,
         {},
         function()
@@ -83,7 +83,7 @@ AddEventHandler('taxi:dispatch:setDropoff', function(dropoffCoords)
 
     exports.proximity:AddInteraction(
         vector3(dropoffCoords.x, dropoffCoords.y, dropoffCoords.z),
-        'Finalizeaza Cursa',
+        Sw.T('taxi.prox_complete_ride'),
         dropoffProxId,
         {},
         function()
@@ -111,7 +111,7 @@ AddEventHandler('taxi:dispatch:orderCancelled', function(orderId)
     if activeOrderId == orderId then
         TriggerEvent('taxi:dispatch:cleanup')
         ClearGpsPlayerWaypoint()
-        notify('warning', 'Taxi', 'Cursa a fost anulata.')
+        notify('warning', Sw.T('taxi.notify_title'), Sw.T('taxi.ride_cancelled'))
     end
     for i, o in ipairs(pendingOrders) do
         if o.id == orderId then table.remove(pendingOrders, i) break end

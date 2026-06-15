@@ -2,6 +2,19 @@
 local introActive = false
 local hasPlayedIntroThisSession = false
 
+local function pushI18n()
+    SendNUIMessage({ action = 'sw:i18n', dict = exports.core:getLocaleDict() })
+end
+
+AddEventHandler('switcore:client:localeUpdated', pushI18n)
+
+-- Intro-ul se arata imediat pe conectare: trimite dictionarul o data, cu un mic delay,
+-- ca tagline-ul tradus sa fie disponibil inainte de prima rulare a intro-ului.
+CreateThread(function()
+    Wait(2000)
+    pushI18n()
+end)
+
 AddEventHandler('switcore:playIntroMenu', function()
     if introActive or hasPlayedIntroThisSession then
         -- Skip → continua direct la character selection
@@ -20,6 +33,7 @@ function PlayIntro()
     DoScreenFadeOut(0)
 
     SetNuiFocus(true, true)
+    pushI18n()
     SendNUIMessage({ type = 'play' })
 
     CreateThread(function()
