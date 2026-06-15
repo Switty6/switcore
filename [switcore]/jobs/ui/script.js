@@ -69,7 +69,7 @@ function open(data) {
     tabs[0].classList.add('active');
     document.getElementById('tab-myJob').classList.add('active');
 
-    headerTitle.textContent = (data.job && data.job.label) ? data.job.label : 'Job';
+    headerTitle.textContent = (data.job && data.job.label) ? data.job.label : SwI18n.t('jobs.ui.header_title');
     app.classList.remove('hidden');
 }
 
@@ -88,10 +88,10 @@ function renderMyJob() {
 
     document.getElementById('jobLabel').textContent   = esc(job.label   || '-');
     document.getElementById('gradeLabel').textContent = esc(job.gradeLabel || '-');
-    document.getElementById('salaryLabel').textContent = job.salary > 0 ? fmt(job.salary) + ' ' + (job.currencySymbol || '$') + ' / tură' : 'Neplătit';
+    document.getElementById('salaryLabel').textContent = job.salary > 0 ? SwI18n.t('jobs.ui.salary_per_shift', fmt(job.salary), (job.currencySymbol || '$')) : SwI18n.t('jobs.ui.salary_unpaid');
 
     const typeBadge = document.getElementById('typeBadge');
-    const typeMap   = { whitelisted: 'Legal', self_serve: 'Liber', illegal: 'Ilegal' };
+    const typeMap   = { whitelisted: SwI18n.t('jobs.ui.type_legal'), self_serve: SwI18n.t('jobs.ui.type_free'), illegal: SwI18n.t('jobs.ui.type_illegal') };
     typeBadge.textContent  = typeMap[job.type] || job.type;
     typeBadge.className    = 'type-badge type-' + (job.type || 'self_serve');
 
@@ -115,15 +115,15 @@ function updateDutyButton(isOnDuty) {
         btn.className   = 'duty-btn on';
         btn.innerHTML   = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
-        </svg> Ieși din tură`;
-        status.textContent = 'În serviciu';
+        </svg> ${esc(SwI18n.t('jobs.ui.clock_out'))}`;
+        status.textContent = SwI18n.t('jobs.ui.duty_on');
         status.style.color = 'var(--green)';
     } else {
         btn.className   = 'duty-btn off';
         btn.innerHTML   = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
-        </svg> Intră în tură`;
-        status.textContent = 'Inactiv';
+        </svg> ${esc(SwI18n.t('jobs.ui.clock_in'))}`;
+        status.textContent = SwI18n.t('jobs.ui.duty_inactive');
         status.style.color = '';
     }
 }
@@ -132,7 +132,7 @@ function renderPermissions(perms) {
     const list = document.getElementById('permsList');
     list.innerHTML = '';
     if (!perms || perms.length === 0) {
-        list.innerHTML = '<span class="empty-inline">Nicio permisiune specială</span>';
+        list.innerHTML = `<span class="empty-inline">${esc(SwI18n.t('jobs.ui.perms_empty'))}</span>`;
         return;
     }
     perms.forEach(p => {
@@ -148,7 +148,7 @@ function renderCoworkers() {
     const items = state.coworkers || [];
     list.innerHTML = '';
     if (items.length === 0) {
-        list.innerHTML = '<div class="empty-state-sm">Niciun coleg activ</div>';
+        list.innerHTML = `<div class="empty-state-sm">${esc(SwI18n.t('jobs.ui.coworkers_empty'))}</div>`;
         return;
     }
     items.forEach(c => {
@@ -179,7 +179,7 @@ function renderRoster() {
     const badge = document.getElementById('rosterBadge');
     const items = state.roster || [];
 
-    count.textContent = items.length + ' membri';
+    count.textContent = SwI18n.t('jobs.ui.roster_count', items.length);
     badge.textContent = items.length;
     badge.className   = 'badge' + (items.length === 0 ? ' zero' : '');
 
@@ -192,7 +192,7 @@ function renderRoster() {
                 <circle cx="9" cy="7" r="4"/>
                 <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
             </svg>
-            <p>Apasă Actualizează pentru a vedea membrii</p>
+            <p>${esc(SwI18n.t('jobs.ui.roster_hint'))}</p>
         </div>`;
         return;
     }
@@ -212,17 +212,17 @@ function renderRoster() {
                 <span class="roster-name">${esc(member.first_name + ' ' + member.last_name)}</span>
                 <div class="roster-meta">
                     <span class="duty-dot ${member.is_on_duty ? 'on' : ''}"></span>
-                    <span class="grade-chip">${esc(member.grade_label || 'Grade ' + member.grade)}</span>
+                    <span class="grade-chip">${esc(member.grade_label || SwI18n.t('jobs.ui.grade_fallback', member.grade))}</span>
                 </div>
             </div>
             ${!isMe ? `<div class="roster-actions">
                 ${canPromote ? `<button class="btn btn-promote btn-sm" data-id="${member.id}" data-grade="${member.grade + 1}">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"/></svg>
-                    Promovează
+                    ${esc(SwI18n.t('jobs.ui.promote'))}
                 </button>` : ''}
                 ${canDemote ? `<button class="btn btn-demote btn-sm" data-id="${member.id}" data-grade="${member.grade - 1}">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
-                    Retrogradează
+                    ${esc(SwI18n.t('jobs.ui.demote'))}
                 </button>` : ''}
             </div>` : ''}
         `;
@@ -271,13 +271,23 @@ window.addEventListener('message', e => {
             renderMyJob();
             renderCoworkers();
             updateRosterTab();
-            headerTitle.textContent = (state.job && state.job.label) || 'Job';
+            headerTitle.textContent = (state.job && state.job.label) || SwI18n.t('jobs.ui.header_title');
             break;
 
         case 'rosterData':
             state.roster = msg.roster || [];
             renderRoster();
             break;
+    }
+});
+
+// Re-randare la schimbarea limbii (data-i18n e aplicat automat de SwI18n.apply)
+document.addEventListener('sw:i18n', () => {
+    if (state.job) {
+        renderMyJob();
+        renderCoworkers();
+        renderRoster();
+        headerTitle.textContent = (state.job && state.job.label) || SwI18n.t('jobs.ui.header_title');
     }
 });
 

@@ -46,7 +46,7 @@ CreateThread(function()
                 exports.proximity:RemoveInteraction(ambInteractionId)
             end
             ambInteractionId = exports.proximity:AddEntityInteraction(
-                vehicle, 'Inventar Ambulanta', 'ems_ambulance_inv',
+                vehicle, Sw.T('ems.ambulance_inv_interaction'), 'ems_ambulance_inv',
                 { plate = plate },
                 function(data)
                     TriggerServerEvent('ems:server:getVehicleInventory', data.plate)
@@ -67,6 +67,7 @@ end)
 RegisterNetEvent('ems:client:vehicleInventory')
 AddEventHandler('ems:client:vehicleInventory', function(items, plate)
     SetNuiFocus(true, true)
+    EmsPushI18n()
     SendNUIMessage({
         action = 'openVehicleInventory',
         items  = items,

@@ -1,3 +1,5 @@
+exports.core:registerModuleLocales(GetCurrentResourceName())
+
 EmsDB = {}
 
 local function pg()

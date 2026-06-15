@@ -6,6 +6,7 @@ fx_version 'bodacious'
 game 'common'
 
 dependencies {
+    'core',
     'postgres'
 }
 
@@ -15,6 +16,10 @@ files {
     'ui/index.html',
     'ui/style.css',
     'ui/script.js'
+}
+
+shared_scripts {
+    '@core/shared/lib.lua'
 }
 
 client_scripts {

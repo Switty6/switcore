@@ -15,7 +15,7 @@ function RegisterGarageZone()
 
     garageProxId = exports.proximity:AddInteraction(
         PoliceConfig.garageCoords,
-        'Garaj Politie',
+        Sw.T('police.prox_garage'),
         'police_garage',
         {},
         function() TriggerServerEvent('police:server:openGarage') end,
@@ -30,6 +30,7 @@ RegisterPoliceZones = function()
 end
 
 RegisterNetEvent('police:client:openGarage', function(data)
+    PushPoliceI18n()
     SendNUIMessage({
         action      = 'openGarage',
         fleet       = data.fleet or {},

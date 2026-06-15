@@ -1,3 +1,4 @@
+exports.core:registerModuleLocales(GetCurrentResourceName())
 
 CreateThread(function()
     while not exports.postgres:isReady() or not exports.settings:IsReady() do
@@ -119,8 +120,8 @@ function PaySalaries()
             end
 
             TriggerClientEvent('notifications:client:send', src, {
-                type = 'success', title = 'Salariu',
-                message = 'Ai primit ' .. salary .. ' ' .. curSymbol .. ' salariu.',
+                type = 'success', title = Sw.TP(src, 'jobs.notify.salary_title'),
+                message = Sw.TP(src, 'jobs.notify.salary_received', salary, curSymbol),
                 duration = 5000
             })
         end
@@ -274,30 +275,31 @@ Sw.SecureEvent('jobs:server:adminAssign', {
     if not isAdmin(src) then
         local myJob = JobsDatabase.getCharacterJob(myChar.id)
         if not myJob or not myJob.can_manage then
-            notify(src, 'error', 'Acces interzis', 'Nu ai permisiunea să angajezi.')
+            notify(src, 'error', Sw.TP(src, 'jobs.notify.access_denied_title'), Sw.TP(src, 'jobs.notify.no_hire_permission'))
             return
         end
         if myJob.job_name ~= jobName then
-            notify(src, 'error', 'Acces interzis', 'Poți angaja doar în facțiunea ta.')
+            notify(src, 'error', Sw.TP(src, 'jobs.notify.access_denied_title'), Sw.TP(src, 'jobs.notify.hire_own_faction_only'))
             return
         end
         if grade >= myJob.grade then
-            notify(src, 'error', 'Acces interzis', 'Nu poți acorda un grad egal sau superior al tău.')
+            notify(src, 'error', Sw.TP(src, 'jobs.notify.access_denied_title'), Sw.TP(src, 'jobs.notify.grade_not_higher'))
             return
         end
     end
 
     local targetChar = getActiveChar(tonumber(targetSrc))
     if not targetChar then
-        notify(src, 'error', 'Eroare', 'Jucătorul nu a fost găsit.')
+        notify(src, 'error', Sw.TP(src, 'jobs.notify.error_title'), Sw.TP(src, 'jobs.notify.player_not_found'))
         return
     end
 
     JobsDatabase.upsertCharacterJob(targetChar.id, jobName, grade)
     local newJob = JobsDatabase.getCharacterJob(targetChar.id)
     TriggerClientEvent('jobs:client:jobUpdated', tonumber(targetSrc), BuildJobPayload(newJob))
-    notify(tonumber(targetSrc), 'info', 'Job actualizat', 'Ai primit jobul: ' .. (newJob and newJob.job_label or jobName))
-    notify(src, 'success', 'Job atribuit', 'Job atribuit cu succes.')
+    local targetSrcNum = tonumber(targetSrc)
+    notify(targetSrcNum, 'info', Sw.TP(targetSrcNum, 'jobs.notify.job_updated_title'), Sw.TP(targetSrcNum, 'jobs.notify.job_received', (newJob and newJob.job_label or jobName)))
+    notify(src, 'success', Sw.TP(src, 'jobs.notify.job_assigned_title'), Sw.TP(src, 'jobs.notify.job_assigned_success'))
 end)
 
 Sw.SecureEvent('jobs:server:manageGrade', {
@@ -317,22 +319,22 @@ Sw.SecureEvent('jobs:server:manageGrade', {
     if not isAdmin(src) then
         local myJob = JobsDatabase.getCharacterJob(myChar.id)
         if not myJob or not myJob.can_manage then
-            notify(src, 'error', 'Acces interzis', 'Nu ai permisiunea să promovezi membri.')
+            notify(src, 'error', Sw.TP(src, 'jobs.notify.access_denied_title'), Sw.TP(src, 'jobs.notify.no_promote_permission'))
             return
         end
         local targetJob = JobsDatabase.getCharacterJob(targetCharId)
         if not targetJob or targetJob.job_name ~= myJob.job_name then
-            notify(src, 'error', 'Acces interzis', 'Jucătorul nu face parte din același job.')
+            notify(src, 'error', Sw.TP(src, 'jobs.notify.access_denied_title'), Sw.TP(src, 'jobs.notify.target_not_same_job'))
             return
         end
         if newGrade >= myJob.grade then
-            notify(src, 'error', 'Acces interzis', 'Nu poți acorda un grad egal sau superior al tău.')
+            notify(src, 'error', Sw.TP(src, 'jobs.notify.access_denied_title'), Sw.TP(src, 'jobs.notify.grade_not_higher'))
             return
         end
     end
 
     JobsDatabase.setGrade(targetCharId, newGrade)
-    notify(src, 'success', 'Grad setat', 'Grad setat cu succes.')
+    notify(src, 'success', Sw.TP(src, 'jobs.notify.grade_set_title'), Sw.TP(src, 'jobs.notify.grade_set_success'))
 
     for _, playerId in ipairs(GetPlayers()) do
         local pSrc = tonumber(playerId)
@@ -341,7 +343,7 @@ Sw.SecureEvent('jobs:server:manageGrade', {
             local updated = JobsDatabase.getCharacterJob(targetCharId)
             if updated then
                 TriggerClientEvent('jobs:client:jobUpdated', pSrc, BuildJobPayload(updated))
-                notify(pSrc, 'info', 'Grad actualizat', 'Gradul tău a fost modificat.')
+                notify(pSrc, 'info', Sw.TP(pSrc, 'jobs.notify.grade_updated_title'), Sw.TP(pSrc, 'jobs.notify.grade_updated_message'))
             end
             break
         end
@@ -363,7 +365,7 @@ Sw.SecureEvent('jobs:server:getRoster', {
     if not isAdmin(src) then
         local myJob = JobsDatabase.getCharacterJob(character.id)
         if not myJob or myJob.job_name ~= jobName or not myJob.can_manage then
-            notify(src, 'error', 'Acces interzis', 'Nu ai acces la evidența membrilor.')
+            notify(src, 'error', Sw.TP(src, 'jobs.notify.access_denied_title'), Sw.TP(src, 'jobs.notify.no_roster_access'))
             return
         end
     end

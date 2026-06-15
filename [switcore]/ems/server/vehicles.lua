@@ -83,7 +83,7 @@ Sw.SecureEvent('ems:server:takeFromAmbulance', {
     qty = math.max(1, math.min(qty or 1, amount))
 
     if amount <= 0 then
-        TriggerClientEvent('switcore:notify', src, 'warning', 'Stoc insuficient in ambulanta.', 3000)
+        TriggerClientEvent('switcore:notify', src, 'warning', Sw.TP(src, 'ems.ambulance_stock_insufficient'), 3000)
         return
     end
 
@@ -91,7 +91,7 @@ Sw.SecureEvent('ems:server:takeFromAmbulance', {
     exports.inventory:AddItem(charId, itemName, qty)
 
     TriggerClientEvent('switcore:notify', src, 'success',
-        qty .. 'x ' .. itemName .. ' luat din ambulanta.', 3000)
+        Sw.TP(src, 'ems.item_taken', qty, itemName), 3000)
 end)
 
 AddEventHandler('playerDropped', function()

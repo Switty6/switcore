@@ -19,6 +19,15 @@ local MIGRATED = {
     'clothing',
     'showroom',
     'shops',
+    'settings',
+    'jobs',
+    'inventory',
+    'garages',
+    'government',
+    'mdt',
+    'police',
+    'ems',
+    'medical',
 }
 
 -- Toate modulele din [switcore]; folosit ca un modul cu locales/ dar absent

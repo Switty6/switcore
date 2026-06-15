@@ -1,6 +1,28 @@
 
 const IS_BROWSER = typeof GetParentResourceName === 'undefined';
 
+// Traducere prin helperul standard SwI18n (core/ui/i18n.js); fallback pe cheie.
+function t(key, ...args) {
+    if (typeof SwI18n === 'undefined') return key;
+    return SwI18n.t(`mdt.${key}`, ...args);
+}
+
+// Re-randare a continutului generat din JS la schimbarea limbii.
+document.addEventListener('sw:i18n', () => {
+    if (!state.job) return;
+    if (state.job === 'ems') {
+        buildEMSTabs();
+    } else {
+        buildPoliceTabs();
+        renderCitations();
+        renderBOLOs();
+        renderIncidents();
+        renderImpounds();
+        renderOfficers(state.officers);
+        if (state.activeTab === 'management') renderManagement();
+    }
+});
+
 const MOCK = {
     jobName: 'police',
     warrants: [
@@ -114,12 +136,12 @@ function openMDT(data) {
 
     if (state.job === 'ems') {
         panel.classList.add('ems-mode');
-        document.getElementById('mdt-badge').textContent = 'EMS';
-        document.getElementById('mdt-title').textContent = 'MDT - Medical EMS';
+        document.getElementById('mdt-badge').textContent = t('header.badge_ems');
+        document.getElementById('mdt-title').textContent = t('header.title_ems');
         buildEMSTabs();
     } else {
-        document.getElementById('mdt-badge').textContent = 'POL';
-        document.getElementById('mdt-title').textContent = 'MDT - Politie';
+        document.getElementById('mdt-badge').textContent = t('header.badge_police');
+        document.getElementById('mdt-title').textContent = t('header.title_police');
         buildPoliceTabs();
     }
 }
@@ -130,22 +152,22 @@ function closeMDT() {
 }
 
 const POLICE_TABS = [
-    { id: 'warrants',    label: 'Mandate'     },
-    { id: 'search',      label: 'Cautare'     },
-    { id: 'criminal',    label: 'Dosar Penal' },
-    { id: 'citations',   label: 'Citatii'     },
-    { id: 'bolos',       label: 'BOLO'        },
-    { id: 'incidents',   label: 'Incidente'   },
-    { id: 'impounds',    label: 'Sechestru'   },
-    { id: 'officers',    label: 'Ofiteri'     },
-    { id: 'management',  label: 'Management', requireManage: true },
+    { id: 'warrants',    key: 'tab.warrants'   },
+    { id: 'search',      key: 'tab.search'     },
+    { id: 'criminal',    key: 'tab.criminal'   },
+    { id: 'citations',   key: 'tab.citations'  },
+    { id: 'bolos',       key: 'tab.bolos'      },
+    { id: 'incidents',   key: 'tab.incidents'  },
+    { id: 'impounds',    key: 'tab.impounds'   },
+    { id: 'officers',    key: 'tab.officers'   },
+    { id: 'management',  key: 'tab.management', requireManage: true },
 ];
 
 const EMS_TABS = [
-    { id: 'calls',       label: 'Apeluri 112'   },
-    { id: 'patient',     label: 'Cauta Pacient'  },
-    { id: 'medical',     label: 'Dosar Medical'  },
-    { id: 'team',        label: 'Echipa'         },
+    { id: 'calls',       key: 'tab.calls'   },
+    { id: 'patient',     key: 'tab.patient' },
+    { id: 'medical',     key: 'tab.medical' },
+    { id: 'team',        key: 'tab.team'    },
 ];
 
 function buildPoliceTabs() {
@@ -154,12 +176,12 @@ function buildPoliceTabs() {
 
     const visibleTabs = POLICE_TABS.filter(t => !t.requireManage || state.canManage);
 
-    tabsEl.innerHTML = visibleTabs.map(t =>
-        `<button class="tab-btn" data-tab="${t.id}" onclick="switchTab('${t.id}')">${t.label}</button>`
+    tabsEl.innerHTML = visibleTabs.map(tab =>
+        `<button class="tab-btn" data-tab="${tab.id}" onclick="switchTab('${tab.id}')">${t(tab.key)}</button>`
     ).join('');
 
-    bodyEl.innerHTML = visibleTabs.map(t =>
-        `<div class="tab-content" id="tab-${t.id}">${getPoliceTabContent(t.id)}</div>`
+    bodyEl.innerHTML = visibleTabs.map(tab =>
+        `<div class="tab-content" id="tab-${tab.id}">${getPoliceTabContent(tab.id)}</div>`
     ).join('');
 
     renderWarrants();
@@ -170,12 +192,12 @@ function buildEMSTabs() {
     const tabsEl = document.getElementById('mdt-tabs');
     const bodyEl = document.getElementById('tab-body');
 
-    tabsEl.innerHTML = EMS_TABS.map(t =>
-        `<button class="tab-btn" data-tab="${t.id}" onclick="switchTab('${t.id}')">${t.label}</button>`
+    tabsEl.innerHTML = EMS_TABS.map(tab =>
+        `<button class="tab-btn" data-tab="${tab.id}" onclick="switchTab('${tab.id}')">${t(tab.key)}</button>`
     ).join('');
 
-    bodyEl.innerHTML = EMS_TABS.map(t =>
-        `<div class="tab-content" id="tab-${t.id}">${getEMSTabContent(t.id)}</div>`
+    bodyEl.innerHTML = EMS_TABS.map(tab =>
+        `<div class="tab-content" id="tab-${tab.id}">${getEMSTabContent(tab.id)}</div>`
     ).join('');
 
     switchTab('calls');
@@ -186,129 +208,129 @@ function getPoliceTabContent(id) {
     switch (id) {
         case 'warrants': return `
             <div class="tab-toolbar">
-                <button class="btn-primary" onclick="showModal('warrant-modal')">+ Emite Mandat</button>
+                <button class="btn-primary" onclick="showModal('warrant-modal')">${t('warrants.add_btn')}</button>
             </div>
             <table class="data-table">
-                <thead><tr><th>Nume</th><th>Acuzatii</th><th>Cautiune</th><th>Data</th><th></th></tr></thead>
+                <thead><tr><th>${t('warrants.col_name')}</th><th>${t('warrants.col_charges')}</th><th>${t('warrants.col_bail')}</th><th>${t('warrants.col_date')}</th><th></th></tr></thead>
                 <tbody id="warrants-body"></tbody>
             </table>`;
 
         case 'search': return `
             <div class="search-bar">
-                <input type="text" id="search-input" placeholder="Cauta dupa nume..." oninput="onSearchInput(this.value)" />
+                <input type="text" id="search-input" placeholder="${t('search.placeholder')}" oninput="onSearchInput(this.value)" />
             </div>
             <div id="search-results-main"></div>`;
 
         case 'criminal': return `
             <div class="search-bar">
-                <input type="text" id="criminal-search-input" placeholder="Cauta persoana..." oninput="onCriminalSearch(this.value)" />
+                <input type="text" id="criminal-search-input" placeholder="${t('criminal.search_placeholder')}" oninput="onCriminalSearch(this.value)" />
             </div>
             <div class="search-layout" style="flex:1;overflow:hidden">
                 <div class="search-results-list" id="criminal-results-list"></div>
-                <div class="search-detail" id="criminal-detail"><div class="empty-msg">Selecteaza o persoana pentru a vedea dosarul penal.</div></div>
+                <div class="search-detail" id="criminal-detail"><div class="empty-msg">${t('criminal.select_prompt')}</div></div>
             </div>`;
 
         case 'citations': return `
             <div class="tab-toolbar">
-                <button class="btn-primary" onclick="showModal('citation-modal')">+ Emite Citatie</button>
-                <button class="btn-secondary" onclick="postNUI('getCitations')">↻ Actualizeaza</button>
+                <button class="btn-primary" onclick="showModal('citation-modal')">${t('citations.add_btn')}</button>
+                <button class="btn-secondary" onclick="postNUI('getCitations')">${t('common.refresh')}</button>
             </div>
             <table class="data-table">
-                <thead><tr><th>Suspect</th><th>Infractiune</th><th>Amenda</th><th>Status</th><th>Data</th><th></th></tr></thead>
+                <thead><tr><th>${t('citations.col_suspect')}</th><th>${t('citations.col_offense')}</th><th>${t('citations.col_fine')}</th><th>${t('citations.col_status')}</th><th>${t('citations.col_date')}</th><th></th></tr></thead>
                 <tbody id="citations-body"></tbody>
             </table>`;
 
         case 'bolos': return `
             <div class="tab-toolbar">
-                <button class="btn-primary" onclick="showModal('bolo-modal')">+ Emite BOLO</button>
-                <button class="btn-secondary" onclick="postNUI('getActiveBOLOs')">↻ Actualizeaza</button>
+                <button class="btn-primary" onclick="showModal('bolo-modal')">${t('bolos.add_btn')}</button>
+                <button class="btn-secondary" onclick="postNUI('getActiveBOLOs')">${t('common.refresh')}</button>
             </div>
             <table class="data-table">
-                <thead><tr><th>Subiect</th><th>Descriere</th><th>Vehicul</th><th>Data</th><th></th></tr></thead>
+                <thead><tr><th>${t('bolos.col_subject')}</th><th>${t('bolos.col_description')}</th><th>${t('bolos.col_vehicle')}</th><th>${t('bolos.col_date')}</th><th></th></tr></thead>
                 <tbody id="bolos-body"></tbody>
             </table>`;
 
         case 'incidents': return `
             <div class="tab-toolbar">
-                <button class="btn-primary" onclick="showModal('incident-modal')">+ Raport Incident</button>
-                <button class="btn-secondary" onclick="postNUI('getIncidents')">↻ Actualizeaza</button>
+                <button class="btn-primary" onclick="showModal('incident-modal')">${t('incidents.add_btn')}</button>
+                <button class="btn-secondary" onclick="postNUI('getIncidents')">${t('common.refresh')}</button>
             </div>
             <table class="data-table">
-                <thead><tr><th>Titlu</th><th>Descriere</th><th>Data</th></tr></thead>
+                <thead><tr><th>${t('incidents.col_title')}</th><th>${t('incidents.col_description')}</th><th>${t('incidents.col_date')}</th></tr></thead>
                 <tbody id="incidents-body"></tbody>
             </table>`;
 
         case 'impounds': return `
             <div class="tab-toolbar">
-                <button class="btn-primary" onclick="showModal('impound-modal')">+ Sechestru Vehicul</button>
-                <button class="btn-secondary" onclick="postNUI('getImpounds')">↻ Actualizeaza</button>
+                <button class="btn-primary" onclick="showModal('impound-modal')">${t('impounds.add_btn')}</button>
+                <button class="btn-secondary" onclick="postNUI('getImpounds')">${t('common.refresh')}</button>
             </div>
             <table class="data-table">
-                <thead><tr><th>Numar</th><th>Model</th><th>Motiv</th><th>Taxa</th><th>Status</th><th>Data</th><th></th></tr></thead>
+                <thead><tr><th>${t('impounds.col_plate')}</th><th>${t('impounds.col_model')}</th><th>${t('impounds.col_reason')}</th><th>${t('impounds.col_fee')}</th><th>${t('impounds.col_status')}</th><th>${t('impounds.col_date')}</th><th></th></tr></thead>
                 <tbody id="impounds-body"></tbody>
             </table>`;
 
         case 'officers': return `
             <div class="tab-toolbar">
-                <button class="btn-secondary" onclick="postNUI('getOnDutyOfficers')">↻ Actualizeaza</button>
+                <button class="btn-secondary" onclick="postNUI('getOnDutyOfficers')">${t('common.refresh')}</button>
             </div>
             <div id="officers-list"></div>`;
 
         case 'management': return `
             <div class="sub-tabs">
-                <button class="sub-tab-btn" data-stab="budget"      onclick="switchSubTab('budget')">Buget</button>
-                <button class="sub-tab-btn" data-stab="mgmt-fleet"  onclick="switchSubTab('mgmt-fleet')">Flota</button>
-                <button class="sub-tab-btn" data-stab="mgmt-armory" onclick="switchSubTab('mgmt-armory')">Armament</button>
+                <button class="sub-tab-btn" data-stab="budget"      onclick="switchSubTab('budget')">${t('management.sub_budget')}</button>
+                <button class="sub-tab-btn" data-stab="mgmt-fleet"  onclick="switchSubTab('mgmt-fleet')">${t('management.sub_fleet')}</button>
+                <button class="sub-tab-btn" data-stab="mgmt-armory" onclick="switchSubTab('mgmt-armory')">${t('management.sub_armory')}</button>
             </div>
             <div id="stab-budget" class="sub-tab-content">
                 <div class="budget-header">
                     <div class="budget-balance-chip">
-                        <span class="budget-label">Buget disponibil</span>
+                        <span class="budget-label">${t('management.budget_available')}</span>
                         <span id="budget-balance" class="budget-amount">$0</span>
                     </div>
                 </div>
                 <table class="data-table" id="budget-tx-table">
-                    <thead><tr><th>Tip</th><th>Suma</th><th>Descriere</th><th>Data</th></tr></thead>
+                    <thead><tr><th>${t('management.tx_col_type')}</th><th>${t('management.tx_col_amount')}</th><th>${t('management.tx_col_description')}</th><th>${t('management.tx_col_date')}</th></tr></thead>
                     <tbody id="budget-tx-body"></tbody>
                 </table>
             </div>
             <div id="stab-mgmt-fleet" class="sub-tab-content">
                 <div class="mgmt-section">
-                    <h3 class="mgmt-section-title">Flota Curenta</h3>
+                    <h3 class="mgmt-section-title">${t('management.fleet_current')}</h3>
                     <div id="mgmt-fleet-list"></div>
                 </div>
                 <div class="mgmt-section">
-                    <h3 class="mgmt-section-title">Achizitioneaza Vehicul</h3>
+                    <h3 class="mgmt-section-title">${t('management.fleet_purchase')}</h3>
                     <div id="mgmt-models-list"></div>
                 </div>
             </div>
             <div id="stab-mgmt-armory" class="sub-tab-content">
                 <div class="mgmt-section">
-                    <h3 class="mgmt-section-title">Arme Configurate</h3>
+                    <h3 class="mgmt-section-title">${t('management.armory_weapons')}</h3>
                     <div id="mgmt-armory-weapons"></div>
                     <div class="mgmt-add-form">
-                        <h4>Adauga Arma</h4>
-                        <input type="text" id="new-weapon-item" placeholder="itemName" />
-                        <input type="text" id="new-weapon-label" placeholder="Nume afisat" />
-                        <input type="text" id="new-weapon-ammo" placeholder="Ammo item (optional)" />
-                        <input type="number" id="new-weapon-ammo-amount" placeholder="Cantitate ammo" value="0" min="0" />
-                        <button class="btn-primary" onclick="submitAddWeapon()">Adauga</button>
+                        <h4>${t('management.add_weapon')}</h4>
+                        <input type="text" id="new-weapon-item" placeholder="${t('management.ph_item_name')}" />
+                        <input type="text" id="new-weapon-label" placeholder="${t('management.ph_display_name')}" />
+                        <input type="text" id="new-weapon-ammo" placeholder="${t('management.ph_ammo_item')}" />
+                        <input type="number" id="new-weapon-ammo-amount" placeholder="${t('management.ph_ammo_amount')}" value="0" min="0" />
+                        <button class="btn-primary" onclick="submitAddWeapon()">${t('common.add')}</button>
                     </div>
                 </div>
                 <div class="mgmt-section">
-                    <h3 class="mgmt-section-title">Echipamente Configurate</h3>
+                    <h3 class="mgmt-section-title">${t('management.armory_equipment')}</h3>
                     <div id="mgmt-armory-equipment"></div>
                     <div class="mgmt-add-form">
-                        <h4>Adauga Echipament</h4>
-                        <input type="text" id="new-equip-item" placeholder="itemName" />
-                        <input type="text" id="new-equip-label" placeholder="Nume afisat" />
-                        <input type="number" id="new-equip-amount" placeholder="Cantitate" value="1" min="1" />
-                        <button class="btn-primary" onclick="submitAddEquipment()">Adauga</button>
+                        <h4>${t('management.add_equipment')}</h4>
+                        <input type="text" id="new-equip-item" placeholder="${t('management.ph_item_name')}" />
+                        <input type="text" id="new-equip-label" placeholder="${t('management.ph_display_name')}" />
+                        <input type="number" id="new-equip-amount" placeholder="${t('management.ph_amount')}" value="1" min="1" />
+                        <button class="btn-primary" onclick="submitAddEquipment()">${t('common.add')}</button>
                     </div>
                 </div>
             </div>`;
 
-        default: return '<div class="empty-msg">Tab nedisponibil.</div>';
+        default: return `<div class="empty-msg">${t('tab.unavailable')}</div>`;
     }
 }
 
@@ -316,35 +338,35 @@ function getEMSTabContent(id) {
     switch (id) {
         case 'calls': return `
             <div class="tab-toolbar">
-                <button class="btn-secondary" onclick="postNUI('getCalls')">↻ Actualizeaza</button>
+                <button class="btn-secondary" onclick="postNUI('getCalls')">${t('common.refresh')}</button>
             </div>
             <table class="data-table">
-                <thead><tr><th>Apelant</th><th>Mesaj</th><th>Timp</th><th>Status</th><th>Actiuni</th></tr></thead>
-                <tbody id="calls-body"><tr><td colspan="5" class="empty-row">Niciun apel activ.</td></tr></tbody>
+                <thead><tr><th>${t('calls.col_caller')}</th><th>${t('calls.col_message')}</th><th>${t('calls.col_time')}</th><th>${t('calls.col_status')}</th><th>${t('calls.col_actions')}</th></tr></thead>
+                <tbody id="calls-body"><tr><td colspan="5" class="empty-row">${t('calls.empty')}</td></tr></tbody>
             </table>`;
 
         case 'patient': return `
             <div class="search-bar">
-                <input type="text" id="patient-search-input" placeholder="Cauta pacient dupa nume..." oninput="onPatientSearchInput(this.value)" />
+                <input type="text" id="patient-search-input" placeholder="${t('patient.search_placeholder')}" oninput="onPatientSearchInput(this.value)" />
             </div>
             <div class="search-layout" style="flex:1;overflow:hidden">
                 <div class="search-results-list" id="patient-results-list"></div>
-                <div class="search-detail" id="patient-detail"><div class="empty-msg">Selecteaza un pacient pentru a vedea istoricul medical.</div></div>
+                <div class="search-detail" id="patient-detail"><div class="empty-msg">${t('patient.select_prompt')}</div></div>
             </div>`;
 
         case 'medical': return `
             <div class="search-bar">
-                <input type="text" id="medical-search-input" placeholder="Cauta dupa nume..." oninput="onMedicalSearch(this.value)" />
+                <input type="text" id="medical-search-input" placeholder="${t('medical.search_placeholder')}" oninput="onMedicalSearch(this.value)" />
             </div>
             <div id="medical-results"></div>`;
 
         case 'team': return `
             <div class="tab-toolbar">
-                <button class="btn-secondary" onclick="postNUI('getOnDutyEMS')">↻ Actualizeaza</button>
+                <button class="btn-secondary" onclick="postNUI('getOnDutyEMS')">${t('common.refresh')}</button>
             </div>
             <div id="team-list"></div>`;
 
-        default: return '<div class="empty-msg">Tab nedisponibil.</div>';
+        default: return `<div class="empty-msg">${t('tab.unavailable')}</div>`;
     }
 }
 
@@ -383,7 +405,7 @@ function renderWarrants() {
     const tbody = document.getElementById('warrants-body');
     if (!tbody) return;
     if (!state.warrants.length) {
-        tbody.innerHTML = '<tr><td colspan="5" class="empty-row">Niciun mandat activ</td></tr>';
+        tbody.innerHTML = `<tr><td colspan="5" class="empty-row">${t('warrants.empty')}</td></tr>`;
         return;
     }
     tbody.innerHTML = state.warrants.map(w => `
@@ -392,7 +414,7 @@ function renderWarrants() {
             <td class="cell-truncate">${esc(w.charges)}</td>
             <td>${w.bail_amount > 0 ? '$' + w.bail_amount.toLocaleString('ro-RO') : '-'}</td>
             <td>${formatDate(w.issued_at)}</td>
-            <td><button class="btn-danger-sm" onclick="closeWarrant(${w.id})">Inchide</button></td>
+            <td><button class="btn-danger-sm" onclick="closeWarrant(${w.id})">${t('warrants.close_btn')}</button></td>
         </tr>`).join('');
 }
 
@@ -411,7 +433,7 @@ function submitWarrant() {
     const charId  = document.getElementById('warrant-char-id').value;
     const charges = document.getElementById('warrant-charges').value.trim();
     const bail    = parseInt(document.getElementById('warrant-bail').value) || 0;
-    if (!charId || charges.length < 3) { alert('Completeaza toate campurile.'); return; }
+    if (!charId || charges.length < 3) { alert(t('alert.fill_all')); return; }
     postNUI('createWarrant', { characterId: parseInt(charId), charges, bailAmount: bail });
     hideModal('warrant-modal');
 }
@@ -438,21 +460,21 @@ function onPoliceSearch(results) {
 function renderMainSearch(results) {
     const el = document.getElementById('search-results-main');
     if (!el) return;
-    if (!results || !results.length) { el.innerHTML = '<div class="empty-msg">Niciun rezultat.</div>'; return; }
+    if (!results || !results.length) { el.innerHTML = `<div class="empty-msg">${t('common.no_results')}</div>`; return; }
     el.innerHTML = results.map(c => `
         <div class="person-card">
             <div class="person-card-name">
                 ${esc(c.first_name)} ${esc(c.last_name)}
-                <span class="person-age">${c.age} ani</span>
+                <span class="person-age">${t('search.age_suffix', c.age)}</span>
             </div>
             <div class="person-card-badges">
-                ${c.hasWarrant ? '<span class="badge badge-warn">Mandat activ</span>' : ''}
-                ${c.isJailed   ? '<span class="badge badge-danger">Inchis</span>' : ''}
+                ${c.hasWarrant ? `<span class="badge badge-warn">${t('search.badge_warrant')}</span>` : ''}
+                ${c.isJailed   ? `<span class="badge badge-danger">${t('search.badge_jailed')}</span>` : ''}
             </div>
             <div class="person-card-actions">
-                <button class="btn-secondary-sm" onclick="quickWarrant(${c.id}, '${esc(c.first_name)} ${esc(c.last_name)}')">Emite Mandat</button>
-                ${c.isJailed ? `<button class="btn-secondary-sm" onclick="unjailChar(${c.id})">Elibereaza</button>` : ''}
-                <button class="btn-secondary-sm" onclick="viewCriminalHistory(${c.id}, '${esc(c.first_name)} ${esc(c.last_name)}')">Dosar Penal</button>
+                <button class="btn-secondary-sm" onclick="quickWarrant(${c.id}, '${esc(c.first_name)} ${esc(c.last_name)}')">${t('search.emit_warrant')}</button>
+                ${c.isJailed ? `<button class="btn-secondary-sm" onclick="unjailChar(${c.id})">${t('search.release')}</button>` : ''}
+                <button class="btn-secondary-sm" onclick="viewCriminalHistory(${c.id}, '${esc(c.first_name)} ${esc(c.last_name)}')">${t('search.criminal_record')}</button>
             </div>
         </div>`).join('');
 }
@@ -463,14 +485,14 @@ function quickWarrant(charId, name) {
 }
 
 function unjailChar(charId) {
-    if (!confirm('Esti sigur ca vrei sa eliberezi acest personaj?')) return;
+    if (!confirm(t('search.confirm_unjail'))) return;
     postNUI('unjailEarly', { characterId: charId });
 }
 
 function viewCriminalHistory(charId, name) {
     switchTab('criminal');
     const detailEl = document.getElementById('criminal-detail');
-    if (detailEl) detailEl.innerHTML = `<div class="loading">Se incarca dosarul pentru ${esc(name)}...</div>`;
+    if (detailEl) detailEl.innerHTML = `<div class="loading">${t('criminal.loading', esc(name))}</div>`;
     postNUI('getCriminalHistory', { characterId: charId });
 }
 
@@ -489,12 +511,12 @@ function onCriminalSearch(val) {
 function renderCriminalSearchResults(results) {
     const listEl = document.getElementById('criminal-results-list');
     if (!listEl) return;
-    if (!results || !results.length) { listEl.innerHTML = '<div class="empty-msg">Niciun rezultat.</div>'; return; }
+    if (!results || !results.length) { listEl.innerHTML = `<div class="empty-msg">${t('common.no_results')}</div>`; return; }
     listEl.innerHTML = results.map(c => `
         <div class="result-row" onclick="loadCriminalHistory(${c.id}, '${esc(c.first_name)} ${esc(c.last_name)}')">
             <span class="result-name">${esc(c.first_name)} ${esc(c.last_name)}</span>
-            ${c.hasWarrant ? '<span class="badge badge-warn">M</span>' : ''}
-            ${c.isJailed   ? '<span class="badge badge-danger">I</span>' : ''}
+            ${c.hasWarrant ? `<span class="badge badge-warn">${t('criminal.badge_warrant')}</span>` : ''}
+            ${c.isJailed   ? `<span class="badge badge-danger">${t('criminal.badge_jailed')}</span>` : ''}
         </div>`).join('');
 }
 
@@ -502,14 +524,14 @@ function loadCriminalHistory(charId, name) {
     document.querySelectorAll('#criminal-results-list .result-row').forEach(r => r.classList.remove('selected'));
     event && event.currentTarget && event.currentTarget.classList.add('selected');
     const detailEl = document.getElementById('criminal-detail');
-    if (detailEl) detailEl.innerHTML = `<div class="loading">Se incarca dosarul pentru ${esc(name)}...</div>`;
+    if (detailEl) detailEl.innerHTML = `<div class="loading">${t('criminal.loading', esc(name))}</div>`;
     postNUI('getCriminalHistory', { characterId: charId });
 }
 
 function renderCriminalHistory(data) {
     const detailEl = document.getElementById('criminal-detail');
     if (!detailEl) return;
-    if (!data) { detailEl.innerHTML = '<div class="empty-msg">Date indisponibile.</div>'; return; }
+    if (!data) { detailEl.innerHTML = `<div class="empty-msg">${t('common.data_unavailable')}</div>`; return; }
 
     const jails    = data.jails    || [];
     const warrants = data.warrants || [];
@@ -518,32 +540,32 @@ function renderCriminalHistory(data) {
     let html = '';
 
     html += `<div class="history-section">
-        <div class="history-section-title">Arestari (${jails.length})</div>`;
+        <div class="history-section-title">${t('criminal.section_arrests', jails.length)}</div>`;
     if (!jails.length) {
-        html += '<div class="empty-msg" style="padding:10px">Nicio arestare.</div>';
+        html += `<div class="empty-msg" style="padding:10px">${t('criminal.no_arrests')}</div>`;
     } else {
         jails.forEach(j => {
             html += `<div class="history-row">
                 <div class="history-row-header">
-                    <span class="badge badge-danger">Arest</span>
+                    <span class="badge badge-danger">${t('criminal.badge_arrest')}</span>
                     <span>${esc(j.reason)}</span>
                     <span class="history-row-date">${formatDate(j.arrested_at)}</span>
                 </div>
-                <div class="history-row-detail">${j.sentence_minutes} min | Cautiune: $${j.bail_amount}</div>
+                <div class="history-row-detail">${t('criminal.arrest_detail', j.sentence_minutes, j.bail_amount)}</div>
             </div>`;
         });
     }
     html += '</div>';
 
     html += `<div class="history-section">
-        <div class="history-section-title">Mandate (${warrants.length})</div>`;
+        <div class="history-section-title">${t('criminal.section_warrants', warrants.length)}</div>`;
     if (!warrants.length) {
-        html += '<div class="empty-msg" style="padding:10px">Niciun mandat.</div>';
+        html += `<div class="empty-msg" style="padding:10px">${t('criminal.no_warrants')}</div>`;
     } else {
         warrants.forEach(w => {
             html += `<div class="history-row">
                 <div class="history-row-header">
-                    <span class="badge ${w.is_active ? 'badge-warn' : 'badge-gray'}">${w.is_active ? 'Activ' : 'Inchis'}</span>
+                    <span class="badge ${w.is_active ? 'badge-warn' : 'badge-gray'}">${w.is_active ? t('criminal.warrant_active') : t('criminal.warrant_closed')}</span>
                     <span>${esc(w.charges)}</span>
                     <span class="history-row-date">${formatDate(w.issued_at)}</span>
                 </div>
@@ -553,18 +575,18 @@ function renderCriminalHistory(data) {
     html += '</div>';
 
     html += `<div class="history-section">
-        <div class="history-section-title">Citatii (${citations.length})</div>`;
+        <div class="history-section-title">${t('criminal.section_citations', citations.length)}</div>`;
     if (!citations.length) {
-        html += '<div class="empty-msg" style="padding:10px">Nicio citatie.</div>';
+        html += `<div class="empty-msg" style="padding:10px">${t('criminal.no_citations')}</div>`;
     } else {
         citations.forEach(c => {
             html += `<div class="history-row">
                 <div class="history-row-header">
-                    <span class="badge ${c.is_paid ? 'badge-ok' : 'badge-warn'}">${c.is_paid ? 'Platita' : 'Neplatita'}</span>
+                    <span class="badge ${c.is_paid ? 'badge-ok' : 'badge-warn'}">${c.is_paid ? t('criminal.citation_paid') : t('criminal.citation_unpaid')}</span>
                     <span>${esc(c.offense)}</span>
                     <span class="history-row-date">${formatDate(c.issued_at)}</span>
                 </div>
-                <div class="history-row-detail">Amenda: $${c.fine_amount}</div>
+                <div class="history-row-detail">${t('criminal.citation_fine', c.fine_amount)}</div>
             </div>`;
         });
     }
@@ -582,7 +604,7 @@ function renderCitations() {
     const tbody = document.getElementById('citations-body');
     if (!tbody) return;
     if (!state.citations.length) {
-        tbody.innerHTML = '<tr><td colspan="6" class="empty-row">Nicio citatie activa.</td></tr>';
+        tbody.innerHTML = `<tr><td colspan="6" class="empty-row">${t('citations.empty')}</td></tr>`;
         return;
     }
     tbody.innerHTML = state.citations.map(c => `
@@ -590,9 +612,9 @@ function renderCitations() {
             <td>${esc(c.first_name)} ${esc(c.last_name)}</td>
             <td class="cell-truncate">${esc(c.offense)}</td>
             <td>$${c.fine_amount}</td>
-            <td><span class="badge ${c.is_paid ? 'badge-ok' : 'badge-warn'}">${c.is_paid ? 'Platita' : 'Neplatita'}</span></td>
+            <td><span class="badge ${c.is_paid ? 'badge-ok' : 'badge-warn'}">${c.is_paid ? t('citations.status_paid') : t('citations.status_unpaid')}</span></td>
             <td>${formatDate(c.issued_at)}</td>
-            <td>${!c.is_paid ? `<button class="btn-success-sm" onclick="markCitationPaid(${c.id})">Marcheaza platita</button>` : ''}</td>
+            <td>${!c.is_paid ? `<button class="btn-success-sm" onclick="markCitationPaid(${c.id})">${t('citations.mark_paid')}</button>` : ''}</td>
         </tr>`).join('');
 }
 
@@ -606,7 +628,7 @@ function submitCitation() {
     const charId  = document.getElementById('citation-char-id').value;
     const offense = document.getElementById('citation-offense').value.trim();
     const fine    = parseInt(document.getElementById('citation-fine').value) || 500;
-    if (!charId || offense.length < 3) { alert('Completeaza toate campurile.'); return; }
+    if (!charId || offense.length < 3) { alert(t('alert.fill_all')); return; }
     postNUI('createCitation', { characterId: parseInt(charId), offense, fineAmount: fine });
     hideModal('citation-modal');
 }
@@ -620,7 +642,7 @@ function renderBOLOs() {
     const tbody = document.getElementById('bolos-body');
     if (!tbody) return;
     if (!state.bolos.length) {
-        tbody.innerHTML = '<tr><td colspan="5" class="empty-row">Niciun BOLO activ.</td></tr>';
+        tbody.innerHTML = `<tr><td colspan="5" class="empty-row">${t('bolos.empty')}</td></tr>`;
         return;
     }
     tbody.innerHTML = state.bolos.map(b => `
@@ -629,7 +651,7 @@ function renderBOLOs() {
             <td class="cell-truncate">${esc(b.description)}</td>
             <td>${esc(b.vehicle_info) || '-'}</td>
             <td>${formatDate(b.created_at)}</td>
-            <td><button class="btn-danger-sm" onclick="closeBOLO(${b.id})">Inchide</button></td>
+            <td><button class="btn-danger-sm" onclick="closeBOLO(${b.id})">${t('bolos.close_btn')}</button></td>
         </tr>`).join('');
 }
 
@@ -643,7 +665,7 @@ function submitBOLO() {
     const subject = document.getElementById('bolo-subject').value.trim();
     const desc    = document.getElementById('bolo-description').value.trim();
     const vehicle = document.getElementById('bolo-vehicle').value.trim();
-    if (!subject || desc.length < 3) { alert('Completeaza subiectul si descrierea.'); return; }
+    if (!subject || desc.length < 3) { alert(t('alert.fill_subject_desc')); return; }
     postNUI('createBOLO', { subjectName: subject, description: desc, vehicleInfo: vehicle });
     hideModal('bolo-modal');
 }
@@ -657,7 +679,7 @@ function renderIncidents() {
     const tbody = document.getElementById('incidents-body');
     if (!tbody) return;
     if (!state.incidents.length) {
-        tbody.innerHTML = '<tr><td colspan="3" class="empty-row">Niciun incident inregistrat.</td></tr>';
+        tbody.innerHTML = `<tr><td colspan="3" class="empty-row">${t('incidents.empty')}</td></tr>`;
         return;
     }
     tbody.innerHTML = state.incidents.map(i => `
@@ -672,7 +694,7 @@ function submitIncident() {
     const title    = document.getElementById('incident-title').value.trim();
     const desc     = document.getElementById('incident-desc').value.trim();
     const involved = document.getElementById('incident-involved').value.trim();
-    if (title.length < 3 || desc.length < 3) { alert('Completeaza titlul si descrierea.'); return; }
+    if (title.length < 3 || desc.length < 3) { alert(t('alert.fill_title_desc')); return; }
     const involvedIds = involved ? involved.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n)) : [];
     postNUI('createIncident', { title, description: desc, involvedCharacters: involvedIds });
     hideModal('incident-modal');
@@ -687,7 +709,7 @@ function renderImpounds() {
     const tbody = document.getElementById('impounds-body');
     if (!tbody) return;
     if (!state.impounds.length) {
-        tbody.innerHTML = '<tr><td colspan="7" class="empty-row">Niciun vehicul sechestrat.</td></tr>';
+        tbody.innerHTML = `<tr><td colspan="7" class="empty-row">${t('impounds.empty')}</td></tr>`;
         return;
     }
     tbody.innerHTML = state.impounds.map(i => `
@@ -696,9 +718,9 @@ function renderImpounds() {
             <td>${esc(i.model) || '-'}</td>
             <td class="cell-truncate">${esc(i.reason)}</td>
             <td>$${i.fee}</td>
-            <td><span class="badge ${i.is_retrieved ? 'badge-ok' : 'badge-warn'}">${i.is_retrieved ? 'Recuperat' : 'Sechestrat'}</span></td>
+            <td><span class="badge ${i.is_retrieved ? 'badge-ok' : 'badge-warn'}">${i.is_retrieved ? t('impounds.status_retrieved') : t('impounds.status_impounded')}</span></td>
             <td>${formatDate(i.impounded_at)}</td>
-            <td>${!i.is_retrieved ? `<button class="btn-success-sm" onclick="retrieveImpound(${i.id})">Elibereaza</button>` : ''}</td>
+            <td>${!i.is_retrieved ? `<button class="btn-success-sm" onclick="retrieveImpound(${i.id})">${t('impounds.release_btn')}</button>` : ''}</td>
         </tr>`).join('');
 }
 
@@ -713,7 +735,7 @@ function submitImpound() {
     const model  = document.getElementById('impound-model').value.trim();
     const reason = document.getElementById('impound-reason').value.trim();
     const fee    = parseInt(document.getElementById('impound-fee').value) || 2500;
-    if (!plate || reason.length < 3) { alert('Completeaza numarul de inmatriculare si motivul.'); return; }
+    if (!plate || reason.length < 3) { alert(t('alert.fill_plate_reason')); return; }
     postNUI('impoundVehicle', { plate, model, reason, fee });
     hideModal('impound-modal');
 }
@@ -722,7 +744,7 @@ function renderOfficers(officers) {
     state.officers = officers || [];
     const el = document.getElementById('officers-list');
     if (!el) return;
-    if (!state.officers.length) { el.innerHTML = '<div class="empty-msg">Niciun ofiter activ.</div>'; return; }
+    if (!state.officers.length) { el.innerHTML = `<div class="empty-msg">${t('officers.empty')}</div>`; return; }
     el.innerHTML = state.officers.map(o => `
         <div class="officer-row">
             <span class="officer-name">${esc(o.first_name)} ${esc(o.last_name)}</span>
@@ -745,7 +767,7 @@ function renderBudget(balance, transactions) {
     const tbody = document.getElementById('budget-tx-body');
     if (!tbody) return;
     if (!transactions || !transactions.length) {
-        tbody.innerHTML = '<tr><td colspan="4" class="empty-row">Nicio tranzactie.</td></tr>'; return;
+        tbody.innerHTML = `<tr><td colspan="4" class="empty-row">${t('management.tx_empty')}</td></tr>`; return;
     }
     tbody.innerHTML = transactions.map(t => {
         const amt = parseFloat(t.amount) || 0;
@@ -766,7 +788,7 @@ function renderMgmtFleet(fleet, models, sellRatio, balance) {
     if (!fleetEl || !modelsEl) return;
 
     if (!fleet || !fleet.length) {
-        fleetEl.innerHTML = '<div class="empty-msg">Niciun vehicul in flota.</div>';
+        fleetEl.innerHTML = `<div class="empty-msg">${t('management.fleet_empty')}</div>`;
     } else {
         fleetEl.innerHTML = fleet.map(v => {
             const sellPrice = Math.floor((parseFloat(v.purchase_price) || 0) * (sellRatio || 0.6));
@@ -774,17 +796,17 @@ function renderMgmtFleet(fleet, models, sellRatio, balance) {
             return `<div class="mgmt-fleet-row ${unavail ? 'mgmt-fleet-inuse' : ''}">
                 <span class="fleet-model">${esc(v.label)}</span>
                 <span class="fleet-plate">${esc(v.plate)}</span>
-                <span class="badge ${v.is_available ? 'badge-ok' : 'badge-danger'}">${v.is_available ? 'Liber' : 'In uz'}</span>
+                <span class="badge ${v.is_available ? 'badge-ok' : 'badge-danger'}">${v.is_available ? t('management.fleet_free') : t('management.fleet_in_use')}</span>
                 ${v.is_available
-                    ? `<button class="btn-danger-sm" onclick="sellVehicle(${v.id}, '${esc(v.plate)}', '${esc(v.label)}', ${sellPrice})">Vinde $${sellPrice.toLocaleString('ro-RO')}</button>`
-                    : '<span class="mgmt-inuse-label">In uz</span>'
+                    ? `<button class="btn-danger-sm" onclick="sellVehicle(${v.id}, '${esc(v.plate)}', '${esc(v.label)}', ${sellPrice})">${t('management.fleet_sell', sellPrice.toLocaleString('ro-RO'))}</button>`
+                    : `<span class="mgmt-inuse-label">${t('management.fleet_in_use')}</span>`
                 }
             </div>`;
         }).join('');
     }
 
     if (!models || !models.length) {
-        modelsEl.innerHTML = '<div class="empty-msg">Niciun model configurat.</div>';
+        modelsEl.innerHTML = `<div class="empty-msg">${t('management.models_empty')}</div>`;
     } else {
         modelsEl.innerHTML = models.map(m => {
             const price    = parseInt(m.price) || 0;
@@ -794,18 +816,18 @@ function renderMgmtFleet(fleet, models, sellRatio, balance) {
                 <span class="mgmt-model-price">$${price.toLocaleString('ro-RO')}</span>
                 <button class="btn-primary-sm ${canAfford ? '' : 'btn-disabled'}"
                     onclick="${canAfford ? `purchaseVehicle('${esc(m.model)}', '${esc(m.label)}')` : ''}"
-                    ${canAfford ? '' : 'disabled'}>Achizitioneaza</button>
+                    ${canAfford ? '' : 'disabled'}>${t('management.buy_btn')}</button>
             </div>`;
         }).join('');
     }
 }
 
 function purchaseVehicle(model, label) {
-    if (!confirm(`Achizitionezi "${label}"?`)) return;
+    if (!confirm(t('management.confirm_buy', label))) return;
     postNUI('purchaseFleetVehicle', { model });
 }
 function sellVehicle(id, plate, label, sellPrice) {
-    if (!confirm(`Vinzi ${label} (${plate}) pentru $${sellPrice}?`)) return;
+    if (!confirm(t('management.confirm_sell', label, plate, sellPrice))) return;
     postNUI('sellFleetVehicle', { vehicleId: id });
 }
 function onFleetAdded(vehicle) {
@@ -826,23 +848,23 @@ function renderMgmtArmory(weapons, equipment) {
     if (!wEl || !eEl) return;
 
     wEl.innerHTML = (!weapons || !weapons.length)
-        ? '<div class="empty-msg">Nicio arma configurata.</div>'
+        ? `<div class="empty-msg">${t('management.weapons_empty')}</div>`
         : weapons.map(w => `
             <div class="mgmt-armory-row">
                 <span>${esc(w.label)}</span>
                 <code class="item-code">${esc(w.itemName)}</code>
                 ${w.ammoItem ? `<span class="ammo-info">${esc(w.ammoItem)} ×${w.ammoAmount}</span>` : ''}
-                <button class="btn-danger-sm" onclick="removeArmoryWeapon('${esc(w.itemName)}')">Sterge</button>
+                <button class="btn-danger-sm" onclick="removeArmoryWeapon('${esc(w.itemName)}')">${t('management.delete_btn')}</button>
             </div>`).join('');
 
     eEl.innerHTML = (!equipment || !equipment.length)
-        ? '<div class="empty-msg">Niciun echipament configurat.</div>'
+        ? `<div class="empty-msg">${t('management.equipment_empty')}</div>`
         : equipment.map(e => `
             <div class="mgmt-armory-row">
                 <span>${esc(e.label)}</span>
                 <code class="item-code">${esc(e.itemName)}</code>
                 <span class="ammo-info">×${e.amount}</span>
-                <button class="btn-danger-sm" onclick="removeArmoryEquipment('${esc(e.itemName)}')">Sterge</button>
+                <button class="btn-danger-sm" onclick="removeArmoryEquipment('${esc(e.itemName)}')">${t('management.delete_btn')}</button>
             </div>`).join('');
 }
 
@@ -851,7 +873,7 @@ function submitAddWeapon() {
     const label      = document.getElementById('new-weapon-label').value.trim();
     const ammoItem   = document.getElementById('new-weapon-ammo').value.trim();
     const ammoAmount = parseInt(document.getElementById('new-weapon-ammo-amount').value) || 0;
-    if (!itemName || !label) { alert('Completeaza itemName si label.'); return; }
+    if (!itemName || !label) { alert(t('alert.fill_item_label')); return; }
     postNUI('addArmoryWeapon', { itemName, label, ammoItem, ammoAmount });
     ['new-weapon-item','new-weapon-label','new-weapon-ammo'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('new-weapon-ammo-amount').value = '0';
@@ -860,17 +882,17 @@ function submitAddEquipment() {
     const itemName = document.getElementById('new-equip-item').value.trim();
     const label    = document.getElementById('new-equip-label').value.trim();
     const amount   = parseInt(document.getElementById('new-equip-amount').value) || 1;
-    if (!itemName || !label) { alert('Completeaza itemName si label.'); return; }
+    if (!itemName || !label) { alert(t('alert.fill_item_label')); return; }
     postNUI('addArmoryEquipment', { itemName, label, amount });
     ['new-equip-item','new-equip-label'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('new-equip-amount').value = '1';
 }
 function removeArmoryWeapon(item) {
-    if (!confirm(`Stergi arma "${item}"?`)) return;
+    if (!confirm(t('management.confirm_delete_weapon', item))) return;
     postNUI('removeArmoryWeapon', { itemName: item });
 }
 function removeArmoryEquipment(item) {
-    if (!confirm(`Stergi echipamentul "${item}"?`)) return;
+    if (!confirm(t('management.confirm_delete_equipment', item))) return;
     postNUI('removeArmoryEquipment', { itemName: item });
 }
 function onArmoryUpdated(weapons, equipment) {
@@ -887,16 +909,16 @@ function renderCalls(callsObj) {
     if (!tbody) return;
     const calls = Object.values(callsObj || {});
     if (!calls.length) {
-        tbody.innerHTML = '<tr><td colspan="5" class="empty-row">Niciun apel activ.</td></tr>'; return;
+        tbody.innerHTML = `<tr><td colspan="5" class="empty-row">${t('calls.empty')}</td></tr>`; return;
     }
     tbody.innerHTML = calls.map(call => {
         const statusBadge = call.status === 'pending'
-            ? '<span class="badge badge-warn">Asteapta</span>'
-            : '<span class="badge badge-ok">Activ</span>';
+            ? `<span class="badge badge-warn">${t('calls.status_pending')}</span>`
+            : `<span class="badge badge-ok">${t('calls.status_active')}</span>`;
         const actions = [];
         if (call.coords) actions.push(`<button class="btn-secondary-sm" onclick="setWaypoint(${call.coords.x||0},${call.coords.y||0})"><i data-lucide="map-pin"></i></button>`);
-        if (call.status === 'pending') actions.push(`<button class="btn-success-sm" onclick="acceptCall(${call.id})"><i data-lucide="check"></i> Accept</button>`);
-        if (call.status === 'active')  actions.push(`<button class="btn-danger-sm" onclick="resolveCall(${call.id})">Rezolva</button>`);
+        if (call.status === 'pending') actions.push(`<button class="btn-success-sm" onclick="acceptCall(${call.id})"><i data-lucide="check"></i> ${t('calls.accept')}</button>`);
+        if (call.status === 'active')  actions.push(`<button class="btn-danger-sm" onclick="resolveCall(${call.id})">${t('calls.resolve')}</button>`);
         return `<tr class="call-row-${call.status}">
             <td>${esc(call.callerName || '?')}</td>
             <td>${esc(call.message || '')}</td>
@@ -932,7 +954,7 @@ function onPatientSearchInput(val) {
 function onPatientSearch(results) {
     const listEl = document.getElementById('patient-results-list');
     if (!listEl) return;
-    if (!results || !results.length) { listEl.innerHTML = '<div class="empty-msg">Niciun rezultat.</div>'; return; }
+    if (!results || !results.length) { listEl.innerHTML = `<div class="empty-msg">${t('common.no_results')}</div>`; return; }
     listEl.innerHTML = results.map(r => `
         <div class="result-row" onclick="loadPatientHistory(${r.id}, '${esc(r.first_name)} ${esc(r.last_name)}')">
             <span class="result-name">${esc(r.first_name)} ${esc(r.last_name)}</span>
@@ -942,19 +964,19 @@ function onPatientSearch(results) {
 
 function loadPatientHistory(charId, name) {
     const detailEl = document.getElementById('patient-detail');
-    if (detailEl) detailEl.innerHTML = `<div class="loading">Se incarca istoricul pentru ${esc(name)}...</div>`;
+    if (detailEl) detailEl.innerHTML = `<div class="loading">${t('patient.loading', esc(name))}</div>`;
     postNUI('getPatientHistory', { characterId: charId });
 }
 
 function renderPatientHistory(records) {
     const detailEl = document.getElementById('patient-detail');
     if (!detailEl) return;
-    if (!records || !records.length) { detailEl.innerHTML = '<div class="empty-msg">Niciun record medical.</div>'; return; }
+    if (!records || !records.length) { detailEl.innerHTML = `<div class="empty-msg">${t('patient.empty')}</div>`; return; }
     const icons = { revive: 'heart', treatment: 'pill', hospital: 'hospital', diagnosis: 'search' };
     detailEl.innerHTML = records.map(r => {
         const icon    = icons[r.record_type] || 'clipboard-list';
         const details = typeof r.details === 'object' ? JSON.stringify(r.details) : (r.details || '');
-        const ems     = (r.ems_first && r.ems_last) ? `${r.ems_first} ${r.ems_last}` : 'Sistem';
+        const ems     = (r.ems_first && r.ems_last) ? `${r.ems_first} ${r.ems_last}` : t('patient.ems_system');
         return `<div class="history-record">
             <div class="hr-header">
                 <span><i data-lucide="${icon}"></i> <strong>${r.record_type}</strong></span>
@@ -980,12 +1002,12 @@ function onMedicalSearch(val) {
 function renderRoster(roster) {
     const el = document.getElementById('team-list');
     if (!el) return;
-    if (!roster || !roster.length) { el.innerHTML = '<div class="empty-msg">Niciun EMS activ.</div>'; return; }
-    el.innerHTML = `<table class="data-table"><thead><tr><th>Nume</th><th>Grad</th><th>Status</th></tr></thead><tbody>` +
+    if (!roster || !roster.length) { el.innerHTML = `<div class="empty-msg">${t('team.empty')}</div>`; return; }
+    el.innerHTML = `<table class="data-table"><thead><tr><th>${t('team.col_name')}</th><th>${t('team.col_grade')}</th><th>${t('team.col_status')}</th></tr></thead><tbody>` +
         roster.map(m => `<tr>
             <td>${esc(m.name || (m.first_name + ' ' + m.last_name) || '?')}</td>
             <td>${esc(m.gradeLabel || m.grade_label || '?')}</td>
-            <td><span class="badge ${(m.isOnDuty || m.is_on_duty) ? 'badge-ok' : 'badge-gray'}">${(m.isOnDuty || m.is_on_duty) ? 'On Duty' : 'Off Duty'}</span></td>
+            <td><span class="badge ${(m.isOnDuty || m.is_on_duty) ? 'badge-ok' : 'badge-gray'}">${(m.isOnDuty || m.is_on_duty) ? t('team.on_duty') : t('team.off_duty')}</span></td>
         </tr>`).join('') + '</tbody></table>';
 }
 
@@ -1024,19 +1046,19 @@ function onModalSearch(mode) {
 function renderModalSearch(results, mode) {
     const el = document.getElementById(`${mode}-search-results`);
     if (!el) return;
-    if (!results || !results.length) { el.innerHTML = '<div class="empty-msg">Niciun rezultat.</div>'; return; }
+    if (!results || !results.length) { el.innerHTML = `<div class="empty-msg">${t('common.no_results')}</div>`; return; }
     el.innerHTML = results.map(c => `
         <div class="result-row" onclick="selectModalChar('${mode}', ${c.id}, '${esc(c.first_name)} ${esc(c.last_name)}')">
             <span>${esc(c.first_name)} ${esc(c.last_name)}</span>
-            ${c.hasWarrant ? '<span class="badge badge-warn">M</span>' : ''}
-            ${c.isJailed   ? '<span class="badge badge-danger">I</span>' : ''}
+            ${c.hasWarrant ? `<span class="badge badge-warn">${t('criminal.badge_warrant')}</span>` : ''}
+            ${c.isJailed   ? `<span class="badge badge-danger">${t('criminal.badge_jailed')}</span>` : ''}
         </div>`).join('');
 }
 
 function selectModalChar(mode, charId, name) {
     document.getElementById(`${mode}-char-id`).value = charId;
     const display = document.getElementById(`${mode}-char-display`);
-    if (display) { display.textContent = 'Suspect: ' + name; display.classList.remove('hidden'); }
+    if (display) { display.textContent = t('modal.suspect_prefix', name); display.classList.remove('hidden'); }
     const resultsEl = document.getElementById(`${mode}-search-results`);
     if (resultsEl) resultsEl.innerHTML = '';
     const inputEl = document.getElementById(`${mode}-search`);
@@ -1056,7 +1078,7 @@ function routeSearchResults(results) {
 function renderMedicalSearchResults(results) {
     const el = document.getElementById('medical-results');
     if (!el) return;
-    if (!results || !results.length) { el.innerHTML = '<div class="empty-msg">Niciun rezultat.</div>'; return; }
+    if (!results || !results.length) { el.innerHTML = `<div class="empty-msg">${t('common.no_results')}</div>`; return; }
     el.innerHTML = results.map(r => `
         <div class="result-row" onclick="loadMedicalRecord(${r.id}, '${esc(r.first_name)} ${esc(r.last_name)}')">
             <span class="result-name">${esc(r.first_name)} ${esc(r.last_name)}</span>

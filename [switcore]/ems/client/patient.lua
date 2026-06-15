@@ -56,7 +56,7 @@ CreateThread(function()
             if dist <= range then
                 if not nearbyPatients[targetSrc] then
                     local id = exports.proximity:AddEntityInteraction(
-                        tPed, 'Examineaza Pacient', 'ems_examine',
+                        tPed, Sw.T('ems.examine_patient'), 'ems_examine',
                         { targetSrc = targetSrc },
                         function(data)
                             TriggerServerEvent('ems:server:getPatientData', data.targetSrc)
@@ -67,7 +67,7 @@ CreateThread(function()
 
                 if IsPedRagdoll(tPed) and not nearbyUnconscious[targetSrc] then
                     local stretcherId = exports.proximity:AddEntityInteraction(
-                        tPed, 'Ridica Pacient (Targa)', 'ems_lift',
+                        tPed, Sw.T('ems.lift_patient'), 'ems_lift',
                         { targetSrc = targetSrc },
                         function(data)
                             if isCarrying then
@@ -94,6 +94,7 @@ end)
 RegisterNetEvent('ems:client:openPatientMenu')
 AddEventHandler('ems:client:openPatientMenu', function(data)
     SetNuiFocus(true, true)
+    EmsPushI18n()
     SendNUIMessage({ action = 'openPatientMenu', data = data })
 end)
 
@@ -157,7 +158,7 @@ AddEventHandler('ems:client:startCarrying', function(targetSrc)
         end
     end)
 
-    exports.notifications:Notify('info', 'Cara pacientul. Apasa E pe el pentru a-l depune.', 5000)
+    exports.notifications:Notify('info', Sw.T('ems.carrying_patient'), 5000)
 end)
 
 RegisterNetEvent('ems:client:stopCarrying')

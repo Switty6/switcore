@@ -7,6 +7,12 @@ local function Send(data)
     SendNUIMessage(data)
 end
 
+local function pushI18n()
+    SendNUIMessage({ action = 'sw:i18n', dict = exports.core:getLocaleDict() })
+end
+
+AddEventHandler('switcore:client:localeUpdated', pushI18n)
+
 local function removeJobBlip()
     if jobBlip and DoesBlipExist(jobBlip) then
         RemoveBlip(jobBlip)
@@ -24,7 +30,7 @@ local function createJobBlip(job)
     SetBlipScale(jobBlip, 0.8)
     SetBlipAsShortRange(jobBlip, true)
     BeginTextCommandSetBlipName('STRING')
-    AddTextComponentString(job.label or job.name or 'Job')
+    AddTextComponentString(job.label or job.name or Sw.T('jobs.blip.default_name'))
     EndTextCommandSetBlipName(jobBlip)
 end
 
@@ -50,7 +56,7 @@ local function registerJobProximity(job)
     -- (altfel se acumuleaza duplicate la fiecare refresh de job).
     proximityId = exports.proximity:AddInteraction(
         coords,
-        job.label .. ' - Sediu',
+        Sw.T('jobs.proximity.base_suffix', job.label),
         'job_base_' .. job.name,
         {},
         function()
@@ -68,6 +74,7 @@ end
 RegisterNetEvent('jobs:client:tabletData', function(data)
     isUIOpen = true
     SetNuiFocus(true, true)
+    pushI18n()
     Send({ action = 'open', job = data.job, grades = data.grades, coworkers = data.coworkers, allJobs = data.allJobs })
 end)
 

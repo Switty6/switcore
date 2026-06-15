@@ -15,23 +15,23 @@
         <div class="inventory-panel player-side" id="player-inventory">
 
             <div class="clothing-toggles">
-                <div class="cloth-btn" data-type="hat" title="Pălărie/Șapcă"><i class="fas fa-hat-cowboy"></i></div>
-                <div class="cloth-btn" data-type="mask" title="Mască"><i class="fas fa-mask"></i></div>
-                <div class="cloth-btn" data-type="glasses" title="Ochelari"><i class="fas fa-glasses"></i></div>
-                <div class="cloth-btn" data-type="torso" title="Tricou/Geacă"><i class="fas fa-tshirt"></i></div>
-                <div class="cloth-btn" data-type="armor" title="Vestă/Armură"><i class="fas fa-shield-alt"></i></div>
-                <div class="cloth-btn" data-type="pants" title="Pantaloni"><i class="fa fa-socks"></i></div>
-                <div class="cloth-btn" data-type="shoes" title="Pantofi"><i class="fas fa-shoe-prints"></i></div>
+                <div class="cloth-btn" data-type="hat" data-i18n-title="inventory.ui.cloth_hat" title="Pălărie/Șapcă"><i class="fas fa-hat-cowboy"></i></div>
+                <div class="cloth-btn" data-type="mask" data-i18n-title="inventory.ui.cloth_mask" title="Mască"><i class="fas fa-mask"></i></div>
+                <div class="cloth-btn" data-type="glasses" data-i18n-title="inventory.ui.cloth_glasses" title="Ochelari"><i class="fas fa-glasses"></i></div>
+                <div class="cloth-btn" data-type="torso" data-i18n-title="inventory.ui.cloth_torso" title="Tricou/Geacă"><i class="fas fa-tshirt"></i></div>
+                <div class="cloth-btn" data-type="armor" data-i18n-title="inventory.ui.cloth_armor" title="Vestă/Armură"><i class="fas fa-shield-alt"></i></div>
+                <div class="cloth-btn" data-type="pants" data-i18n-title="inventory.ui.cloth_pants" title="Pantaloni"><i class="fa fa-socks"></i></div>
+                <div class="cloth-btn" data-type="shoes" data-i18n-title="inventory.ui.cloth_shoes" title="Pantofi"><i class="fas fa-shoe-prints"></i></div>
             </div>
 
             <div class="panel-header">
                 <div class="header-title">
-                    <i class="fas fa-user"></i> <span>Inventar</span>
+                    <i class="fas fa-user"></i> <span data-i18n="inventory.ui.inventory_title">Inventar</span>
                 </div>
                 <div class="header-right">
                     <div class="cash-bar" id="cash-bar">
                         <i class="fas fa-wallet"></i>
-                        <span class="cash-label">CASH</span>
+                        <span class="cash-label" data-i18n="inventory.ui.cash_label">CASH</span>
                         <span id="cash-display" class="cash-value">$0</span>
                     </div>
                     <div class="weight-bar-container">
@@ -45,11 +45,11 @@
 
             <div class="keys-section" id="keys-section">
                 <div class="keys-header">
-                    <i class="fas fa-key"></i> <span>Chei</span>
+                    <i class="fas fa-key"></i> <span data-i18n="inventory.ui.keys_title">Chei</span>
                     <span class="keys-count" id="keys-count">0</span>
                 </div>
                 <div class="keys-grid" id="keys-grid">
-                    <div class="keys-empty" id="keys-empty">Nicio cheie</div>
+                    <div class="keys-empty" id="keys-empty" data-i18n="inventory.ui.no_keys">Nicio cheie</div>
                 </div>
             </div>
         </div>
@@ -57,7 +57,7 @@
         <div class="inventory-panel secondary-side hidden" id="secondary-inventory">
             <div class="panel-header">
                 <div class="header-title">
-                    <i class="fas fa-box-open"></i> <span id="secondary-title">Portbagaj</span>
+                    <i class="fas fa-box-open"></i> <span id="secondary-title" data-i18n="inventory.ui.trunk_title">Portbagaj</span>
                 </div>
                 <div class="weight-bar-container">
                     <div class="weight-fill" id="secondary-weight-fill"></div>
@@ -70,26 +70,26 @@
 
         <div id="context-menu" class="context-menu hidden">
             <div class="context-item" id="ctx-use">
-                <i class="fas fa-hand-pointer"></i> Folosește
+                <i class="fas fa-hand-pointer"></i> <span data-i18n="inventory.ui.ctx_use">Folosește</span>
             </div>
             <div class="context-item" id="ctx-give">
-                <i class="fas fa-hand-holding-heart"></i> Oferă
+                <i class="fas fa-hand-holding-heart"></i> <span data-i18n="inventory.ui.ctx_give">Oferă</span>
             </div>
             <div class="context-item" id="ctx-split">
-                <i class="fas fa-columns"></i> Împarte (Split)
+                <i class="fas fa-columns"></i> <span data-i18n="inventory.ui.ctx_split">Împarte (Split)</span>
             </div>
             <div class="context-item text-red" id="ctx-drop">
-                <i class="fas fa-trash-alt"></i> Aruncă
+                <i class="fas fa-trash-alt"></i> <span data-i18n="inventory.ui.ctx_drop">Aruncă</span>
             </div>
         </div>
 
         <div id="split-dialog" class="dialog-box hidden">
             <div class="dialog-content">
-                <h3>Cantitate</h3>
+                <h3 data-i18n="inventory.ui.dialog_amount">Cantitate</h3>
                 <input type="number" id="split-amount" min="1" value="1">
                 <div class="dialog-actions">
-                    <button id="split-cancel" class="btn-cancel">Anulează</button>
-                    <button id="split-confirm" class="btn-confirm">Confirmă</button>
+                    <button id="split-cancel" class="btn-cancel" data-i18n="inventory.ui.dialog_cancel">Anulează</button>
+                    <button id="split-confirm" class="btn-confirm" data-i18n="inventory.ui.dialog_confirm">Confirmă</button>
                 </div>
             </div>
         </div>
@@ -100,6 +100,7 @@
 
     <div id="notifications-layer"></div>
 
+    <script src="nui://core/ui/i18n.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
