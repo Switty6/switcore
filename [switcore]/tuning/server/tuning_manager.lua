@@ -55,7 +55,7 @@ local function chargePlayer(source, characterId, amount, paymentMethod, currency
 
     if paymentMethod == 'cash' then
         if not exports.banking:tryDeductCharacterCash(characterId, currencyId, amount) then
-            return false, 'Fonduri insuficiente (cash)'
+            return false, Sw.TP(source, 'tuning.error_insufficient_cash')
         end
         return true, nil, function()
             exports.banking:addCharacterCash(characterId, currencyId, amount)
@@ -63,11 +63,11 @@ local function chargePlayer(source, characterId, amount, paymentMethod, currency
     end
 
     local accounts = exports.banking:getCharacterAccounts(characterId)
-    if not accounts or #accounts == 0 then return false, 'Niciun cont bancar activ' end
+    if not accounts or #accounts == 0 then return false, Sw.TP(source, 'tuning.error_no_bank_account') end
     local accountId = accounts[1].id
 
     if not exports.banking:removeAccountBalance(accountId, currencyId, amount) then
-        return false, 'Fonduri insuficiente (cont bancar)'
+        return false, Sw.TP(source, 'tuning.error_insufficient_bank')
     end
     return true, nil, function()
         exports.banking:addAccountBalance(accountId, currencyId, amount)
@@ -76,17 +76,17 @@ end
 
 local function validateRequest(source, vehicleId)
     local character = exports.characters:getActiveCharacter(source)
-    if not character then return nil, nil, 'Niciun personaj activ' end
+    if not character then return nil, nil, Sw.TP(source, 'tuning.error_no_character') end
 
     local vehicle = exports.vehicles:getOwnedVehicle(vehicleId)
-    if not vehicle then return nil, nil, 'Vehicul inexistent' end
+    if not vehicle then return nil, nil, Sw.TP(source, 'tuning.error_no_vehicle') end
 
     if not exports.vehicles:hasVehicleKey(vehicleId, character.id) then
-        return nil, nil, 'Nu ai cheie pentru acest vehicul'
+        return nil, nil, Sw.TP(source, 'tuning.error_no_key')
     end
 
     if vehicle.impounded then
-        return nil, nil, 'Vehiculul este sechestrat'
+        return nil, nil, Sw.TP(source, 'tuning.error_impounded')
     end
 
     return character, vehicle, nil
@@ -94,13 +94,13 @@ end
 
 function TuningManager.calculateUpgradeCost(vehicleId, category, targetTier)
     local vehicle = exports.vehicles:getOwnedVehicle(vehicleId)
-    if not vehicle then return nil, 'Vehicul inexistent' end
+    if not vehicle then return nil, Sw.T('tuning.error_no_vehicle') end
 
     local catPrices = priceCache[category]
-    if not catPrices then return nil, 'Categorie invalidă' end
+    if not catPrices then return nil, Sw.T('tuning.error_invalid_category') end
 
     local targetEntry = catPrices[targetTier]
-    if not targetEntry then return nil, 'Tier invalid' end
+    if not targetEntry then return nil, Sw.T('tuning.error_invalid_tier') end
 
     local mods        = decodeMods(vehicle.modifications)
     local currentTier = tonumber(mods[category]) or 0
@@ -124,7 +124,7 @@ function TuningManager.applyMod(source, vehicleId, category, tier, paymentMethod
 
     if isVipMod(category, tier) then
         if not exports.core:hasPermission(source, 'vip') then
-            return false, 'Necesită abonament VIP'
+            return false, Sw.TP(source, 'tuning.error_vip_required')
         end
     end
 
@@ -140,7 +140,7 @@ function TuningManager.applyMod(source, vehicleId, category, tier, paymentMethod
     if cost > 0 then
         local currCode = exports.settings:GetSetting('vehicles.default_currency_code', 'USD')
         local currId   = resolveCurrencyId(currCode)
-        if not currId then return false, 'Monedă indisponibilă' end
+        if not currId then return false, Sw.TP(source, 'tuning.error_currency_unavailable') end
 
         local paid, payErr, refundFn = chargePlayer(source, character.id, cost, paymentMethod, currId)
         if not paid then return false, payErr end
@@ -158,7 +158,7 @@ function TuningManager.applyMod(source, vehicleId, category, tier, paymentMethod
     if not saved then
         refund()
         print(string.format('[TUNING] WARN: saveVehicleState eșuat pentru vehicul %d - refund aplicat', vehicleId))
-        return false, 'Eroare la salvarea modificării; banii au fost rambursați'
+        return false, Sw.TP(source, 'tuning.error_save_mod')
     end
 
     local shopId = nil
@@ -182,7 +182,7 @@ function TuningManager.applyColor(source, vehicleId, colorPrimary, colorSecondar
     local cost    = tonumber(exports.settings:GetSettingNumber('tuning.color_change_cost', 500))
     local currCode = exports.settings:GetSetting('vehicles.default_currency_code', 'USD')
     local currId   = resolveCurrencyId(currCode)
-    if not currId then return false, 'Monedă indisponibilă' end
+    if not currId then return false, Sw.TP(source, 'tuning.error_currency_unavailable') end
 
     local refund = function() end
     if cost > 0 then
@@ -198,7 +198,7 @@ function TuningManager.applyColor(source, vehicleId, colorPrimary, colorSecondar
 
     if not exports.vehicles:saveVehicleState(vehicleId, { modifications = mods }) then
         refund()
-        return false, 'Eroare la salvarea culorii; banii au fost rambursați'
+        return false, Sw.TP(source, 'tuning.error_save_color')
     end
 
     local shopId = nil
@@ -218,7 +218,7 @@ function TuningManager.applyLivery(source, vehicleId, liveryIndex, paymentMethod
     local cost     = tonumber(exports.settings:GetSettingNumber('tuning.livery_change_cost', 1000))
     local currCode = exports.settings:GetSetting('vehicles.default_currency_code', 'USD')
     local currId   = resolveCurrencyId(currCode)
-    if not currId then return false, 'Monedă indisponibilă' end
+    if not currId then return false, Sw.TP(source, 'tuning.error_currency_unavailable') end
 
     local refund = function() end
     if cost > 0 then
@@ -233,7 +233,7 @@ function TuningManager.applyLivery(source, vehicleId, liveryIndex, paymentMethod
 
     if not exports.vehicles:saveVehicleState(vehicleId, { modifications = mods }) then
         refund()
-        return false, 'Eroare la salvarea livery-ului; banii au fost rambursați'
+        return false, Sw.TP(source, 'tuning.error_save_livery')
     end
 
     local shopId = nil
@@ -253,7 +253,7 @@ function TuningManager.resetMods(source, vehicleId, paymentMethod, shopCode)
     local cost     = tonumber(exports.settings:GetSettingNumber('tuning.reset_mods_cost', 1500))
     local currCode = exports.settings:GetSetting('vehicles.default_currency_code', 'USD')
     local currId   = resolveCurrencyId(currCode)
-    if not currId then return false, 'Monedă indisponibilă' end
+    if not currId then return false, Sw.TP(source, 'tuning.error_currency_unavailable') end
 
     local refund = function() end
     if cost > 0 then
@@ -264,7 +264,7 @@ function TuningManager.resetMods(source, vehicleId, paymentMethod, shopCode)
 
     if not exports.vehicles:saveVehicleState(vehicleId, { modifications = {}, replace_modifications = true }) then
         refund()
-        return false, 'Eroare la resetarea modificărilor; banii au fost rambursați'
+        return false, Sw.TP(source, 'tuning.error_save_reset')
     end
 
     local shopId = nil
@@ -282,6 +282,6 @@ end
 
 function TuningManager.getVehicleMods(vehicleId)
     local vehicle = exports.vehicles:getOwnedVehicle(vehicleId)
-    if not vehicle then return nil, 'Vehicul inexistent' end
+    if not vehicle then return nil, Sw.T('tuning.error_no_vehicle') end
     return decodeMods(vehicle.modifications), nil
 end

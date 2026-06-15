@@ -1,3 +1,5 @@
+exports.core:registerModuleLocales(GetCurrentResourceName())
+
 local DEFAULT_CURRENCY_CODE = 'USD'
 
 local function perm(source, node)
@@ -152,7 +154,7 @@ Sw.SecureEvent('admin:server:open', {
     local tabs  = computeTabs(src)
     local perms = getPermSet(src)
     if #tabs == 0 then
-        notify(src, 'error', 'Acces interzis.')
+        notify(src, 'error', Sw.TP(src, 'admin.notify.access_denied'))
         return
     end
 
@@ -206,12 +208,12 @@ Sw.SecureEvent('admin:server:getPlayerInfo', {
     if not perm(src, 'admin.players.view') then return end
     targetId = tonumber(targetId)
     if not isOnline(targetId) then
-        notify(src, 'error', 'Jucătorul nu a fost găsit.')
+        notify(src, 'error', Sw.TP(src, 'admin.notify.player_not_found'))
         return
     end
     local pd = exports.core:getPlayerData(targetId)
     if not pd then
-        notify(src, 'error', 'Date indisponibile.')
+        notify(src, 'error', Sw.TP(src, 'admin.notify.data_unavailable'))
         return
     end
 
@@ -247,13 +249,13 @@ Sw.SecureEvent('admin:server:banPlayer', {
     local targetId, reason, duration = ctx.args[1], ctx.args[2], ctx.args[3]
     if not perm(src, 'admin.players.moderate') then return end
     targetId = tonumber(targetId)
-    if not isOnline(targetId) then return notify(src, 'error', 'Țintă invalidă.') end
-    if not reason or reason == '' then return notify(src, 'error', 'Motivul este obligatoriu.') end
+    if not isOnline(targetId) then return notify(src, 'error', Sw.TP(src, 'admin.notify.invalid_target')) end
+    if not reason or reason == '' then return notify(src, 'error', Sw.TP(src, 'admin.notify.reason_required')) end
     local ok, err = exports.core:banPlayerBySource(targetId, src, reason, duration or 'permanent')
     if ok then
-        notify(src, 'success', 'Jucător banat.')
+        notify(src, 'success', Sw.TP(src, 'admin.notify.player_banned'))
     else
-        notify(src, 'error', 'Ban eșuat: ' .. tostring(err))
+        notify(src, 'error', Sw.TP(src, 'admin.notify.ban_failed', tostring(err)))
     end
 end)
 
@@ -264,11 +266,11 @@ Sw.SecureEvent('admin:server:kickPlayer', {
     local targetId, reason = ctx.args[1], ctx.args[2]
     if not perm(src, 'admin.players.moderate') then return end
     targetId = tonumber(targetId)
-    if not isOnline(targetId) then return notify(src, 'error', 'Țintă invalidă.') end
-    if not reason or reason == '' then return notify(src, 'error', 'Motivul este obligatoriu.') end
+    if not isOnline(targetId) then return notify(src, 'error', Sw.TP(src, 'admin.notify.invalid_target')) end
+    if not reason or reason == '' then return notify(src, 'error', Sw.TP(src, 'admin.notify.reason_required')) end
     local ok = exports.core:kickPlayerBySource(targetId, src, reason)
     if ok ~= false then
-        notify(src, 'success', 'Jucător dat afară.')
+        notify(src, 'success', Sw.TP(src, 'admin.notify.player_kicked'))
     end
 end)
 
@@ -279,11 +281,11 @@ Sw.SecureEvent('admin:server:warnPlayer', {
     local targetId, reason = ctx.args[1], ctx.args[2]
     if not perm(src, 'admin.players.moderate') then return end
     targetId = tonumber(targetId)
-    if not isOnline(targetId) then return notify(src, 'error', 'Țintă invalidă.') end
-    if not reason or reason == '' then return notify(src, 'error', 'Motivul este obligatoriu.') end
+    if not isOnline(targetId) then return notify(src, 'error', Sw.TP(src, 'admin.notify.invalid_target')) end
+    if not reason or reason == '' then return notify(src, 'error', Sw.TP(src, 'admin.notify.reason_required')) end
     local ok = exports.core:warnPlayerBySource(targetId, src, reason)
     if ok ~= false then
-        notify(src, 'success', 'Warn trimis.')
+        notify(src, 'success', Sw.TP(src, 'admin.notify.warn_sent'))
     end
 end)
 
@@ -295,7 +297,7 @@ Sw.SecureEvent('admin:server:gotoPlayer', {
     if not perm(src, 'admin.players.teleport') then return end
     targetId = tonumber(targetId)
     local ped = GetPlayerPed(targetId)
-    if not ped or ped == 0 then return notify(src, 'error', 'Jucător invalid.') end
+    if not ped or ped == 0 then return notify(src, 'error', Sw.TP(src, 'admin.notify.invalid_player')) end
     local c = GetEntityCoords(ped)
     TriggerClientEvent('admin:client:teleport', src, { x = c.x + 0.5, y = c.y + 0.5, z = c.z })
 end)
@@ -307,12 +309,12 @@ Sw.SecureEvent('admin:server:bringPlayer', {
     local targetId = ctx.args[1]
     if not perm(src, 'admin.players.teleport') then return end
     targetId = tonumber(targetId)
-    if not isOnline(targetId) then return notify(src, 'error', 'Țintă invalidă.') end
+    if not isOnline(targetId) then return notify(src, 'error', Sw.TP(src, 'admin.notify.invalid_target')) end
     local ped = GetPlayerPed(src)
     if not ped or ped == 0 then return end
     local c = GetEntityCoords(ped)
     TriggerClientEvent('admin:client:teleport', targetId, { x = c.x + 1.5, y = c.y, z = c.z })
-    notify(src, 'success', 'Jucător adus la tine.')
+    notify(src, 'success', Sw.TP(src, 'admin.notify.player_brought'))
 end)
 
 Sw.SecureEvent('admin:server:freezePlayer', {
@@ -322,36 +324,36 @@ Sw.SecureEvent('admin:server:freezePlayer', {
     local targetId, frozen = ctx.args[1], ctx.args[2]
     if not perm(src, 'admin.players.freeze') then return end
     targetId = tonumber(targetId)
-    if not isOnline(targetId) then return notify(src, 'error', 'Țintă invalidă.') end
+    if not isOnline(targetId) then return notify(src, 'error', Sw.TP(src, 'admin.notify.invalid_target')) end
     TriggerClientEvent('admin:client:setFreeze', targetId, frozen and true or false)
-    notify(src, 'success', frozen and 'Jucător înghețat.' or 'Jucător dezghețat.')
+    notify(src, 'success', frozen and Sw.TP(src, 'admin.notify.player_frozen') or Sw.TP(src, 'admin.notify.player_unfrozen'))
 end)
 
 local function doCashGrant(adminSrc, targetSrc, amount, target, currencyId)
-    if not isOnline(targetSrc) then return notify(adminSrc, 'error', 'Țintă invalidă.') end
+    if not isOnline(targetSrc) then return notify(adminSrc, 'error', Sw.TP(adminSrc, 'admin.notify.invalid_target')) end
     amount = tonumber(amount)
-    if not amount or amount == 0 then return notify(adminSrc, 'error', 'Sumă invalidă.') end
+    if not amount or amount == 0 then return notify(adminSrc, 'error', Sw.TP(adminSrc, 'admin.notify.invalid_amount')) end
 
     local charId = getCharacterIdSafe(targetSrc)
-    if not charId then return notify(adminSrc, 'error', 'Ținta nu are personaj activ.') end
+    if not charId then return notify(adminSrc, 'error', Sw.TP(adminSrc, 'admin.notify.target_no_character')) end
 
     currencyId = tonumber(currencyId) or getDefaultCurrencyId()
-    if not currencyId then return notify(adminSrc, 'error', 'Valută indisponibilă.') end
+    if not currencyId then return notify(adminSrc, 'error', Sw.TP(adminSrc, 'admin.notify.currency_unavailable')) end
 
     if target == 'bank' then
         local ok, info = adminCreditBankAccount(charId, currencyId, amount, 'Admin grant')
         if not ok then
-            if info == 'no_account' then return notify(adminSrc, 'error', 'Ținta nu are cont bancar.') end
-            return notify(adminSrc, 'error', 'Creditare eșuată.')
+            if info == 'no_account' then return notify(adminSrc, 'error', Sw.TP(adminSrc, 'admin.notify.target_no_bank')) end
+            return notify(adminSrc, 'error', Sw.TP(adminSrc, 'admin.notify.credit_failed'))
         end
-        notify(adminSrc, 'success', ('Bancă: %s în %s'):format(amount, info))
-        notify(targetSrc, 'info', ('Ai primit %s în cont bancar.'):format(amount))
+        notify(adminSrc, 'success', Sw.TP(adminSrc, 'admin.notify.bank_grant_admin', amount, info))
+        notify(targetSrc, 'info', Sw.TP(targetSrc, 'admin.notify.bank_grant_target', amount))
         logAdminAction(adminSrc, 'cash.grant.bank', targetSrc, { amount = amount, currencyId = currencyId, account = info })
     else
         exports.banking:addCharacterCash(charId, currencyId, amount)
-        notify(adminSrc, 'success', ('Cash: %s acordat.'):format(amount))
+        notify(adminSrc, 'success', Sw.TP(adminSrc, 'admin.notify.cash_grant_admin', amount))
         if targetSrc ~= adminSrc then
-            notify(targetSrc, 'info', ('Ai primit %s cash.'):format(amount))
+            notify(targetSrc, 'info', Sw.TP(targetSrc, 'admin.notify.cash_grant_target', amount))
         end
         logAdminAction(adminSrc, 'cash.grant.cash', targetSrc, { amount = amount, currencyId = currencyId })
     end
@@ -383,13 +385,13 @@ Sw.SecureEvent('admin:server:addGroup', {
     if not perm(src, 'admin.players.groups') then return end
     targetId = tonumber(targetId)
     if not isOnline(targetId) or not groupName or groupName == '' then
-        return notify(src, 'error', 'Parametri invalizi.')
+        return notify(src, 'error', Sw.TP(src, 'admin.notify.invalid_params'))
     end
     local ok, err = exports.core:addPlayerGroup(targetId, groupName, nil, src)
     if ok ~= false then
-        notify(src, 'success', 'Grup adăugat: ' .. groupName)
+        notify(src, 'success', Sw.TP(src, 'admin.notify.group_added', groupName))
     else
-        notify(src, 'error', 'Eroare: ' .. tostring(err))
+        notify(src, 'error', Sw.TP(src, 'admin.notify.error_prefix', tostring(err)))
     end
 end)
 
@@ -401,13 +403,13 @@ Sw.SecureEvent('admin:server:removeGroup', {
     if not perm(src, 'admin.players.groups') then return end
     targetId = tonumber(targetId)
     if not isOnline(targetId) or not groupName or groupName == '' then
-        return notify(src, 'error', 'Parametri invalizi.')
+        return notify(src, 'error', Sw.TP(src, 'admin.notify.invalid_params'))
     end
     local ok, err = exports.core:removePlayerGroup(targetId, groupName)
     if ok ~= false then
-        notify(src, 'success', 'Grup scos: ' .. groupName)
+        notify(src, 'success', Sw.TP(src, 'admin.notify.group_removed', groupName))
     else
-        notify(src, 'error', 'Eroare: ' .. tostring(err))
+        notify(src, 'error', Sw.TP(src, 'admin.notify.error_prefix', tostring(err)))
     end
 end)
 
@@ -419,10 +421,10 @@ Sw.SecureEvent('admin:server:setBucket', {
     if not perm(src, 'admin.players.bucket') then return end
     targetId = tonumber(targetId); bucketId = tonumber(bucketId)
     if not isOnline(targetId) or not bucketId then
-        return notify(src, 'error', 'Parametri invalizi.')
+        return notify(src, 'error', Sw.TP(src, 'admin.notify.invalid_params'))
     end
     setPlayerBucket(targetId, bucketId)
-    notify(src, 'success', ('Bucket %d aplicat.'):format(bucketId))
+    notify(src, 'success', Sw.TP(src, 'admin.notify.bucket_applied', bucketId))
 end)
 
 Sw.SecureEvent('admin:server:teleportToWaypoint', {
@@ -430,7 +432,7 @@ Sw.SecureEvent('admin:server:teleportToWaypoint', {
 }, function(ctx)
     local src = ctx.source
     if not perm(src, 'admin.self.teleport') then
-        return notify(src, 'error', 'Acces interzis.')
+        return notify(src, 'error', Sw.TP(src, 'admin.notify.access_denied'))
     end
     TriggerClientEvent('admin:client:teleportToWaypoint', src)
 end)
@@ -442,7 +444,7 @@ Sw.SecureEvent('admin:server:teleportToCoords', {
     local x, y, z = ctx.args[1], ctx.args[2], ctx.args[3]
     if not perm(src, 'admin.self.teleport') then return end
     x, y, z = tonumber(x), tonumber(y), tonumber(z)
-    if not (x and y and z) then return notify(src, 'error', 'Coordonate invalide.') end
+    if not (x and y and z) then return notify(src, 'error', Sw.TP(src, 'admin.notify.invalid_coords')) end
     TriggerClientEvent('admin:client:teleport', src, { x = x, y = y, z = z })
 end)
 
@@ -453,7 +455,7 @@ Sw.SecureEvent('admin:server:checkOverlayPermission', {
     if perm(src, 'admin.self.overlay') then
         TriggerClientEvent('admin:client:toggleOverlay', src)
     else
-        notify(src, 'error', 'Acces interzis.')
+        notify(src, 'error', Sw.TP(src, 'admin.notify.access_denied'))
     end
 end)
 
@@ -466,7 +468,7 @@ Sw.SecureEvent('admin:server:syncTime', {
     hour   = tonumber(hour) or 12
     minute = tonumber(minute) or 0
     TriggerClientEvent('admin:client:syncTime', -1, hour, minute, freeze and true or false)
-    notify(src, 'success', ('Timp setat la %02d:%02d'):format(hour, minute))
+    notify(src, 'success', Sw.TP(src, 'admin.notify.time_set', ('%02d:%02d'):format(hour, minute)))
 end)
 
 Sw.SecureEvent('admin:server:syncWeather', {
@@ -477,7 +479,7 @@ Sw.SecureEvent('admin:server:syncWeather', {
     if not perm(src, 'admin.world.weather') then return end
     if type(weather) ~= 'string' or weather == '' then return end
     TriggerClientEvent('admin:client:syncWeather', -1, weather)
-    notify(src, 'success', 'Vreme: ' .. weather)
+    notify(src, 'success', Sw.TP(src, 'admin.notify.weather_set', weather))
 end)
 
 Sw.SecureEvent('admin:server:announce', {
@@ -488,7 +490,7 @@ Sw.SecureEvent('admin:server:announce', {
     if not perm(src, 'admin.world.announce') then return end
     if not message or message == '' then return end
     local who = GetPlayerName(src) or 'Admin'
-    TriggerClientEvent('switcore:notify', -1, 'warning', ('[ANUNȚ] %s: %s'):format(who, message), 8000)
+    TriggerClientEvent('switcore:notify', -1, 'warning', Sw.T('admin.notify.announce_prefix', who, message), 8000)
 end)
 
 Sw.SecureEvent('admin:server:getResources', {
@@ -515,12 +517,12 @@ Sw.SecureEvent('admin:server:restartResource', {
     if not perm(src, 'admin.world.resources') then return end
     if not resourceName or resourceName == '' then return end
     if GetResourceState(resourceName) == 'missing' then
-        return notify(src, 'error', 'Resursa nu există.')
+        return notify(src, 'error', Sw.TP(src, 'admin.notify.resource_not_found'))
     end
     StopResource(resourceName)
     Wait(400)
     StartResource(resourceName)
-    notify(src, 'success', 'Restartat: ' .. resourceName)
+    notify(src, 'success', Sw.TP(src, 'admin.notify.resource_restarted', resourceName))
 end)
 
 Sw.SecureEvent('admin:server:startResource', {
@@ -531,7 +533,7 @@ Sw.SecureEvent('admin:server:startResource', {
     if not perm(src, 'admin.world.resources') then return end
     if not resourceName or resourceName == '' then return end
     StartResource(resourceName)
-    notify(src, 'success', 'Pornit: ' .. resourceName)
+    notify(src, 'success', Sw.TP(src, 'admin.notify.resource_started', resourceName))
 end)
 
 Sw.SecureEvent('admin:server:stopResource', {
@@ -542,17 +544,17 @@ Sw.SecureEvent('admin:server:stopResource', {
     if not perm(src, 'admin.world.resources') then return end
     if not resourceName or resourceName == '' then return end
     StopResource(resourceName)
-    notify(src, 'success', 'Oprit: ' .. resourceName)
+    notify(src, 'success', Sw.TP(src, 'admin.notify.resource_stopped', resourceName))
 end)
 
 local function getTargetCharacterId(adminSrc, targetId)
     if not isOnline(targetId) then
-        notify(adminSrc, 'error', 'Țintă invalidă.')
+        notify(adminSrc, 'error', Sw.TP(adminSrc, 'admin.notify.invalid_target'))
         return nil
     end
     local charId = getCharacterIdSafe(targetId)
     if not charId then
-        notify(adminSrc, 'error', 'Ținta nu are personaj activ.')
+        notify(adminSrc, 'error', Sw.TP(adminSrc, 'admin.notify.target_no_character'))
         return nil
     end
     return charId
@@ -642,7 +644,7 @@ Sw.SecureEvent('admin:server:getPlayerInventory', {
     local function send()
         local payload = buildInventoryPayload(charId)
         if not payload then
-            return notify(src, 'error', 'Inventarul nu este încărcat.')
+            return notify(src, 'error', Sw.TP(src, 'admin.notify.inventory_not_loaded'))
         end
         payload.targetId = targetId
         TriggerClientEvent('admin:client:playerInventory', src, payload)
@@ -697,7 +699,7 @@ Sw.SecureEvent('admin:server:givePlayerItem', {
     targetId = tonumber(targetId)
     amount = tonumber(amount) or 1
     if type(itemName) ~= 'string' or itemName == '' or amount <= 0 then
-        return notify(src, 'error', 'Parametri invalizi.')
+        return notify(src, 'error', Sw.TP(src, 'admin.notify.invalid_params'))
     end
     local charId = getTargetCharacterId(src, targetId)
     if not charId then return end
@@ -705,10 +707,10 @@ Sw.SecureEvent('admin:server:givePlayerItem', {
     ensureInventoryLoaded(charId, function(invId)
         local ok, err = exports.inventory:AddItem(invId, itemName, amount, nil, nil)
         if not ok then
-            return notify(src, 'error', 'Adăugare eșuată: ' .. tostring(err))
+            return notify(src, 'error', Sw.TP(src, 'admin.notify.item_add_failed', tostring(err)))
         end
         logAdminAction(src, 'inventory.give', targetId, { item = itemName, amount = amount })
-        notify(src, 'success', ('Adăugat %dx %s.'):format(amount, itemName))
+        notify(src, 'success', Sw.TP(src, 'admin.notify.item_added', amount, itemName))
 
         local payload = buildInventoryPayload(charId)
         if payload then
@@ -727,7 +729,7 @@ Sw.SecureEvent('admin:server:takePlayerItem', {
     targetId = tonumber(targetId)
     amount = tonumber(amount) or 1
     if type(itemName) ~= 'string' or itemName == '' or amount <= 0 then
-        return notify(src, 'error', 'Parametri invalizi.')
+        return notify(src, 'error', Sw.TP(src, 'admin.notify.invalid_params'))
     end
     local charId = getTargetCharacterId(src, targetId)
     if not charId then return end
@@ -735,10 +737,10 @@ Sw.SecureEvent('admin:server:takePlayerItem', {
     ensureInventoryLoaded(charId, function(invId)
         local ok, err = exports.inventory:RemoveItem(invId, itemName, amount, tonumber(slot))
         if not ok then
-            return notify(src, 'error', 'Ștergere eșuată: ' .. tostring(err))
+            return notify(src, 'error', Sw.TP(src, 'admin.notify.item_remove_failed', tostring(err)))
         end
         logAdminAction(src, 'inventory.take', targetId, { item = itemName, amount = amount, slot = slot })
-        notify(src, 'success', ('Șters %dx %s.'):format(amount, itemName))
+        notify(src, 'success', Sw.TP(src, 'admin.notify.item_removed', amount, itemName))
 
         local payload = buildInventoryPayload(charId)
         if payload then
@@ -797,21 +799,21 @@ Sw.SecureEvent('admin:server:saveItem', {
     local src = ctx.source
     local payload = ctx.args[1]
     if not perm(src, 'admin.items.manage') then return end
-    if type(payload) ~= 'table' then return notify(src, 'error', 'Date invalide.') end
+    if type(payload) ~= 'table' then return notify(src, 'error', Sw.TP(src, 'admin.notify.invalid_data')) end
 
     local name = tostring(payload.name or ''):lower():gsub('%s+', '_')
     if name == '' or #name > 50 or not name:match('^[a-z0-9_]+$') then
-        return notify(src, 'error', 'Nume invalid (doar a-z, 0-9, _, max 50).')
+        return notify(src, 'error', Sw.TP(src, 'admin.notify.item_invalid_name'))
     end
 
     local label = tostring(payload.label or ''):gsub('^%s+', ''):gsub('%s+$', '')
     if label == '' or #label > 100 then
-        return notify(src, 'error', 'Label invalid (1-100 caractere).')
+        return notify(src, 'error', Sw.TP(src, 'admin.notify.item_invalid_label'))
     end
 
     local weight = tonumber(payload.weight) or 0
     if weight < 0 or weight > 999.99 then
-        return notify(src, 'error', 'Greutate invalidă (0-999.99).')
+        return notify(src, 'error', Sw.TP(src, 'admin.notify.item_invalid_weight'))
     end
 
     local itype = tostring(payload.type or 'misc'):lower()
@@ -835,13 +837,13 @@ Sw.SecureEvent('admin:server:saveItem', {
     local drop_anim_name = cleanText(payload.drop_anim_name, 100)
 
     if drop_prop and not drop_prop:match('^[%w_@%-]+$') then
-        return notify(src, 'error', 'Drop prop invalid (doar litere, cifre, _, -, @).')
+        return notify(src, 'error', Sw.TP(src, 'admin.notify.item_invalid_drop_prop'))
     end
     if drop_anim_dict and not drop_anim_dict:match('^[%w_@%-]+$') then
-        return notify(src, 'error', 'Anim dict invalid.')
+        return notify(src, 'error', Sw.TP(src, 'admin.notify.item_invalid_anim_dict'))
     end
     if drop_anim_name and not drop_anim_name:match('^[%w_@%-]+$') then
-        return notify(src, 'error', 'Anim name invalid.')
+        return notify(src, 'error', Sw.TP(src, 'admin.notify.item_invalid_anim_name'))
     end
 
     local ok, err = pcall(function()
@@ -861,12 +863,12 @@ Sw.SecureEvent('admin:server:saveItem', {
                 drop_anim_name = EXCLUDED.drop_anim_name
         ]], { name, label, weight, itype, usable, stackable, description, image_url, drop_prop, drop_anim_dict, drop_anim_name })
     end)
-    if not ok then return notify(src, 'error', 'Eroare DB: ' .. tostring(err)) end
+    if not ok then return notify(src, 'error', Sw.TP(src, 'admin.notify.item_db_error', tostring(err))) end
 
     pcall(function() exports.inventory:ReloadItems() end)
 
     logAdminAction(src, 'items.save', nil, { name = name, label = label, type = itype })
-    notify(src, 'success', 'Item salvat: ' .. name)
+    notify(src, 'success', Sw.TP(src, 'admin.notify.item_saved', name))
     broadcastItemsCatalog(src)
 end)
 
@@ -877,7 +879,7 @@ Sw.SecureEvent('admin:server:deleteItem', {
     local itemName = ctx.args[1]
     if not perm(src, 'admin.items.manage') then return end
     if type(itemName) ~= 'string' or itemName == '' then
-        return notify(src, 'error', 'Nume invalid.')
+        return notify(src, 'error', Sw.TP(src, 'admin.notify.item_name_invalid'))
     end
 
     local row = exports.postgres:queryOne(
@@ -885,18 +887,18 @@ Sw.SecureEvent('admin:server:deleteItem', {
         { itemName }
     )
     if row and tonumber(row.c) and tonumber(row.c) > 0 then
-        return notify(src, 'error', ('Itemul este folosit de %d jucători. Nu se poate șterge.'):format(row.c))
+        return notify(src, 'error', Sw.TP(src, 'admin.notify.item_in_use', row.c))
     end
 
     local ok, err = pcall(function()
         exports.postgres:query('DELETE FROM items WHERE name = $1', { itemName })
     end)
-    if not ok then return notify(src, 'error', 'Eroare DB: ' .. tostring(err)) end
+    if not ok then return notify(src, 'error', Sw.TP(src, 'admin.notify.item_db_error', tostring(err))) end
 
     pcall(function() exports.inventory:ReloadItems() end)
 
     logAdminAction(src, 'items.delete', nil, { name = itemName })
-    notify(src, 'success', 'Item șters: ' .. itemName)
+    notify(src, 'success', Sw.TP(src, 'admin.notify.item_deleted', itemName))
     broadcastItemsCatalog(src)
 end)
 
@@ -906,7 +908,7 @@ Sw.SecureEvent('admin:server:reloadItemsCatalog', {
     local src = ctx.source
     if not perm(src, 'admin.items.manage') then return end
     pcall(function() exports.inventory:ReloadItems() end)
-    notify(src, 'success', 'Catalog reîncărcat.')
+    notify(src, 'success', Sw.TP(src, 'admin.notify.catalog_reloaded'))
     broadcastItemsCatalog(src)
 end)
 
@@ -917,7 +919,7 @@ Sw.SecureEvent('admin:server:getPlayerNeeds', {
     local targetId = ctx.args[1]
     if not perm(src, 'admin.players.needs') then return end
     targetId = tonumber(targetId)
-    if not isOnline(targetId) then return notify(src, 'error', 'Țintă invalidă.') end
+    if not isOnline(targetId) then return notify(src, 'error', Sw.TP(src, 'admin.notify.invalid_target')) end
 
     local hunger, thirst = 0, 0
     local ok1, h = pcall(function() return exports.needs:GetHunger(targetId) end)
@@ -946,7 +948,7 @@ Sw.SecureEvent('admin:server:setPlayerNeed', {
     targetId = tonumber(targetId)
     value = tonumber(value)
     if not isOnline(targetId) or not value then
-        return notify(src, 'error', 'Parametri invalizi.')
+        return notify(src, 'error', Sw.TP(src, 'admin.notify.invalid_params'))
     end
     value = math.max(0, math.min(100, value))
 
@@ -955,10 +957,10 @@ Sw.SecureEvent('admin:server:setPlayerNeed', {
     elseif key == 'thirst' then
         exports.needs:SetThirst(targetId, value)
     else
-        return notify(src, 'error', 'Cheie necunoscută: ' .. tostring(key))
+        return notify(src, 'error', Sw.TP(src, 'admin.notify.unknown_key', tostring(key)))
     end
     logAdminAction(src, 'needs.set', targetId, { key = key, value = value })
-    notify(src, 'success', ('%s setat la %d.'):format(key, value))
+    notify(src, 'success', Sw.TP(src, 'admin.notify.need_set', key, value))
 end)
 
 local function clearMedicalState(targetId)
@@ -978,12 +980,12 @@ Sw.SecureEvent('admin:server:healTarget', {
     local targetId = ctx.args[1]
     if not perm(src, 'admin.players.needs') then return end
     targetId = tonumber(targetId)
-    if not isOnline(targetId) then return notify(src, 'error', 'Țintă invalidă.') end
+    if not isOnline(targetId) then return notify(src, 'error', Sw.TP(src, 'admin.notify.invalid_target')) end
     TriggerClientEvent('admin:client:applyHeal', targetId)
     pcall(function() exports.needs:SetHunger(targetId, 100); exports.needs:SetThirst(targetId, 100) end)
     clearMedicalState(targetId)
     logAdminAction(src, 'needs.heal', targetId, {})
-    notify(src, 'success', 'Țintă vindecată.')
+    notify(src, 'success', Sw.TP(src, 'admin.notify.target_healed'))
 end)
 
 Sw.SecureEvent('admin:server:reviveTarget', {
@@ -993,11 +995,11 @@ Sw.SecureEvent('admin:server:reviveTarget', {
     local targetId = ctx.args[1]
     if not perm(src, 'admin.players.needs') then return end
     targetId = tonumber(targetId)
-    if not isOnline(targetId) then return notify(src, 'error', 'Țintă invalidă.') end
+    if not isOnline(targetId) then return notify(src, 'error', Sw.TP(src, 'admin.notify.invalid_target')) end
     TriggerClientEvent('admin:client:applyRevive', targetId)
     clearMedicalState(targetId)
     logAdminAction(src, 'needs.revive', targetId, {})
-    notify(src, 'success', 'Țintă reînviată.')
+    notify(src, 'success', Sw.TP(src, 'admin.notify.target_revived'))
 end)
 
 Sw.SecureEvent('admin:server:healSelf', {
@@ -1026,7 +1028,7 @@ Sw.SecureEvent('admin:server:getPlayerCharacterInfo', {
     local targetId = ctx.args[1]
     if not perm(src, 'admin.players.character') then return end
     targetId = tonumber(targetId)
-    if not isOnline(targetId) then return notify(src, 'error', 'Țintă invalidă.') end
+    if not isOnline(targetId) then return notify(src, 'error', Sw.TP(src, 'admin.notify.invalid_target')) end
 
     local pd = exports.core:getPlayerData(targetId)
     local active
@@ -1081,11 +1083,11 @@ Sw.SecureEvent('admin:server:teleportTargetToCoords', {
     targetId = tonumber(targetId)
     x, y, z = tonumber(x), tonumber(y), tonumber(z)
     if not isOnline(targetId) or not (x and y and z) then
-        return notify(src, 'error', 'Parametri invalizi.')
+        return notify(src, 'error', Sw.TP(src, 'admin.notify.invalid_params'))
     end
     TriggerClientEvent('admin:client:teleport', targetId, { x = x, y = y, z = z })
     logAdminAction(src, 'character.teleport', targetId, { x = x, y = y, z = z })
-    notify(src, 'success', ('Țintă teleportată la (%.1f, %.1f, %.1f).'):format(x, y, z))
+    notify(src, 'success', Sw.TP(src, 'admin.notify.target_teleported', ('%.1f'):format(x), ('%.1f'):format(y), ('%.1f'):format(z)))
 end)
 
 Sw.SecureEvent('admin:server:getPlayerVehicles', {
@@ -1125,11 +1127,11 @@ Sw.SecureEvent('admin:server:spawnPlayerVehicle', {
     local targetId, vehicleId = ctx.args[1], ctx.args[2]
     if not perm(src, 'admin.players.vehicles') then return end
     targetId = tonumber(targetId); vehicleId = tonumber(vehicleId)
-    if not isOnline(targetId) or not vehicleId then return notify(src, 'error', 'Parametri invalizi.') end
+    if not isOnline(targetId) or not vehicleId then return notify(src, 'error', Sw.TP(src, 'admin.notify.invalid_params')) end
     local ok, err = exports.vehicles:spawnVehicleForPlayer(targetId, vehicleId)
-    if not ok then return notify(src, 'error', 'Spawn eșuat: ' .. tostring(err)) end
+    if not ok then return notify(src, 'error', Sw.TP(src, 'admin.notify.vehicle_spawn_failed', tostring(err))) end
     logAdminAction(src, 'vehicles.spawn', targetId, { vehicleId = vehicleId })
-    notify(src, 'success', 'Vehicul spawnat la țintă.')
+    notify(src, 'success', Sw.TP(src, 'admin.notify.vehicle_spawned'))
 end)
 
 Sw.SecureEvent('admin:server:impoundPlayerVehicle', {
@@ -1139,10 +1141,10 @@ Sw.SecureEvent('admin:server:impoundPlayerVehicle', {
     local vehicleId, reason = ctx.args[1], ctx.args[2]
     if not perm(src, 'admin.players.vehicles') then return end
     vehicleId = tonumber(vehicleId)
-    if not vehicleId then return notify(src, 'error', 'ID invalid.') end
+    if not vehicleId then return notify(src, 'error', Sw.TP(src, 'admin.notify.invalid_id')) end
     exports.vehicles:impoundVehicle(vehicleId, reason or 'Admin impound')
     logAdminAction(src, 'vehicles.impound', nil, { vehicleId = vehicleId, reason = reason })
-    notify(src, 'success', 'Vehicul sechestrat.')
+    notify(src, 'success', Sw.TP(src, 'admin.notify.vehicle_impounded'))
 end)
 
 Sw.SecureEvent('admin:server:releasePlayerVehicle', {
@@ -1152,10 +1154,10 @@ Sw.SecureEvent('admin:server:releasePlayerVehicle', {
     local vehicleId = ctx.args[1]
     if not perm(src, 'admin.players.vehicles') then return end
     vehicleId = tonumber(vehicleId)
-    if not vehicleId then return notify(src, 'error', 'ID invalid.') end
+    if not vehicleId then return notify(src, 'error', Sw.TP(src, 'admin.notify.invalid_id')) end
     exports.vehicles:releaseVehicle(vehicleId)
     logAdminAction(src, 'vehicles.release', nil, { vehicleId = vehicleId })
-    notify(src, 'success', 'Vehicul eliberat.')
+    notify(src, 'success', Sw.TP(src, 'admin.notify.vehicle_released'))
 end)
 
 Sw.SecureEvent('admin:server:setVehicleFuelAdmin', {
@@ -1165,11 +1167,11 @@ Sw.SecureEvent('admin:server:setVehicleFuelAdmin', {
     local vehicleId, amount = ctx.args[1], ctx.args[2]
     if not perm(src, 'admin.players.vehicles') then return end
     vehicleId = tonumber(vehicleId); amount = tonumber(amount)
-    if not vehicleId or not amount then return notify(src, 'error', 'Parametri invalizi.') end
+    if not vehicleId or not amount then return notify(src, 'error', Sw.TP(src, 'admin.notify.invalid_params')) end
     amount = math.max(0, math.min(100, amount))
     exports.vehicles:setVehicleFuel(vehicleId, amount)
     logAdminAction(src, 'vehicles.fuel', nil, { vehicleId = vehicleId, amount = amount })
-    notify(src, 'success', ('Combustibil setat la %d%%.'):format(amount))
+    notify(src, 'success', Sw.TP(src, 'admin.notify.vehicle_fuel_set', amount))
 end)
 
 Sw.SecureEvent('admin:server:getJobsCatalog', {
@@ -1243,16 +1245,16 @@ Sw.SecureEvent('admin:server:setPlayerJob', {
     targetId = tonumber(targetId)
     grade = tonumber(grade) or 0
     if type(jobName) ~= 'string' or jobName == '' then
-        return notify(src, 'error', 'Job invalid.')
+        return notify(src, 'error', Sw.TP(src, 'admin.notify.invalid_job'))
     end
     local charId = getTargetCharacterId(src, targetId)
     if not charId then return end
 
     local ok = pcall(function() exports.jobs:SetCharacterJob(charId, jobName, grade) end)
-    if not ok then return notify(src, 'error', 'Setare job eșuată.') end
+    if not ok then return notify(src, 'error', Sw.TP(src, 'admin.notify.job_set_failed')) end
     logAdminAction(src, 'jobs.set', targetId, { job = jobName, grade = grade })
-    notify(src, 'success', ('Job setat: %s (grad %d).'):format(jobName, grade))
-    notify(targetId, 'info', ('Job nou: %s (grad %d).'):format(jobName, grade))
+    notify(src, 'success', Sw.TP(src, 'admin.notify.job_set_admin', jobName, grade))
+    notify(targetId, 'info', Sw.TP(targetId, 'admin.notify.job_set_target', jobName, grade))
 end)
 
 Sw.SecureEvent('admin:server:firePlayer', {
@@ -1269,14 +1271,14 @@ Sw.SecureEvent('admin:server:firePlayer', {
     local defaultGrade = exports.settings:GetSettingNumber('jobs.default_grade', 0)
     pcall(function() exports.jobs:SetCharacterJob(charId, defaultJob, defaultGrade) end)
     logAdminAction(src, 'jobs.fire', targetId, {})
-    notify(src, 'success', 'Țintă concediată.')
-    notify(targetId, 'warning', 'Ai fost concediat de un admin.')
+    notify(src, 'success', Sw.TP(src, 'admin.notify.target_fired'))
+    notify(targetId, 'warning', Sw.TP(targetId, 'admin.notify.you_were_fired'))
 end)
 
 RegisterCommand('tpm', function(src)
     if src == 0 then return end
     if not perm(src, 'admin.self.teleport') then
-        return notify(src, 'error', 'Acces interzis.')
+        return notify(src, 'error', Sw.TP(src, 'admin.notify.access_denied'))
     end
     TriggerClientEvent('admin:client:teleportToWaypoint', src)
 end, false)

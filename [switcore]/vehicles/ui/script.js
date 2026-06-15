@@ -98,11 +98,11 @@ function openFillHud(data) {
     state.holding = false;
 
     hudPumpId.textContent      = String(state.pumpId).padStart(2, '0');
-    hudStatus.textContent      = 'ÎN AȘTEPTARE';
+    hudStatus.textContent      = SwI18n.t('vehicles.ui_waiting');
     hudStatus.className        = 'hud-status';
     holdIndicator.className    = 'hold-indicator';
     holdCaption.className      = 'hold-caption';
-    holdCaption.textContent    = 'ȚINE APĂSAT PENTRU A ALIMENTA';
+    holdCaption.textContent    = SwI18n.t('vehicles.ui_hold_to_refuel');
     hudProgressBar.style.width = '0%';
     hudLitres.textContent      = '0.00L';
     hudCost.textContent        = money(0);
@@ -130,14 +130,14 @@ function setHoldState(active) {
     if (active) {
         holdIndicator.classList.add('active');
         holdCaption.classList.add('active');
-        holdCaption.textContent = 'ALIMENTARE ACTIVĂ - ELIBEREAZĂ PENTRU A OPRI';
-        hudStatus.textContent   = 'ÎN CURS';
+        holdCaption.textContent = SwI18n.t('vehicles.ui_refuel_active');
+        hudStatus.textContent   = SwI18n.t('vehicles.ui_in_progress');
         hudStatus.className     = 'hud-status active';
     } else {
         holdIndicator.classList.remove('active');
         holdCaption.classList.remove('active');
-        holdCaption.textContent = 'ȚINE APĂSAT PENTRU A ALIMENTA';
-        hudStatus.textContent   = 'ÎN AȘTEPTARE';
+        holdCaption.textContent = SwI18n.t('vehicles.ui_hold_to_refuel');
+        hudStatus.textContent   = SwI18n.t('vehicles.ui_waiting');
         hudStatus.className     = 'hud-status';
     }
 }
@@ -162,22 +162,22 @@ function setCableDistance(dist, maxDist = 6) {
     if (pct >= 90) {
         cableBar.className      = 'cable-bar-fill crit';
         cableStatus.className   = 'cable-status crit';
-        cableStatus.textContent = 'CRITIC - APROAPE DE RUPERE';
+        cableStatus.textContent = SwI18n.t('vehicles.ui_cable_critical');
     } else if (pct >= 65) {
         cableBar.className      = 'cable-bar-fill warn';
         cableStatus.className   = 'cable-status warn';
-        cableStatus.textContent = 'AVERTISMENT - FURTUN ÎNTINS';
+        cableStatus.textContent = SwI18n.t('vehicles.ui_cable_warning');
     } else {
         cableBar.className      = 'cable-bar-fill';
         cableStatus.className   = 'cable-status';
-        cableStatus.textContent = 'OK';
+        cableStatus.textContent = SwI18n.t('vehicles.ui_cable_ok');
     }
 }
 
 function showInsufficientFunds() {
     hudFundsWarn.classList.remove('hidden');
     setHoldState(false);
-    hudStatus.textContent = 'FONDURI INSUFICIENTE';
+    hudStatus.textContent = SwI18n.t('vehicles.ui_insufficient_funds');
     hudStatus.className   = 'hud-status warn';
 }
 
@@ -219,7 +219,7 @@ function closePayment() {
 }
 
 function paymentError(data) {
-    payError.textContent = data.error || 'Plată eșuată';
+    payError.textContent = data.error || SwI18n.t('vehicles.ui_payment_failed');
     payError.classList.remove('hidden');
 }
 
@@ -232,6 +232,13 @@ payCardBtn.addEventListener('click', () => {
     if (payCardBtn.classList.contains('disabled')) return;
     payError.classList.add('hidden');
     postNUI('fuel:pay', { method: 'card' });
+});
+
+// Re-randare stringuri generate din JS la schimbarea dictionarului (sw:i18n).
+document.addEventListener('sw:i18n', () => {
+    if (state.phase === 'filling') {
+        setHoldState(state.holding);
+    }
 });
 
 window.addEventListener('message', e => {

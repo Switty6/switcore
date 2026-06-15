@@ -1,3 +1,4 @@
+exports.core:registerModuleLocales(GetCurrentResourceName())
 
 CreateThread(function()
     while not exports.postgres:isReady() or not exports.settings:IsReady() do
@@ -73,7 +74,7 @@ local function registerVehicleKeyUsable()
             local label = item and item.metadata and item.metadata.label
             if plate and label then
                 TriggerClientEvent('switcore:notify', source, 'info',
-                    string.format('Cheie: %s - %s', label, plate), 4000)
+                    Sw.TP(source, 'vehicles.key_item_info', label, plate), 4000)
             end
         end)
     end)
@@ -124,7 +125,7 @@ end)
 
 local function checkAdmin(source)
     if not exports.core:hasPermission(source, 'admin.vehicle') then
-        TriggerClientEvent('switcore:notify', source, 'error', 'Acces refuzat', 3000)
+        TriggerClientEvent('switcore:notify', source, 'error', Sw.TP(source, 'vehicles.access_denied'), 3000)
         return false
     end
     return true
@@ -147,7 +148,7 @@ RegisterCommand('vehicles:give', function(source, args)
     local success, err, vehicle = VehiclesManager.createVehicle(character.id, model, category, model)
     if success then
         TriggerClientEvent('switcore:notify', targetId, 'success',
-            string.format('Ai primit vehiculul %s (%s)', model, vehicle.plate), 6000)
+            Sw.TP(targetId, 'vehicles.admin_vehicle_received', model, vehicle.plate), 6000)
         print(string.format('[VEHICLES] Admin %d a dat vehiculul %s lui %d (plăcuță: %s)',
             source, model, targetId, vehicle.plate))
         TriggerClientEvent('vehicles:client:spawnVehicle', targetId, VehiclesManager.buildSpawnData(vehicle))

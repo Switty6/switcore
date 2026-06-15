@@ -1,4 +1,10 @@
 
+local function pushI18n()
+    SendNUIMessage({ action = 'sw:i18n', dict = exports.core:getLocaleDict() })
+end
+
+AddEventHandler('switcore:client:localeUpdated', pushI18n)
+
 local currentDealershipCode = nil
 local isUIOpen = false
 
@@ -126,6 +132,7 @@ end)
 RegisterNetEvent('showroom:client:openUI', function(data)
     isUIOpen = true
     SetNuiFocus(true, true)
+    pushI18n()
     SendNUIMessage({
         action          = 'open',
         dealership      = data.dealership,
@@ -165,7 +172,7 @@ RegisterNetEvent('showroom:client:startTestDrive', function(data)
     end
 
     if not spawnPoint then
-        TriggerEvent('switcore:notify:local', 'error', 'Punct de spawn test drive lipsă', 3000)
+        TriggerEvent('switcore:notify:local', 'error', Sw.T('showroom.notify_test_drive_spawn_missing'), 3000)
         return
     end
 
@@ -178,7 +185,7 @@ RegisterNetEvent('showroom:client:startTestDrive', function(data)
     end
 
     if not HasModelLoaded(model) then
-        TriggerEvent('switcore:notify:local', 'error', 'Model vehicul indisponibil', 3000)
+        TriggerEvent('switcore:notify:local', 'error', Sw.T('showroom.notify_vehicle_model_unavailable'), 3000)
         return
     end
 

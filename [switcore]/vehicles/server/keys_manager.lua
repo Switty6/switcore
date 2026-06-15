@@ -15,12 +15,12 @@ end
 
 function KeysManager.giveKey(vehicleId, characterId, keyType)
     if not vehicleId or not characterId then
-        return false, 'Parametri invalizi'
+        return false, Sw.T('vehicles.invalid_parameters')
     end
 
     local success = VehiclesDatabase.addVehicleKey(vehicleId, characterId, keyType or 'standard')
     if not success then
-        return false, 'Eroare la adăugarea cheii în baza de date'
+        return false, Sw.T('vehicles.key_add_db_error')
     end
 
     local vehicle = VehiclesDatabase.getOwnedVehicleById(vehicleId)
@@ -40,12 +40,12 @@ end
 
 function KeysManager.removeKey(vehicleId, characterId)
     if not vehicleId or not characterId then
-        return false, 'Parametri invalizi'
+        return false, Sw.T('vehicles.invalid_parameters')
     end
 
     local success = VehiclesDatabase.removeVehicleKey(vehicleId, characterId)
     if not success then
-        return false, 'Eroare la ștergerea cheii'
+        return false, Sw.T('vehicles.key_remove_failed')
     end
 
     removeKeyFromInventory('char:' .. tostring(characterId), vehicleId)
@@ -68,7 +68,7 @@ end
 
 function KeysManager.transferOwnership(vehicleId, fromCharacterId, toCharacterId)
     if not vehicleId or not fromCharacterId or not toCharacterId then
-        return false, 'Parametri invalizi'
+        return false, Sw.T('vehicles.invalid_parameters')
     end
 
     local keys = VehiclesDatabase.getVehicleKeys(vehicleId)
@@ -81,7 +81,7 @@ function KeysManager.transferOwnership(vehicleId, fromCharacterId, toCharacterId
     end
 
     if not isOwner then
-        return false, 'Nu ești proprietarul acestui vehicul'
+        return false, Sw.T('vehicles.not_owner')
     end
 
     VehiclesDatabase.removeVehicleKey(vehicleId, fromCharacterId)
@@ -90,7 +90,7 @@ function KeysManager.transferOwnership(vehicleId, fromCharacterId, toCharacterId
     local success, err = KeysManager.giveKey(vehicleId, toCharacterId, 'owner')
     if not success then
         KeysManager.giveKey(vehicleId, fromCharacterId, 'owner')
-        return false, 'Eroare la transferul proprietății: ' .. (err or '')
+        return false, Sw.T('vehicles.ownership_transfer_failed', err or '')
     end
 
     print(string.format('[VEHICLES] Transfer proprietate vehicul %d: %d → %d',

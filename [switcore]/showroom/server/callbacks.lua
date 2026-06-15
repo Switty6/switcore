@@ -10,7 +10,7 @@ Sw.SecureEvent('showroom:server:openDealership', {
 
     local data, err = ShowroomManager.getDealershipCatalog(ctx.args.dealershipCode)
     if not data then
-        return ctx.error(err or 'Eroare catalog', 3000)
+        return ctx.error(err or Sw.TP(ctx.source, 'showroom.error_catalog'), 3000)
     end
 
     local activeDrive = ShowroomDatabase.getActiveTestDrive(ctx.character.id)
@@ -68,7 +68,7 @@ Sw.SecureEvent('showroom:server:endTestDrive', {
     rateLimit = { max = 5, window = 3000 },
 }, function(ctx)
     ShowroomManager.endTestDrive(ctx.source, ctx.character.id)
-    ctx.notify('info', 'Test drive finalizat', 3000)
+    ctx.notify('info', Sw.TP(ctx.source, 'showroom.notify_test_drive_ended'), 3000)
 end)
 
 AddEventHandler('playerDropped', function()

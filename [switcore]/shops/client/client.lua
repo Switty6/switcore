@@ -1,10 +1,17 @@
 local isUIOpen = false
 
+local function pushI18n()
+    SendNUIMessage({ action = 'sw:i18n', dict = exports.core:getLocaleDict() })
+end
+
+AddEventHandler('switcore:client:localeUpdated', pushI18n)
+
 local function OpenNUI(data)
     if isUIOpen then return end
     isUIOpen = true
 
     SetNuiFocus(true, true)
+    pushI18n()
     SendNUIMessage({
         action = 'open',
         shop   = data.shop,
@@ -66,7 +73,7 @@ RegisterNetEvent('shops:client:buyResult', function(result)
     else
         SendNUIMessage({
             action = 'buyError',
-            error  = result.error or 'Eroare necunoscută'
+            error  = result.error or Sw.T('shops.error_unknown')
         })
     end
 end)

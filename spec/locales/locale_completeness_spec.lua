@@ -13,6 +13,12 @@ local MIGRATED = {
     'notifications',
     'characters',
     'banking',
+    'vehicles',
+    'tuning',
+    'admin',
+    'clothing',
+    'showroom',
+    'shops',
 }
 
 -- Toate modulele din [switcore]; folosit ca un modul cu locales/ dar absent

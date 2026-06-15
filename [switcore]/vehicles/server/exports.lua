@@ -78,16 +78,16 @@ end)
 
 exports('spawnVehicleForPlayer', function(source, vehicleId, spawnPoint)
     local character = exports.characters:getActiveCharacter(source)
-    if not character then return false, 'No character' end
+    if not character then return false, Sw.TP(source, 'vehicles.no_character') end
 
     local vehicle = VehiclesManager.getOwnedVehicle(vehicleId)
-    if not vehicle then return false, 'Vehicul inexistent' end
+    if not vehicle then return false, Sw.TP(source, 'vehicles.vehicle_not_found') end
 
     if not KeysManager.hasKey(vehicleId, character.id) then
-        return false, 'Personajul nu are cheie pentru acest vehicul'
+        return false, Sw.TP(source, 'vehicles.character_no_key')
     end
 
-    if vehicle.impounded then return false, 'Vehiculul este sechestrat' end
+    if vehicle.impounded then return false, Sw.TP(source, 'vehicles.vehicle_impounded') end
 
     local sp = spawnPoint
     if type(sp) == 'string' then sp = json.decode(sp) end

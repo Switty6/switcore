@@ -12,6 +12,12 @@ local BLIP_SPRITE = 73   -- t-shirt
 local BLIP_COLOR  = 4    -- alb
 local BLIP_SCALE  = 0.8
 
+local function pushI18n()
+    SendNUIMessage({ action = 'sw:i18n', dict = exports.core:getLocaleDict() })
+end
+
+AddEventHandler('switcore:client:localeUpdated', pushI18n)
+
 RegisterNetEvent('clothing:receiveStores', function(storesData)
     stores = storesData or {}
     SetupStoreInteractions()
@@ -70,7 +76,7 @@ function SetupStoreBlips()
             SetBlipScale(blip, BLIP_SCALE)
             SetBlipAsShortRange(blip, true)
             BeginTextCommandSetBlipName('STRING')
-            AddTextComponentString(store.label or 'Magazin haine')
+            AddTextComponentString(store.label or Sw.T('clothing.blip_name'))
             EndTextCommandSetBlipName(blip)
             storeBlips[#storeBlips + 1] = blip
         end
@@ -98,6 +104,7 @@ end
 
 RegisterNetEvent('clothing:receiveStoreData', function(items, storeName, ownedItemIds, equipped)
     SetNuiFocus(true, true)
+    pushI18n()
     SendNUIMessage({
         action     = 'openStore',
         storeName  = storeName,
