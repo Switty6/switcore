@@ -26,22 +26,22 @@ end
 
 function VehiclesManager.createVehicle(characterId, model, category, label, customPlate)
     if not characterId or not model then
-        return false, 'Parametri invalizi'
+        return false, Sw.T('vehicles.invalid_parameters')
     end
 
     if customPlate and customPlate ~= '' then
         local cleanPlate = customPlate:upper():gsub('[^A-Z0-9%-]', ''):sub(1, 8)
         if #cleanPlate < 3 then
-            return false, 'Plăcuța custom trebuie să aibă minim 3 caractere'
+            return false, Sw.T('vehicles.custom_plate_min_length')
         end
 
         local vehicle, err = VehiclesDatabase.createOwnedVehicle(
             characterId, cleanPlate, model, label or model, category or 'sedans'
         )
         if err == 'plate_taken' then
-            return false, 'Plăcuța custom este deja folosită'
+            return false, Sw.T('vehicles.custom_plate_taken')
         elseif not vehicle then
-            return false, 'Eroare la crearea vehiculului în baza de date'
+            return false, Sw.T('vehicles.vehicle_create_db_error')
         end
 
         KeysManager.giveKey(vehicle.id, characterId, 'owner')
@@ -60,22 +60,22 @@ function VehiclesManager.createVehicle(characterId, model, category, label, cust
             return true, nil, vehicle
         end
         if err == 'db_error' then
-            return false, 'Eroare la crearea vehiculului în baza de date'
+            return false, Sw.T('vehicles.vehicle_create_db_error')
         end
         -- err == 'plate_taken' -> retry cu placuta noua
     end
 
-    return false, 'Nu am putut genera o plăcuță unică după 100 încercări'
+    return false, Sw.T('vehicles.plate_generation_failed')
 end
 
 function VehiclesManager.saveVehicleState(vehicleId, state)
     if not vehicleId or not state then
-        return false, 'Parametri invalizi'
+        return false, Sw.T('vehicles.invalid_parameters')
     end
 
     local success = VehiclesDatabase.updateVehicleState(vehicleId, state)
     if not success then
-        return false, 'Eroare la salvarea stării vehiculului'
+        return false, Sw.T('vehicles.save_state_failed')
     end
     return true, nil
 end
@@ -93,7 +93,7 @@ function VehiclesManager.getCharacterVehicles(characterId)
 end
 
 function VehiclesManager.impoundVehicle(vehicleId, reason)
-    if not vehicleId then return false, 'vehicleId lipsă' end
+    if not vehicleId then return false, Sw.T('vehicles.vehicle_id_missing') end
 
     local success = VehiclesDatabase.updateVehicleState(vehicleId, {
         impounded = true,
@@ -104,17 +104,17 @@ function VehiclesManager.impoundVehicle(vehicleId, reason)
         print(string.format('[VEHICLES] Vehicul %d sechestrat. Motiv: %s', vehicleId, reason or 'N/A'))
     end
 
-    return success, success and nil or 'Eroare la sechestrare'
+    return success, success and nil or Sw.T('vehicles.impound_failed')
 end
 
 function VehiclesManager.releaseVehicle(vehicleId)
-    if not vehicleId then return false, 'vehicleId lipsă' end
+    if not vehicleId then return false, Sw.T('vehicles.vehicle_id_missing') end
 
     local success = VehiclesDatabase.updateVehicleState(vehicleId, {
         impounded = false
     })
 
-    return success, success and nil or 'Eroare la eliberare din sechestru'
+    return success, success and nil or Sw.T('vehicles.release_failed')
 end
 
 function VehiclesManager.addMileage(vehicleId, km)

@@ -7,7 +7,12 @@ fx_version 'bodacious'
 game 'gta5'
 
 dependencies {
+    'core',
     'settings'
+}
+
+shared_scripts {
+    '@core/shared/lib.lua'
 }
 
 server_scripts {

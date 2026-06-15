@@ -89,9 +89,18 @@ function destroyPedScreen()
     SetFrontendActive(false)
 end
 
+local function pushI18n()
+    SendNUIMessage({ action = 'sw:i18n', dict = exports.core:getLocaleDict() })
+end
+
+AddEventHandler('switcore:client:localeUpdated', pushI18n)
+
 function ToggleInventory()
     isInventoryOpen = not isInventoryOpen
     SetNuiFocus(isInventoryOpen, isInventoryOpen)
+    if isInventoryOpen then
+        pushI18n()
+    end
     SendNUIMessage({
         action = isInventoryOpen and "open" or "close"
     })
@@ -116,7 +125,7 @@ end)
 RegisterCommand('inventory', function()
     ToggleInventory()
 end, false)
-RegisterKeyMapping('inventory', 'Deschide Inventar', 'keyboard', 'TAB')
+RegisterKeyMapping('inventory', Sw.T('inventory.keybind.open_inventory'), 'keyboard', 'TAB')
 
 RegisterNUICallback('close', function(data, cb)
     isInventoryOpen = false
@@ -162,7 +171,7 @@ end
 RegisterNUICallback('giveItem', function(data, cb)
     local target = getClosestPlayerServerId()
     if not target then
-        exports.notifications:Notify('error', 'Niciun jucător aproape.', 3500)
+        exports.notifications:Notify('error', Sw.T('inventory.notify.no_player_nearby'), 3500)
         cb('ok')
         return
     end
@@ -176,7 +185,7 @@ for i=1, 5 do
             TriggerServerEvent('switcore:inventoryUseItem', currentInventoryId, i)
         end
     end, false)
-    RegisterKeyMapping('hotbar_'..i, 'Folosește Slot '..i, 'keyboard', tostring(i))
+    RegisterKeyMapping('hotbar_'..i, Sw.T('inventory.keybind.use_slot', i), 'keyboard', tostring(i))
 end
 
 local savedClothes = {}
@@ -319,7 +328,7 @@ AddEventHandler('switcore:createPhysicalDrop', function(dropId, itemName, label,
     droppedProps[dropId] = prop
 
     exports.proximity:AddInteraction(dropId, {
-        label = "Ridică " .. label,
+        label = Sw.T('inventory.interaction.pickup', label),
         icon = "fas fa-hand-holding",
         distance = ClientConfig.DropInteractionRange,
         coords = vector3(coords.x, coords.y, z),

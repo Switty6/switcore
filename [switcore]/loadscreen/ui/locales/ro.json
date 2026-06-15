@@ -1,0 +1,22 @@
+{
+    "loadscreen": {
+        "tagline": "Roleplay. Libertate. Comunitate.",
+        "status": {
+            "initializing": "Se inițializează...",
+            "loading": "Se încarcă resursele...",
+            "almost_done": "Aproape gata...",
+            "finalizing": "Finalizare...",
+            "ready": "Gata!"
+        },
+        "tips": {
+            "interact": "Apasă E pentru a interacționa cu lumea din jurul tău.",
+            "inventory": "Apasă TAB pentru a deschide inventarul.",
+            "help_command": "Folosește /help pentru a vedea comenzile disponibile.",
+            "banking": "Accesează un ATM sau o bancă pentru a-ți gestiona fondurile.",
+            "character": "Alege-ți cu grijă personajul - personalitatea contează!",
+            "rp_chat": "Comunicarea RP cu alți jucători îmbunătățește experiența tuturor.",
+            "rules": "Respectă regulile serverului pentru o experiență plăcută.",
+            "discord": "Găsești ajutor și actualizări pe Discord-ul comunității noastre."
+        }
+    }
+}

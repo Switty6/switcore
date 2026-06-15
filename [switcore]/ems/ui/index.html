@@ -12,12 +12,12 @@
 <div id="unconscious-overlay" class="hidden">
     <div class="uncon-box">
         <div class="uncon-icon"><i data-lucide="hospital"></i></div>
-        <h2 class="uncon-title">Ești inconștient...</h2>
-        <p class="uncon-sub">Așteaptă EMS sau respawn la expirarea timpului</p>
+        <h2 class="uncon-title" data-i18n="ems.ui.unconscious_title">Ești inconștient...</h2>
+        <p class="uncon-sub" data-i18n="ems.ui.unconscious_sub">Așteaptă EMS sau respawn la expirarea timpului</p>
         <div id="uncon-timer" class="uncon-timer">10:00</div>
         <button id="respawn-btn" class="respawn-btn hidden" onclick="requestRespawn()">
-            Respawn la Spital
-            <span class="respawn-cost">(5000 RON)</span>
+            <span data-i18n="ems.ui.respawn_hospital">Respawn la Spital</span>
+            <span class="respawn-cost" data-i18n="ems.ui.respawn_cost">(5000 RON)</span>
         </button>
     </div>
 </div>
@@ -26,7 +26,7 @@
     <div class="panel-header">
         <div>
             <span class="panel-title" id="pm-name">Pacient</span>
-            <span id="pm-unconscious-badge" class="badge badge-red hidden">INCONȘTIENT <i data-lucide="alert-triangle"></i></span>
+            <span id="pm-unconscious-badge" class="badge badge-red hidden"><span data-i18n="ems.ui.badge_unconscious">INCONȘTIENT</span> <i data-lucide="alert-triangle"></i></span>
             <span id="pm-timer" class="pm-timer hidden"></span>
         </div>
         <button class="btn-close" onclick="postNUI('closePatientMenu')"><i data-lucide="x"></i></button>
@@ -34,32 +34,32 @@
 
     <div class="pm-body">
         <div class="pm-section">
-            <h3 class="pm-section-title"><i data-lucide="bug"></i> Condiții Medicale</h3>
+            <h3 class="pm-section-title"><i data-lucide="bug"></i> <span data-i18n="ems.ui.section_conditions">Condiții Medicale</span></h3>
             <div id="pm-conditions"></div>
         </div>
 
         <div class="pm-section">
-            <h3 class="pm-section-title"><i data-lucide="bandage"></i> Răni Active</h3>
+            <h3 class="pm-section-title"><i data-lucide="bandage"></i> <span data-i18n="ems.ui.section_injuries">Răni Active</span></h3>
             <div id="pm-injuries"></div>
         </div>
 
         <div class="pm-section pm-actions">
-            <h3 class="pm-section-title"><i data-lucide="cross"></i> Acțiuni</h3>
+            <h3 class="pm-section-title"><i data-lucide="cross"></i> <span data-i18n="ems.ui.section_actions">Acțiuni</span></h3>
             <div class="pm-action-row">
                 <button id="btn-revive" class="btn-primary hidden" onclick="doRevive()">
-                    <i data-lucide="heart"></i> Resuscitare
+                    <i data-lucide="heart"></i> <span data-i18n="ems.ui.btn_revive">Resuscitare</span>
                 </button>
                 <button id="btn-cure-all" class="btn-secondary hidden" onclick="doCureAll()">
-                    <i data-lucide="pill"></i> Vindeca Boli
+                    <i data-lucide="pill"></i> <span data-i18n="ems.ui.btn_cure_all">Vindeca Boli</span>
                 </button>
             </div>
             <div class="pm-action-row" id="iv-row">
                 <select id="iv-select" class="iv-select"></select>
-                <button class="btn-primary" onclick="doAdministerIV()"><i data-lucide="syringe"></i> Administreaza IV</button>
+                <button class="btn-primary" onclick="doAdministerIV()"><i data-lucide="syringe"></i> <span data-i18n="ems.ui.btn_administer_iv">Administreaza IV</span></button>
             </div>
             <div class="pm-action-row">
-                <input type="text" id="diag-notes" class="diag-input" placeholder="Note diagnostic..." />
-                <button class="btn-secondary" onclick="doLogDiagnosis()"><i data-lucide="clipboard-list"></i> Log în Dosar</button>
+                <input type="text" id="diag-notes" class="diag-input" data-i18n-placeholder="ems.ui.diag_placeholder" placeholder="Note diagnostic..." />
+                <button class="btn-secondary" onclick="doLogDiagnosis()"><i data-lucide="clipboard-list"></i> <span data-i18n="ems.ui.btn_log_diagnosis">Log în Dosar</span></button>
             </div>
         </div>
     </div>
@@ -67,12 +67,13 @@
 
 <div id="vehicle-inventory" class="hidden">
     <div class="panel-header">
-        <span class="panel-title"><i data-lucide="ambulance"></i> Inventar Ambulantă - <span id="vi-plate"></span></span>
+        <span class="panel-title"><i data-lucide="ambulance"></i> <span data-i18n="ems.ui.ambulance_inventory">Inventar Ambulantă</span> - <span id="vi-plate"></span></span>
         <button class="btn-close" onclick="postNUI('closeVehicleInventory')"><i data-lucide="x"></i></button>
     </div>
     <div id="vi-items" class="vi-items"></div>
 </div>
 
+<script src="nui://core/ui/i18n.js"></script>
 <script src="script.js"></script>
 <script>document.addEventListener('DOMContentLoaded', () => lucide.createIcons());</script>
 </body>

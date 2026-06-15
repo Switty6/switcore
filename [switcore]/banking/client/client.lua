@@ -2,6 +2,12 @@ local isUIOpen = false
 local currentMode = nil
 local currentBankCode = nil
 
+local function pushI18n()
+    SendNUIMessage({ action = 'sw:i18n', dict = exports.core:getLocaleDict() })
+end
+
+AddEventHandler('switcore:client:localeUpdated', pushI18n)
+
 local function OpenNUI(mode, bankCode)
     if isUIOpen then return end
     isUIOpen = true
@@ -9,6 +15,7 @@ local function OpenNUI(mode, bankCode)
     currentBankCode = bankCode
 
     SetNuiFocus(true, true)
+    pushI18n()
     SendNUIMessage({
         action = 'open',
         mode = mode,
@@ -48,7 +55,7 @@ RegisterNetEvent('banking:client:proximityConfig', function(config)
     for _, model in ipairs(config.atmModels or {}) do
         exports.proximity:AddStaticModelInteraction(
             model,
-            'ATM',
+            Sw.T('banking.proximity.atm_label'),
             'banking_atm',
             {},
             atmDistance
@@ -59,7 +66,7 @@ RegisterNetEvent('banking:client:proximityConfig', function(config)
         local coords = vector3(location.x, location.y, location.z)
         exports.proximity:AddStaticInteraction(
             coords,
-            location.label or 'Bancă',
+            location.label or Sw.T('banking.proximity.bank_label'),
             'banking_bank',
             { bankCode = location.bankCode }
         )

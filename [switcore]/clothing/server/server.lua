@@ -1,14 +1,16 @@
+exports.core:registerModuleLocales(GetCurrentResourceName())
+
 local CLOTH_ITEM_TYPES = {
-    {'cloth_mask',        'Mască',            0.10},
-    {'cloth_torso',       'Tricou/Bustieră',  0.30},
-    {'cloth_legs',        'Pantaloni',        0.30},
-    {'cloth_feet',        'Încălțăminte',     0.30},
-    {'cloth_accessories', 'Accesoriu',        0.10},
-    {'cloth_undershirt',  'Tricou interior',  0.20},
-    {'cloth_jacket',      'Jachetă',          0.40},
-    {'cloth_bag',         'Geantă/Rucsac',    0.50},
-    {'cloth_hat',         'Pălărie',          0.20},
-    {'cloth_glasses',     'Ochelari',         0.10},
+    {'cloth_mask',        Sw.T('clothing.type_mask'),        0.10},
+    {'cloth_torso',       Sw.T('clothing.type_torso'),       0.30},
+    {'cloth_legs',        Sw.T('clothing.type_legs'),        0.30},
+    {'cloth_feet',        Sw.T('clothing.type_feet'),        0.30},
+    {'cloth_accessories', Sw.T('clothing.type_accessories'), 0.10},
+    {'cloth_undershirt',  Sw.T('clothing.type_undershirt'),  0.20},
+    {'cloth_jacket',      Sw.T('clothing.type_jacket'),      0.40},
+    {'cloth_bag',         Sw.T('clothing.type_bag'),         0.50},
+    {'cloth_hat',         Sw.T('clothing.type_hat'),         0.20},
+    {'cloth_glasses',     Sw.T('clothing.type_glasses'),     0.10},
 }
 
 local DEMO_STORES = {
@@ -138,7 +140,7 @@ local function RegisterClothingUsableItems()
                 end
             end
 
-            TriggerClientEvent('switcore:notify', source, 'error', 'Articol invalid.', 4000)
+            TriggerClientEvent('switcore:notify', source, 'error', Sw.TP(source, 'clothing.item_invalid'), 4000)
         end)
     end
 end

@@ -1,4 +1,10 @@
 
+local function pushI18n()
+    SendNUIMessage({ action = 'sw:i18n', dict = exports.core:getLocaleDict() })
+end
+
+AddEventHandler('switcore:client:localeUpdated', pushI18n)
+
 local isUIOpen          = false
 local currentVehicle    = nil
 local currentVehicleId  = nil
@@ -218,7 +224,7 @@ RegisterNetEvent('tuning:client:initShops', function(shops)
     for _, shop in ipairs(shops) do
         local id = exports.proximity:AddInteraction(
             vector3(shop.coords.x, shop.coords.y, shop.coords.z),
-            shop.name .. '\nDeschide LS Customs',
+            Sw.T('tuning.proximity_label', shop.name),
             'tuning_open',
             { shopCode = shop.code, shopName = shop.name }
         )
@@ -260,7 +266,7 @@ AddEventHandler('switcore:proximity:interact', function(interaction)
     local vehicle = GetVehiclePedIsIn(ped, false)
 
     if not DoesEntityExist(vehicle) or vehicle == 0 then
-        TriggerEvent('switcore:notify', 'error', 'Trebuie să fii în vehicul pentru a folosi LS Customs.', 4000)
+        TriggerEvent('switcore:notify', 'error', Sw.T('tuning.open_need_vehicle'), 4000)
         return
     end
 
@@ -281,6 +287,7 @@ RegisterNetEvent('tuning:client:openUI', function(vehicleData, tuningConfig)
 
     local liveryCount = GetVehicleLiveryCount(vehicle)
 
+    pushI18n()
     SendNUIMessage({
         action  = 'openUI',
         vehicle = vehicleData,
@@ -292,7 +299,7 @@ RegisterNetEvent('tuning:client:openUI', function(vehicleData, tuningConfig)
 end)
 
 RegisterNetEvent('tuning:client:openFailed', function(reason)
-    TriggerEvent('switcore:notify', 'error', reason or 'Nu s-a putut deschide LS Customs.', 5000)
+    TriggerEvent('switcore:notify', 'error', reason or Sw.T('tuning.open_failed_generic'), 5000)
 end)
 
 RegisterNUICallback('previewMod', function(data, cb)

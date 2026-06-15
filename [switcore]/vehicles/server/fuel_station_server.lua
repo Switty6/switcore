@@ -62,21 +62,21 @@ Sw.SecureEvent('vehicles:server:refuel', {
     if vehicleId then
         local characterId = GetCharacterId(source)
         if not characterId then
-            TriggerClientEvent('switcore:notify', source, 'error', 'Eroare autentificare.', 3000)
+            TriggerClientEvent('switcore:notify', source, 'error', Sw.TP(source, 'vehicles.auth_error'), 3000)
             return
         end
 
         local ok, err, result = FuelManager.refuel(source, characterId, vehicleId, litres, method)
         if not ok then
-            TriggerClientEvent('switcore:notify', source, 'error', err or 'Alimentare eșuată.', 4000)
+            TriggerClientEvent('switcore:notify', source, 'error', err or Sw.TP(source, 'vehicles.refuel_failed'), 4000)
             TriggerClientEvent('vehicles:client:refuelResult', source, false, err)
         else
             local sym = (getFirstCurrency() or {}).symbol or '$'
             TriggerClientEvent('vehicles:client:refuelResult', source, true, nil, result)
             TriggerClientEvent('switcore:notify', source, 'success',
-                string.format('Alimentat %.1fL  -  %s%.2f plătit cu %s',
-                    result.liters, sym, result.cost,
-                    result.method == 'card' and 'cardul' or 'cash'),
+                Sw.TP(source, 'vehicles.refueled_success',
+                    string.format('%.1f', result.liters), sym, string.format('%.2f', result.cost),
+                    result.method == 'card' and Sw.TP(source, 'vehicles.pay_method_card') or Sw.TP(source, 'vehicles.pay_method_cash')),
                 5000)
             print(string.format('[FUEL-STATION] Jucătorul %d a alimentat vehiculul %d cu %.2fL (%s%.2f) - %s',
                 source, vehicleId, result.liters, sym, result.cost, result.method))
@@ -96,20 +96,20 @@ Sw.SecureEvent('vehicles:server:refuel', {
                 local cash = exports.banking:getCharacterCash(characterId, currencyId) or 0
                 if cash < totalCost then
                     TriggerClientEvent('switcore:notify', source, 'error',
-                        string.format('Cash insuficient: %s%d necesar.', sym, totalCost), 4000)
+                        Sw.TP(source, 'vehicles.insufficient_cash_amount', sym, totalCost), 4000)
                     return
                 end
                 exports.banking:addCharacterCash(characterId, currencyId, -totalCost)
             else
                 local accounts = exports.banking:getCharacterAccounts(characterId) or {}
                 if #accounts == 0 then
-                    TriggerClientEvent('switcore:notify', source, 'error', 'Nu ai cont bancar.', 4000)
+                    TriggerClientEvent('switcore:notify', source, 'error', Sw.TP(source, 'vehicles.no_bank_account'), 4000)
                     return
                 end
                 local bal = exports.banking:getAccountBalance(accounts[1].id, currencyId) or 0
                 if bal < totalCost then
                     TriggerClientEvent('switcore:notify', source, 'error',
-                        string.format('Sold bancar insuficient: %s%d necesar.', sym, totalCost), 4000)
+                        Sw.TP(source, 'vehicles.insufficient_bank_amount', sym, totalCost), 4000)
                     return
                 end
                 exports.banking:removeAccountBalance(accounts[1].id, currencyId, totalCost)
@@ -119,9 +119,9 @@ Sw.SecureEvent('vehicles:server:refuel', {
 
     TriggerClientEvent('vehicles:client:refuelResult', source, true, nil, { cost = totalCost, liters = litres, method = method })
     TriggerClientEvent('switcore:notify', source, 'success',
-        string.format('Alimentat %.1fL  -  %s%.2f plătit cu %s',
-            litres, sym, totalCost or 0,
-            method == 'card' and 'cardul' or 'cash'),
+        Sw.TP(source, 'vehicles.refueled_success',
+            string.format('%.1f', litres), sym, string.format('%.2f', totalCost or 0),
+            method == 'card' and Sw.TP(source, 'vehicles.pay_method_card') or Sw.TP(source, 'vehicles.pay_method_cash')),
         5000)
 end)
 

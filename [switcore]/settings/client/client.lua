@@ -1,5 +1,11 @@
 local isOpen = false
 
+local function pushI18n()
+    SendNUIMessage({ action = 'sw:i18n', dict = exports.core:getLocaleDict() })
+end
+
+AddEventHandler('switcore:client:localeUpdated', pushI18n)
+
 local function openPanel()
     if isOpen then return end
     isOpen = true
@@ -16,6 +22,7 @@ local function closePanel()
 end
 
 RegisterNetEvent('settings:client:allSettings', function(payload)
+    pushI18n()
     SendNUIMessage({ action = 'open', payload = payload })
 end)
 

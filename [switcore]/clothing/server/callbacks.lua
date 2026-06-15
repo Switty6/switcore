@@ -48,7 +48,7 @@ Sw.SecureEvent('clothing:buyItem', {
 
     ClothingDB.getItemById(storeItemId, function(item)
         if not item then
-            return ctx.error('Articolul nu exista.')
+            return ctx.error(Sw.TP(ctx.source, 'clothing.item_not_found'))
         end
 
         local characterId = character.id
@@ -60,7 +60,7 @@ Sw.SecureEvent('clothing:buyItem', {
                 if slot and slot.name == item.item_name then
                     local meta = slot.metadata or {}
                     if tonumber(meta.clothing_item_id) == storeItemId then
-                        return ctx.error('Deja detii acest articol.')
+                        return ctx.error(Sw.TP(ctx.source, 'clothing.item_already_owned'))
                     end
                 end
             end
@@ -69,14 +69,14 @@ Sw.SecureEvent('clothing:buyItem', {
         local currencyCode = exports.settings:GetSetting('clothing.currency', 'RON')
         local currencyId   = GetCurrencyId(currencyCode)
         if not currencyId then
-            return ctx.error('Eroare configurare valuta.')
+            return ctx.error(Sw.TP(ctx.source, 'clothing.currency_config_error'))
         end
 
         local price = tonumber(item.price) or 0
         local cash  = exports.banking:getCharacterCash(characterId, currencyId) or 0
 
         if cash < price then
-            return ctx.error(string.format('Nu ai suficienti bani. Necesar: %d %s', price, currencyCode))
+            return ctx.error(Sw.TP(ctx.source, 'clothing.insufficient_funds', price, currencyCode))
         end
 
         exports.banking:addCharacterCash(characterId, currencyId, -price)
@@ -97,7 +97,7 @@ Sw.SecureEvent('clothing:buyItem', {
 
         local success, msg = exports.inventory:AddItem(invId, item.item_name, 1, metadata)
         if success then
-            ctx.success('Ai cumparat: ' .. item.label, 5000)
+            ctx.success(Sw.TP(ctx.source, 'clothing.item_bought', item.label), 5000)
             local updatedInv = exports.inventory:GetInventory(invId)
             if updatedInv then
                 TriggerClientEvent('switcore:inventoryUpdated', ctx.source, invId, updatedInv)
@@ -105,7 +105,7 @@ Sw.SecureEvent('clothing:buyItem', {
             end
         else
             exports.banking:addCharacterCash(characterId, currencyId, price)
-            ctx.error('Inventarul e plin: ' .. (msg or ''))
+            ctx.error(Sw.TP(ctx.source, 'clothing.inventory_full', msg or ''))
         end
     end)
 end)
@@ -153,7 +153,7 @@ Sw.SecureEvent('clothing:saveOutfit', {
 
     local equipped = ClothingManager.getEquipped(character.id)
     ClothingDB.saveOutfit(character.id, name, equipped, function()
-        ctx.success('Outfit salvat: ' .. name)
+        ctx.success(Sw.TP(ctx.source, 'clothing.outfit_saved', name))
         ClothingDB.getOutfits(character.id, function(outfits)
             TriggerClientEvent('clothing:receiveOutfits', ctx.source, outfits)
         end)
@@ -171,7 +171,7 @@ Sw.SecureEvent('clothing:loadOutfit', {
 
     ClothingDB.getOutfitById(ctx.args.outfitId, character.id, function(outfit)
         if not outfit then
-            return ctx.error('Outfit inexistent.')
+            return ctx.error(Sw.TP(ctx.source, 'clothing.outfit_not_found'))
         end
 
         local components = outfit.components
@@ -181,7 +181,7 @@ Sw.SecureEvent('clothing:loadOutfit', {
         ClothingManager.recalculateBonuses(character.id)
         ClothingDB.saveEquippedClothing(character.id, components)
         TriggerClientEvent('clothing:applyComponents', ctx.source, components)
-        ctx.success('Outfit aplicat: ' .. outfit.name)
+        ctx.success(Sw.TP(ctx.source, 'clothing.outfit_applied', outfit.name))
     end)
 end)
 
@@ -195,7 +195,7 @@ Sw.SecureEvent('clothing:deleteOutfit', {
     local character = ctx.character
 
     ClothingDB.deleteOutfit(character.id, ctx.args.outfitId, function()
-        ctx.success('Outfit sters.')
+        ctx.success(Sw.TP(ctx.source, 'clothing.outfit_deleted'))
         ClothingDB.getOutfits(character.id, function(outfits)
             TriggerClientEvent('clothing:receiveOutfits', ctx.source, outfits)
         end)

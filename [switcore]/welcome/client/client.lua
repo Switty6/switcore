@@ -38,7 +38,7 @@ local function notify(notifType, message, duration)
 end
 
 RegisterNetEvent('welcome:client:spawn', function(data)
-    local firstName  = data.firstName  or 'Jucător'
+    local firstName  = data.firstName  or Sw.T('welcome.default_name')
     local firstSpawn = data.firstSpawn or false
 
     CreateThread(function()
@@ -51,26 +51,26 @@ RegisterNetEvent('welcome:client:spawn', function(data)
 
             Wait(600)
             notify('info',
-                'Bine ai venit pe SwitCore, ' .. firstName .. '!',
+                Sw.T('welcome.welcome_new', firstName),
                 7000
             )
 
             Wait(3500)
             notify('info',
-                'Apasă TAB pentru inventar sau /help pentru lista de comenzi.',
+                Sw.T('welcome.hint_inventory'),
                 6000
             )
 
             Wait(4000)
             notify('info',
-                'Probleme? Folosește /report pentru a contacta un admin online.',
+                Sw.T('welcome.hint_report'),
                 6000
             )
 
         else
             Wait(300)
             notify('success',
-                'Bine ai revenit, ' .. firstName .. '!',
+                Sw.T('welcome.welcome_back', firstName),
                 4000
             )
         end

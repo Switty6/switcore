@@ -8,6 +8,12 @@ local function Send(data)
     SendNUIMessage(data)
 end
 
+function PushMecanicI18n()
+    SendNUIMessage({ action = 'sw:i18n', dict = exports.core:getLocaleDict() })
+end
+
+AddEventHandler('switcore:client:localeUpdated', PushMecanicI18n)
+
 local function notify(notifType, title, message)
     TriggerEvent('notifications:client:send', { type = notifType, title = title, message = message, duration = 5000 })
 end
@@ -46,7 +52,7 @@ function SetupWorkshopBlip()
     SetBlipScale(workshopBlip, 0.9)
     SetBlipAsShortRange(workshopBlip, true)
     BeginTextCommandSetBlipName('STRING')
-    AddTextComponentString('Service Auto')
+    AddTextComponentString(Sw.T('mecanic.blip_workshop'))
     EndTextCommandSetBlipName(workshopBlip)
 end
 
@@ -66,7 +72,7 @@ function SetupWorkshopProximity()
 
     exports.proximity:AddInteraction(
         vector3(c.x, c.y, c.z),
-        'Service Auto - Deschide Tableta',
+        Sw.T('mecanic.prox_open_tablet'),
         proximityId,
         {},
         function()
@@ -91,6 +97,7 @@ end
 RegisterNetEvent('mecanic:client:tabletData', function(data)
     isUIOpen = true
     SetNuiFocus(true, true)
+    PushMecanicI18n()
     Send({ action = 'open', stats = data.stats, recent = data.recent,
            calls = data.calls, prices = data.prices, job = myJob })
 end)

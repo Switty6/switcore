@@ -130,7 +130,7 @@ function showInteraction(data) {
             counterNumber.textContent = data.totalCount;
             const counterText = document.createElement('span');
             counterText.className = 'counter-text';
-            counterText.textContent = ' interactiuni';
+            counterText.textContent = ' ' + SwI18n.t('proximity.interactions_count');
             counterElement.innerHTML = '';
             counterElement.appendChild(counterNumber);
             counterElement.appendChild(counterText);

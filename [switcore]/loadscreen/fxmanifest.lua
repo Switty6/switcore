@@ -14,7 +14,9 @@ files {
     'ui/style.css',
     'ui/script.js',
     'ui/logo.svg',
-    'ui/audio/intro.wav'
+    'ui/audio/intro.wav',
+    'ui/locales/ro.json',
+    'ui/locales/en.json'
 }
 
 client_scripts {

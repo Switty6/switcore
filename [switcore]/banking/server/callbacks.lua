@@ -64,7 +64,7 @@ Sw.SecureEvent('banking:server:deposit', {
 }, function(ctx)
     local amount = ctx.args.amount
     if amount <= 0 then
-        return TriggerClientEvent('banking:client:depositResult', ctx.source, { success = false, error = 'Parametri invalizi' })
+        return TriggerClientEvent('banking:client:depositResult', ctx.source, { success = false, error = Sw.TP(ctx.source, 'banking.error_invalid_parameters') })
     end
 
     local currencyId = GetDefaultCurrencyId()
@@ -86,7 +86,7 @@ Sw.SecureEvent('banking:server:withdraw', {
 }, function(ctx)
     local amount = ctx.args.amount
     if amount <= 0 then
-        return TriggerClientEvent('banking:client:withdrawResult', ctx.source, { success = false, error = 'Parametri invalizi' })
+        return TriggerClientEvent('banking:client:withdrawResult', ctx.source, { success = false, error = Sw.TP(ctx.source, 'banking.error_invalid_parameters') })
     end
 
     local currencyId = GetDefaultCurrencyId()
@@ -109,12 +109,12 @@ Sw.SecureEvent('banking:server:transfer', {
 }, function(ctx)
     local amount = ctx.args.amount
     if amount <= 0 then
-        return TriggerClientEvent('banking:client:transferResult', ctx.source, { success = false, error = 'Parametri invalizi' })
+        return TriggerClientEvent('banking:client:transferResult', ctx.source, { success = false, error = Sw.TP(ctx.source, 'banking.error_invalid_parameters') })
     end
 
     local toAccount = BankingManager.getAccountByNumber(ctx.args.toAccountNumber)
     if not toAccount then
-        return TriggerClientEvent('banking:client:transferResult', ctx.source, { success = false, error = 'Cont destinatar inexistent' })
+        return TriggerClientEvent('banking:client:transferResult', ctx.source, { success = false, error = Sw.TP(ctx.source, 'banking.error_recipient_account_missing') })
     end
 
     local currencyId = GetDefaultCurrencyId()
@@ -171,7 +171,7 @@ Sw.SecureEvent('banking:server:createAccount', {
 }, function(ctx)
     local bank = BankingDatabase.getBankByCode(ctx.args.bankCode)
     if not bank then
-        return TriggerClientEvent('banking:client:createAccountResult', ctx.source, { success = false, error = 'Bancă inexistentă' })
+        return TriggerClientEvent('banking:client:createAccountResult', ctx.source, { success = false, error = Sw.TP(ctx.source, 'banking.error_bank_not_found') })
     end
 
     local success, err, account = BankingManager.createAccount(ctx.character.id, bank.id, ctx.args.accountType)
@@ -214,7 +214,7 @@ Sw.SecureEvent('banking:server:createLoan', {
 }, function(ctx)
     local bank = BankingDatabase.getBankByCode(ctx.args.bankCode)
     if not bank then
-        return TriggerClientEvent('banking:client:createLoanResult', ctx.source, { success = false, error = 'Bancă inexistentă' })
+        return TriggerClientEvent('banking:client:createLoanResult', ctx.source, { success = false, error = Sw.TP(ctx.source, 'banking.error_bank_not_found') })
     end
 
     local currencyId = GetDefaultCurrencyId()
@@ -236,7 +236,7 @@ Sw.SecureEvent('banking:server:payLoan', {
 }, function(ctx)
     local amount = ctx.args.amount
     if amount <= 0 then
-        return TriggerClientEvent('banking:client:payLoanResult', ctx.source, { success = false, error = 'Parametri invalizi' })
+        return TriggerClientEvent('banking:client:payLoanResult', ctx.source, { success = false, error = Sw.TP(ctx.source, 'banking.error_invalid_parameters') })
     end
 
     local success, err = LoanManager.makeLoanPayment(ctx.character.id, ctx.args.loanId, amount)

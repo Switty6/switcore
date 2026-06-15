@@ -100,7 +100,7 @@ function Database.createPlayer(identifiers, name)
     
     local playerResult = postgres:query(
         'INSERT INTO players (name, created_at, updated_at, last_seen, playtime, language) VALUES ($1, NOW(), NOW(), NOW(), 0, $2) RETURNING *',
-        {name, Config.DEFAULT_LANGUAGE or 'ro'}
+        {name, LocalizationServer.getLanguage()}
     )
     
     if not playerResult or not playerResult.rows or not playerResult.rows[1] then

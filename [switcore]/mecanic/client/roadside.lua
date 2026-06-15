@@ -7,8 +7,8 @@ RegisterNetEvent('mecanic:client:newServiceCall', function(data)
 
     TriggerEvent('notifications:client:send', {
         type     = 'info',
-        title    = 'Cerere Mecanic!',
-        message  = string.format('%s are o problema: %s', data.clientName, ProblemLabel(data.problemType)),
+        title    = Sw.T('mecanic.roadside.call_title'),
+        message  = Sw.T('mecanic.roadside.call_msg', data.clientName, ProblemLabel(data.problemType)),
         duration = 10000
     })
 
@@ -19,7 +19,7 @@ RegisterNetEvent('mecanic:client:newServiceCall', function(data)
         SetBlipScale(b, 0.9)
         SetBlipAsShortRange(b, false)
         BeginTextCommandSetBlipName('STRING')
-        AddTextComponentString('Cerere: ' .. (data.clientName or '?'))
+        AddTextComponentString(Sw.T('mecanic.roadside.blip_call_name', data.clientName or '?'))
         EndTextCommandSetBlipName(b)
         activeCallBlips[data.id] = b
     end
@@ -52,7 +52,7 @@ RegisterNetEvent('mecanic:client:callAccepted', function(data)
         SetBlipScale(clientBlip, 1.0)
         SetBlipRoute(clientBlip, true)
         BeginTextCommandSetBlipName('STRING')
-        AddTextComponentString('Client in nevoie')
+        AddTextComponentString(Sw.T('mecanic.roadside.blip_client_name'))
         EndTextCommandSetBlipName(clientBlip)
     end
 
@@ -78,8 +78,8 @@ CreateThread(function()
 
             if dist <= 10.0 then
                 TriggerEvent('notifications:client:send', {
-                    type='success', title='Ai ajuns!',
-                    message='Apasa E langa vehiculul clientului pentru servicii.',
+                    type='success', title=Sw.T('mecanic.roadside.arrived_title'),
+                    message=Sw.T('mecanic.roadside.arrived_msg'),
                     duration=6000
                 })
                 if clientBlip and DoesBlipExist(clientBlip) then
@@ -100,8 +100,8 @@ RegisterNetEvent('mecanic:client:vehicleTowed', function(data)
     end
     activeCallId = nil
     TriggerEvent('notifications:client:send', {
-        type='success', title='Tractare finalizata',
-        message='Vehiculul clientului a fost dus la service.', duration=6000
+        type='success', title=Sw.T('mecanic.roadside.tow_done_title'),
+        message=Sw.T('mecanic.roadside.tow_done_msg'), duration=6000
     })
 end)
 
@@ -115,11 +115,9 @@ RegisterNUICallback('roadsideDone', function(_, cb)
 end)
 
 function ProblemLabel(problemType)
-    local labels = {
-        engine  = 'Motor avariat',
-        tire    = 'Roata sparta',
-        battery = 'Baterie descarcata',
-        tow     = 'Tractare necesara',
-    }
-    return labels[problemType] or problemType
+    local valid = { engine = true, tire = true, battery = true, tow = true }
+    if valid[problemType] then
+        return Sw.T('mecanic.problem.' .. problemType)
+    end
+    return problemType
 end

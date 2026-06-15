@@ -39,6 +39,18 @@ local function SendCashNotif(amount, currency, isAdd, duration)
     })
 end
 
+local function pushI18n()
+    SendNUIMessage({ action = 'sw:i18n', dict = exports.core:getLocaleDict() })
+end
+
+AddEventHandler('switcore:client:localeUpdated', pushI18n)
+
+-- UI mereu vizibil: push o data la pornire, cu un mic delay
+CreateThread(function()
+    Wait(2000)
+    pushI18n()
+end)
+
 local function applySettings()
     SendNUIMessage({
         action           = 'config',

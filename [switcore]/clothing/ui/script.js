@@ -1,7 +1,20 @@
 'use strict';
 
+// Traducere prin helperul standard SwI18n (core/ui/i18n.js); fallback pe cheie.
+function t(key, ...args) {
+    return SwI18n.t(`clothing.${key}`, ...args);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     if (window.lucide) lucide.createIcons();
+});
+
+// re-randare a stringurilor generate din JS la schimbarea dictionarului
+document.addEventListener('sw:i18n', () => {
+    renderItemGrid();
+    if (state.selectedItem) renderDetail(state.selectedItem);
+    renderEquipped();
+    renderOutfits(state.outfits || []);
 });
 
 const state = {
@@ -39,13 +52,13 @@ function getCompMeta(item) {
 }
 
 function formatPrice(price) {
-    return Number(price).toLocaleString('ro-RO') + ' RON';
+    return t('ui.price', Number(price).toLocaleString('ro-RO'));
 }
 
 function formatBonus(slots, weight) {
     const parts = [];
-    if (slots  > 0) parts.push(`+${slots} sloturi`);
-    if (weight > 0) parts.push(`+${weight}kg`);
+    if (slots  > 0) parts.push(t('ui.bonus_slots', slots));
+    if (weight > 0) parts.push(t('ui.bonus_weight', weight));
     return parts.join('  ');
 }
 
@@ -83,7 +96,7 @@ function onOpenStore(data) {
     badge.textContent = data.storeType || 'casual';
     badge.className   = data.storeType || 'casual';
 
-    document.getElementById('store-title').textContent = data.storeLabel || 'Magazin';
+    document.getElementById('store-title').textContent = data.storeLabel || t('ui.store_default');
 
     switchTab('items');
     filterCategory('all');
@@ -137,7 +150,7 @@ function renderItemGrid() {
 
     const items = filtered(state.activeCategory);
     grid.innerHTML = items.length === 0
-        ? `<div class="empty-state" style="grid-column:1/-1"><div><i data-lucide="shopping-bag"></i></div>Niciun articol în această categorie.</div>`
+        ? `<div class="empty-state" style="grid-column:1/-1"><div><i data-lucide="shopping-bag"></i></div>${t('ui.empty_category')}</div>`
         : items.map(itemCardHTML).join('');
     if (window.lucide) lucide.createIcons({ nodes: grid.querySelectorAll('[data-lucide]') });
 }
@@ -162,7 +175,7 @@ function itemCardHTML(item) {
     <div class="item-card-icon ${meta.bg}"><i data-lucide="${meta.icon}"></i></div>
     <div class="item-card-label">${item.label}</div>
     <div class="item-card-price">${formatPrice(item.price)}</div>
-    ${hasBonus ? `<div class="item-card-bonus">+inv</div>` : ''}
+    ${hasBonus ? `<div class="item-card-bonus">${t('ui.bonus_inv')}</div>` : ''}
 </div>`;
 }
 
@@ -215,10 +228,10 @@ function renderDetail(item) {
         btnBuy.classList.add('hidden');
         btnOwned.classList.remove('hidden');
         if (isEquipped) {
-            btnEquip.innerHTML = '<i data-lucide="check"></i> Echipat';
+            btnEquip.innerHTML = `<i data-lucide="check"></i> ${t('ui.equipped_state')}`;
             btnEquip.classList.remove('hidden');
         } else {
-            btnEquip.textContent = 'Echipează';
+            btnEquip.textContent = t('ui.equip');
             btnEquip.classList.remove('hidden');
         }
     } else {
@@ -293,30 +306,35 @@ function equipSelected() {
     renderDetail(state.selectedItem);
 }
 
-const SLOT_LABELS = {
-    component_1:  'Mască',
-    component_3:  'Torso',
-    component_4:  'Pantaloni',
-    component_5:  'Geantă',
-    component_6:  'Încălțăminte',
-    component_7:  'Accesoriu',
-    component_8:  'Tricou interior',
-    component_9:  'Vestă',
-    component_10: 'Decal',
-    component_11: 'Jachetă',
-    prop_0:       'Pălărie',
-    prop_1:       'Ochelari',
-    prop_2:       'Cercei',
-    prop_6:       'Ceas',
-    prop_7:       'Brățară',
+const SLOT_LABEL_KEYS = {
+    component_1:  'ui.slot_mask',
+    component_3:  'ui.slot_torso',
+    component_4:  'ui.slot_legs',
+    component_5:  'ui.slot_bag',
+    component_6:  'ui.slot_feet',
+    component_7:  'ui.slot_accessory',
+    component_8:  'ui.slot_undershirt',
+    component_9:  'ui.slot_vest',
+    component_10: 'ui.slot_decal',
+    component_11: 'ui.slot_jacket',
+    prop_0:       'ui.slot_hat',
+    prop_1:       'ui.slot_glasses',
+    prop_2:       'ui.slot_earrings',
+    prop_6:       'ui.slot_watch',
+    prop_7:       'ui.slot_bracelet',
 };
+
+function slotLabel(key) {
+    const k = SLOT_LABEL_KEYS[key];
+    return k ? t(k) : key;
+}
 
 function renderEquipped() {
     const list = document.getElementById('equipped-list');
     const entries = Object.entries(state.equippedMap);
 
     if (entries.length === 0) {
-        list.innerHTML = `<div class="empty-state"><div><i data-lucide="shirt"></i></div>Nu ai nicio haină echipată.</div>`;
+        list.innerHTML = `<div class="empty-state"><div><i data-lucide="shirt"></i></div>${t('ui.empty_equipped')}</div>`;
         if (window.lucide) lucide.createIcons({ nodes: list.querySelectorAll('[data-lucide]') });
         return;
     }
@@ -328,11 +346,11 @@ function renderEquipped() {
 <div class="equipped-row">
     <div class="equipped-row-icon"><i data-lucide="${meta.icon}"></i></div>
     <div class="equipped-row-info">
-        <div class="equipped-row-label">${comp.label || 'Necunoscut'}</div>
-        <div class="equipped-row-slot">${SLOT_LABELS[key] || key} - textură ${(comp.texture || 0) + 1}</div>
+        <div class="equipped-row-label">${comp.label || t('ui.item_unknown')}</div>
+        <div class="equipped-row-slot">${t('ui.slot_texture', slotLabel(key), (comp.texture || 0) + 1)}</div>
         ${hasBonus ? `<div class="equipped-row-bonus"><i data-lucide="package"></i> ${formatBonus(comp.bonus_slots, comp.bonus_weight)}</div>` : ''}
     </div>
-    <button class="btn-danger" onclick="unequipSlot('${comp.component_type}', ${comp.component_id})">Dezechipează</button>
+    <button class="btn-danger" onclick="unequipSlot('${comp.component_type}', ${comp.component_id})">${t('ui.unequip')}</button>
 </div>`;
     }).join('');
     if (window.lucide) lucide.createIcons({ nodes: list.querySelectorAll('[data-lucide]') });
@@ -366,7 +384,7 @@ function hideFittingRoom() {
     document.getElementById('store-panel').classList.remove('hidden');
     state.isAutoRotating = false;
     document.getElementById('btn-auto-rotate').classList.remove('rotating');
-    document.getElementById('btn-auto-rotate').innerHTML = '<i data-lucide="play"></i> 360° Auto';
+    document.getElementById('btn-auto-rotate').innerHTML = `<i data-lucide="play"></i> ${t('ui.auto_360')}`;
     if (window.lucide) lucide.createIcons({ nodes: document.getElementById('btn-auto-rotate').querySelectorAll('[data-lucide]') });
 }
 
@@ -380,7 +398,7 @@ function toggleAutoRotate() {
         state.isAutoRotating = false;
         const btn = document.getElementById('btn-auto-rotate');
         btn.classList.remove('rotating');
-        btn.innerHTML = '<i data-lucide="play"></i> 360° Auto';
+        btn.innerHTML = `<i data-lucide="play"></i> ${t('ui.auto_360')}`;
         if (window.lucide) lucide.createIcons({ nodes: btn.querySelectorAll('[data-lucide]') });
     } else {
         nuiPost('autoRotate').then(res => {
@@ -388,7 +406,7 @@ function toggleAutoRotate() {
                 state.isAutoRotating = true;
                 const btn = document.getElementById('btn-auto-rotate');
                 btn.classList.add('rotating');
-                btn.innerHTML = '<i data-lucide="square"></i> Stop';
+                btn.innerHTML = `<i data-lucide="square"></i> ${t('ui.stop')}`;
                 if (window.lucide) lucide.createIcons({ nodes: btn.querySelectorAll('[data-lucide]') });
             }
         });
@@ -399,7 +417,7 @@ function onAutoRotateFinished() {
     state.isAutoRotating = false;
     const btn = document.getElementById('btn-auto-rotate');
     btn.classList.remove('rotating');
-    btn.innerHTML = '<i data-lucide="play"></i> 360° Auto';
+    btn.innerHTML = `<i data-lucide="play"></i> ${t('ui.auto_360')}`;
     if (window.lucide) lucide.createIcons({ nodes: btn.querySelectorAll('[data-lucide]') });
 }
 
@@ -408,7 +426,7 @@ function renderOutfits(outfits) {
     const list = document.getElementById('outfits-list');
 
     if (!outfits || outfits.length === 0) {
-        list.innerHTML = `<div class="empty-state"><div><i data-lucide="shirt"></i></div>Nu ai outfit-uri salvate.</div>`;
+        list.innerHTML = `<div class="empty-state"><div><i data-lucide="shirt"></i></div>${t('ui.empty_outfits')}</div>`;
         if (window.lucide) lucide.createIcons({ nodes: list.querySelectorAll('[data-lucide]') });
         return;
     }
@@ -422,7 +440,7 @@ function renderOutfits(outfits) {
     <div class="outfit-row-name">${escapeHtml(o.name)}</div>
     <div class="outfit-row-date">${date}</div>
     <div class="outfit-row-actions">
-        <button class="btn-primary" onclick="loadOutfit(${o.id})">Aplică</button>
+        <button class="btn-primary" onclick="loadOutfit(${o.id})">${t('ui.apply')}</button>
         <button class="btn-danger"  onclick="deleteOutfit(${o.id})"><i data-lucide="x"></i></button>
     </div>
 </div>`;

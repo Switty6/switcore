@@ -5,16 +5,16 @@ local cacheExpiry = 60 -- 1 minut
 
 function FeeManager.setBankFee(bankId, feeType, feeTypeValue, feeAmount, currencyId)
     if not bankId or not feeType or not feeTypeValue or not feeAmount or not currencyId then
-        return false, 'Parametri invalizi'
+        return false, Sw.T('banking.error_invalid_parameters')
     end
     
     if feeTypeValue ~= 'percentage' and feeTypeValue ~= 'fixed' then
-        return false, 'Tip comision invalid (trebuie să fie percentage sau fixed)'
+        return false, Sw.T('banking.fee_type_value_invalid')
     end
     
     local success = BankingDatabase.setBankFee(bankId, feeType, feeTypeValue, feeAmount, currencyId)
     if not success then
-        return false, 'Eroare la setarea comisionului'
+        return false, Sw.T('banking.fee_set_failed')
     end
     
     feeCache = {}
@@ -166,4 +166,4 @@ function FeeManager.applyInflationToFees(currencyId, inflationRate)
 end
 
 return FeeManager
-
+

@@ -4,6 +4,12 @@ local invisible       = false
 local noWantedActive  = false
 local frozenTime      = false
 
+local function pushI18n()
+    SendNUIMessage({ action = 'sw:i18n', dict = exports.core:getLocaleDict() })
+end
+
+AddEventHandler('switcore:client:localeUpdated', pushI18n)
+
 local function CloseAdmin()
     if not isUIOpen then return end
     isUIOpen = false
@@ -18,10 +24,11 @@ end
 
 RegisterNetEvent('admin:client:open', function(data)
     if not data or not data.tabs or #data.tabs == 0 then
-        exports.notifications:Notify('error', 'Acces interzis.', 3000)
+        exports.notifications:Notify('error', Sw.T('admin.client.access_denied'), 3000)
         return
     end
     isUIOpen = true
+    pushI18n()
     SetNuiFocus(true, true)
     SendNUIMessage({
         action     = 'open',
@@ -655,7 +662,7 @@ end)
 local function TeleportToWaypoint()
     local waypointBlip = GetFirstBlipInfoId(8)
     if not DoesBlipExist(waypointBlip) then
-        exports.notifications:Notify('error', 'Nu ai marcat niciun waypoint.', 3000)
+        exports.notifications:Notify('error', Sw.T('admin.client.no_waypoint'), 3000)
         return
     end
 
@@ -681,7 +688,7 @@ local function TeleportToWaypoint()
 
     SetEntityCoordsNoOffset(entity, coords.x, coords.y, (found and groundZ + 1.0) or 100.0, false, false, false)
     FreezeEntityPosition(entity, false)
-    exports.notifications:Notify('success', 'Teleportat la waypoint.', 2500)
+    exports.notifications:Notify('success', Sw.T('admin.client.teleported_waypoint'), 2500)
 end
 
 RegisterNetEvent('admin:client:teleportToWaypoint', TeleportToWaypoint)
@@ -689,7 +696,7 @@ RegisterNetEvent('admin:client:teleportToWaypoint', TeleportToWaypoint)
 RegisterNetEvent('admin:client:toggleOverlay', function()
     local active = ToggleOverlay()
     SaveOverlayKVP()
-    exports.notifications:Notify('info', 'Dev Overlay: ' .. (active and 'ACTIVAT' or 'DEZACTIVAT'), 3000)
+    exports.notifications:Notify('info', active and Sw.T('admin.client.dev_overlay_on') or Sw.T('admin.client.dev_overlay_off'), 3000)
 end)
 
 RegisterCommand('devoverlay', function()

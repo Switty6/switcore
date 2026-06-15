@@ -12,12 +12,19 @@ local function setLanguage(language)
     return false
 end
 
+local function translate(key, ...)
+    if LocalizationClient and LocalizationClient.translate then
+        return LocalizationClient.translate(key, ...)
+    end
+    return key
+end
+
 RegisterNetEvent('switcore:languageChanged', function(language)
     TriggerServerEvent('switcore:getLocalizedMessage', 'language.changed', language)
 end)
 
 RegisterNetEvent('switcore:languageError', function(error)
-    print('[CORE] Error changing language: ' .. tostring(error))
+    print('[CORE] ' .. tostring(error))
 end)
 
 RegisterNetEvent('switcore:localizedMessage', function(message)
@@ -26,21 +33,20 @@ end)
 
 RegisterCommand('language', function(source, args)
     if #args < 1 then
-        print('Usage: /language [ro|en]')
-        print('Current language: ' .. getCurrentLanguage())
-        print('Available languages: ro (Romanian), en (English)')
+        print(translate('language.usage'))
+        print(translate('language.current', getCurrentLanguage()))
+        print(translate('language.available'))
         return
     end
-    
+
     local lang = args[1]:lower()
     if lang == 'ro' or lang == 'en' then
         setLanguage(lang)
-        print('[CORE] Changing language to: ' .. lang .. '...')
+        print('[CORE] ' .. translate('language.changing', lang))
     else
-        print('[CORE] Invalid language. Available: ro, en')
+        print('[CORE] ' .. translate('language.invalid'))
     end
 end, false)
 
 exports('setLanguage', setLanguage)
 exports('getLanguage', getCurrentLanguage)
-

@@ -1,11 +1,11 @@
 local ServiceAnims = {
     inspect = {
-        label = 'Diagnosticare vehicul...',
+        labelKey = 'mecanic.minigame.inspect',
         dict  = 'amb@world_human_car_park_attendant@male@idle_a',
         anim  = 'idle_c',
     },
     oil_change = {
-        label      = 'Schimb ulei motor...',
+        labelKey   = 'mecanic.minigame.oil_change',
         prop       = 'prop_tool_wrench',
         propBone   = 57005,
         propOffset = {x=0.13, y=0.05, z=0.0},
@@ -14,7 +14,7 @@ local ServiceAnims = {
         anim       = 'fixing_a_ped',
     },
     brakes = {
-        label      = 'Schimb placute frana...',
+        labelKey   = 'mecanic.minigame.brakes',
         prop       = 'prop_tool_wrench',
         propBone   = 57005,
         propOffset = {x=0.13, y=0.05, z=0.0},
@@ -23,7 +23,7 @@ local ServiceAnims = {
         anim       = 'fixing_a_ped',
     },
     tire = {
-        label      = 'Schimb anvelopa...',
+        labelKey   = 'mecanic.minigame.tire',
         prop       = 'prop_tool_wrench',
         propBone   = 57005,
         propOffset = {x=0.13, y=0.05, z=0.0},
@@ -32,7 +32,7 @@ local ServiceAnims = {
         anim       = 'fixing_a_ped',
     },
     suspension = {
-        label      = 'Reparatie suspensie...',
+        labelKey   = 'mecanic.minigame.suspension',
         prop       = 'prop_tool_wrench',
         propBone   = 57005,
         propOffset = {x=0.13, y=0.05, z=0.0},
@@ -41,7 +41,7 @@ local ServiceAnims = {
         anim       = 'fixing_a_ped',
     },
     battery = {
-        label      = 'Inlocuire baterie...',
+        labelKey   = 'mecanic.minigame.battery',
         prop       = 'prop_tool_wrench',
         propBone   = 57005,
         propOffset = {x=0.13, y=0.05, z=0.0},
@@ -50,7 +50,7 @@ local ServiceAnims = {
         anim       = 'fixing_a_ped',
     },
     engine = {
-        label      = 'Reparatie motor...',
+        labelKey   = 'mecanic.minigame.engine',
         prop       = 'prop_tool_wrench',
         propBone   = 57005,
         propOffset = {x=0.13, y=0.05, z=0.0},
@@ -59,7 +59,7 @@ local ServiceAnims = {
         anim       = 'fixing_a_ped',
     },
     bodywork = {
-        label      = 'Reparatie caroserie...',
+        labelKey   = 'mecanic.minigame.bodywork',
         prop       = 'prop_tool_hammer',
         propBone   = 57005,
         propOffset = {x=0.06, y=0.03, z=-0.05},
@@ -68,7 +68,7 @@ local ServiceAnims = {
         anim       = 'idle_a',
     },
     roadside_engine = {
-        label      = 'Urgenta motor...',
+        labelKey   = 'mecanic.minigame.roadside_engine',
         prop       = 'prop_tool_wrench',
         propBone   = 57005,
         propOffset = {x=0.13, y=0.05, z=0.0},
@@ -77,7 +77,7 @@ local ServiceAnims = {
         anim       = 'fixing_a_ped',
     },
     roadside_tire = {
-        label      = 'Schimb anvelopa pe drum...',
+        labelKey   = 'mecanic.minigame.roadside_tire',
         prop       = 'prop_tool_wrench',
         propBone   = 57005,
         propOffset = {x=0.13, y=0.05, z=0.0},
@@ -86,12 +86,12 @@ local ServiceAnims = {
         anim       = 'fixing_a_ped',
     },
     roadside_battery = {
-        label = 'Jump start baterie...',
+        labelKey = 'mecanic.minigame.roadside_battery',
         dict  = 'mini@repair',
         anim  = 'fixing_a_ped',
     },
     roadside_tow = {
-        label = 'Pregatire tractare...',
+        labelKey = 'mecanic.minigame.roadside_tow',
         dict  = 'mini@repair',
         anim  = 'fixing_a_ped',
     },
@@ -228,8 +228,8 @@ end
 function StartServiceMinigame(serviceType, vehicle, onComplete)
     if activeMinigame then
         TriggerEvent('notifications:client:send', {
-            type='warning', title='Ocupat',
-            message='Esti deja in mijlocul unui serviciu.', duration=3000
+            type='warning', title=Sw.T('mecanic.notify.busy_title'),
+            message=Sw.T('mecanic.notify.busy_msg'), duration=3000
         })
         return
     end
@@ -268,7 +268,7 @@ function StartServiceMinigame(serviceType, vehicle, onComplete)
             gameType   = mgCfg.gameType,
             rounds     = mgCfg.rounds,
             difficulty = mgCfg.difficulty,
-            label      = animCfg.label,
+            label      = animCfg.labelKey and Sw.T(animCfg.labelKey) or '',
         })
 
         while minigameResult == nil do Wait(100) end

@@ -69,12 +69,12 @@ Sw.SecureEvent('ems:server:revivePatient', {
     local patientSrc = ctx.args[1]
 
     if not exports.jobs:HasJobPermission(charId, 'revive') then
-        Notify(emsSrc, 'error', 'Nu ai permisiunea de resuscitare.', 4000)
+        Notify(emsSrc, 'error', Sw.TP(emsSrc, 'ems.no_revive_permission'), 4000)
         return
     end
 
     if not IsUnconscious(patientSrc) then
-        Notify(emsSrc, 'warning', 'Pacientul nu este inconstient.', 3000)
+        Notify(emsSrc, 'warning', Sw.TP(emsSrc, 'ems.patient_not_unconscious'), 3000)
         return
     end
 
@@ -99,7 +99,7 @@ Sw.SecureEvent('ems:server:treatInjury', {
 
     local ok = exports.medical:TreatInjury(patientSrc, injuryId)
     if not ok then
-        Notify(emsSrc, 'warning', 'Rana nu a fost gasita.', 3000)
+        Notify(emsSrc, 'warning', Sw.TP(emsSrc, 'ems.injury_not_found'), 3000)
         return
     end
 
@@ -112,7 +112,7 @@ Sw.SecureEvent('ems:server:treatInjury', {
         })
     end
 
-    Notify(emsSrc, 'success', 'Rana tratata cu succes.', 3000)
+    Notify(emsSrc, 'success', Sw.TP(emsSrc, 'ems.injury_treated'), 3000)
     SendPatientData(emsSrc, patientSrc)
     local patientName   = GetCharName(patientSrc)
     local conditions    = exports.medical:GetCharacterConditions(patientSrc)
@@ -145,7 +145,7 @@ Sw.SecureEvent('ems:server:cureAllConditions', {
     local patientSrc = ctx.args[1]
 
     if not exports.jobs:HasJobPermission(charId, 'revive') then
-        Notify(emsSrc, 'error', 'Nu ai permisiunea necesara.', 4000)
+        Notify(emsSrc, 'error', Sw.TP(emsSrc, 'ems.no_permission'), 4000)
         return
     end
 
@@ -156,8 +156,8 @@ Sw.SecureEvent('ems:server:cureAllConditions', {
         EmsDB.logRecord(patientCharId, charId, 'treatment', { type = 'cure_all' })
     end
 
-    Notify(emsSrc, 'success', 'Toate bolile pacientului au fost tratate.', 4000)
-    Notify(patientSrc, 'success', 'Ai fost tratat de medic. Bolile sunt vindecate.', 5000)
+    Notify(emsSrc, 'success', Sw.TP(emsSrc, 'ems.all_conditions_cured'), 4000)
+    Notify(patientSrc, 'success', Sw.TP(patientSrc, 'ems.cured_by_doctor'), 5000)
 end)
 
 Sw.SecureEvent('ems:server:administerIV', {
@@ -179,12 +179,12 @@ Sw.SecureEvent('ems:server:administerIV', {
     end
 
     if not treatment then
-        Notify(emsSrc, 'error', 'Tratament IV invalid.', 3000)
+        Notify(emsSrc, 'error', Sw.TP(emsSrc, 'ems.iv_invalid'), 3000)
         return
     end
 
     if not EmsDB.tryDeductVehicleItem(plate, itemName, 1) then
-        Notify(emsSrc, 'warning', 'Stoc insuficient in ambulanta.', 3000)
+        Notify(emsSrc, 'warning', Sw.TP(emsSrc, 'ems.iv_insufficient_stock'), 3000)
         return
     end
 
@@ -208,8 +208,8 @@ Sw.SecureEvent('ems:server:administerIV', {
         })
     end
 
-    Notify(emsSrc, 'success', treatment.label .. ' administrat cu succes.', 3000)
-    Notify(patientSrc, 'info', 'Medicul ti-a administrat ' .. treatment.label .. '.', 4000)
+    Notify(emsSrc, 'success', Sw.TP(emsSrc, 'ems.iv_administered', treatment.label), 3000)
+    Notify(patientSrc, 'info', Sw.TP(patientSrc, 'ems.iv_received', treatment.label), 4000)
 end)
 
 Sw.SecureEvent('ems:server:searchPatient', {
@@ -284,12 +284,12 @@ Sw.SecureEvent('ems:server:liftPatient', {
     local targetSrc = ctx.args[1]
 
     if not IsUnconscious(targetSrc) then
-        Notify(emsSrc, 'warning', 'Pacientul nu este inconstient.', 3000)
+        Notify(emsSrc, 'warning', Sw.TP(emsSrc, 'ems.patient_not_unconscious'), 3000)
         return
     end
 
     if not TrySetCarrier(targetSrc, nil, emsSrc) then
-        Notify(emsSrc, 'warning', 'Pacientul este deja transportat.', 3000)
+        Notify(emsSrc, 'warning', Sw.TP(emsSrc, 'ems.patient_already_carried'), 3000)
         return
     end
 
@@ -307,7 +307,7 @@ Sw.SecureEvent('ems:server:placePatient', {
     local targetSrc, inVehicle, vehiclePlate = ctx.args[1], ctx.args[2], ctx.args[3]
 
     if not TrySetCarrier(targetSrc, emsSrc, nil) then
-        Notify(emsSrc, 'warning', 'Nu transporti acest pacient.', 3000)
+        Notify(emsSrc, 'warning', Sw.TP(emsSrc, 'ems.not_carrying_patient'), 3000)
         return
     end
 
@@ -332,5 +332,5 @@ Sw.SecureEvent('ems:server:logDiagnosis', {
     if not patientCharId then return end
 
     EmsDB.logRecord(patientCharId, emsCharId, 'diagnosis', { notes = notes or '' })
-    Notify(emsSrc, 'success', 'Diagnostic salvat in dosar.', 3000)
+    Notify(emsSrc, 'success', Sw.TP(emsSrc, 'ems.diagnosis_saved'), 3000)
 end)

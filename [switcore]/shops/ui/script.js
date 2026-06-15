@@ -2,6 +2,28 @@ let shopData = null;
 let selectedItem = null;
 let cashBalance = 0;
 let accounts = [];
+let currentItems = [];
+
+// Traducere prin helperul standard SwI18n (core/ui/i18n.js); fallback pe cheie.
+function t(key, ...args) {
+    return SwI18n.t(`shops.${key}`, ...args);
+}
+
+// re-randare a stringurilor generate din JS la schimbarea dictionarului
+document.addEventListener('sw:i18n', () => {
+    if (currentItems.length > 0) {
+        renderItems(currentItems);
+    }
+    buildPaymentOptions();
+    updateBalanceDisplay();
+    if (selectedItem) {
+        const symbol = selectedItem.currency_code === 'USD' ? '$' : selectedItem.currency_code;
+        const priceEl = document.getElementById('item-preview-price');
+        if (priceEl) {
+            priceEl.textContent = t('ui.price_per_unit', `${symbol}${parseFloat(selectedItem.price).toFixed(2)}`);
+        }
+    }
+});
 
 function closeShop() {
     fetch(`https://${GetParentResourceName()}/closeShop`, {
@@ -24,11 +46,12 @@ function resetState() {
 }
 
 function renderItems(items) {
+    currentItems = items || [];
     const grid = document.getElementById('items-grid');
     grid.innerHTML = '';
 
     if (!items || items.length === 0) {
-        grid.innerHTML = '<div class="no-items">Niciun produs disponibil</div>';
+        grid.innerHTML = `<div class="no-items">${t('ui.no_items')}</div>`;
         return;
     }
 
@@ -63,7 +86,7 @@ function selectItem(item) {
     document.getElementById('item-preview-img').style.backgroundImage =
         `url('nui://inventory/ui/img/items/${item.item_name}.png')`;
     document.getElementById('item-preview-label').textContent = item.label;
-    document.getElementById('item-preview-price').textContent = `${symbol}${parseFloat(item.price).toFixed(2)} / buc.`;
+    document.getElementById('item-preview-price').textContent = t('ui.price_per_unit', `${symbol}${parseFloat(item.price).toFixed(2)}`);
 
     document.getElementById('qty-input').value = 1;
     updateTotal();
@@ -108,7 +131,7 @@ document.getElementById('payment-select').addEventListener('change', updateBalan
 
 function buildPaymentOptions() {
     const select = document.getElementById('payment-select');
-    select.innerHTML = `<option value="cash">Cash - $${parseFloat(cashBalance).toFixed(2)}</option>`;
+    select.innerHTML = `<option value="cash">${t('ui.payment_cash_balance', `$${parseFloat(cashBalance).toFixed(2)}`)}</option>`;
     accounts.forEach(acc => {
         const opt = document.createElement('option');
         opt.value = acc.id;
@@ -176,7 +199,7 @@ window.addEventListener('message', (event) => {
             buildPaymentOptions();
             updateBalanceDisplay();
             const errEl = document.getElementById('buy-error');
-            errEl.innerHTML = '<i data-lucide="check"></i> Cumpărătură reușită!';
+            errEl.innerHTML = `<i data-lucide="check"></i> ${t('ui.buy_success')}`;
             if (window.lucide) lucide.createIcons();
             errEl.className = 'buy-success';
             errEl.classList.remove('hidden');
@@ -186,7 +209,7 @@ window.addEventListener('message', (event) => {
         case 'buyError':
             document.getElementById('btn-buy').disabled = false;
             const errDiv = document.getElementById('buy-error');
-            errDiv.textContent = data.error || 'Eroare necunoscută';
+            errDiv.textContent = data.error || t('error_unknown');
             errDiv.className = 'buy-error-msg';
             errDiv.classList.remove('hidden');
             break;

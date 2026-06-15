@@ -1,3 +1,4 @@
+exports.core:registerModuleLocales(GetCurrentResourceName())
 
 local function getPrimaryCurrency()
     return exports.settings:GetSetting('hud.primary_currency', 'USD')

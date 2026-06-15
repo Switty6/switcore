@@ -35,7 +35,7 @@
                         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
                         <circle cx="12" cy="7" r="4"/>
                     </svg>
-                    Jobul Meu
+                    <span data-i18n="jobs.ui.tab_my_job">Jobul Meu</span>
                 </button>
                 <button class="tab" data-tab="roster" id="tabRoster">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -44,7 +44,7 @@
                         <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
                         <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
                     </svg>
-                    Membri
+                    <span data-i18n="jobs.ui.tab_members">Membri</span>
                     <span class="badge zero" id="rosterBadge">0</span>
                 </button>
             </div>
@@ -58,19 +58,19 @@
                     <!-- Job info card -->
                     <div class="info-card">
                         <div class="info-row">
-                            <span class="info-label">Job</span>
+                            <span class="info-label" data-i18n="jobs.ui.info_job">Job</span>
                             <span class="info-value" id="jobLabel">-</span>
                         </div>
                         <div class="info-row">
-                            <span class="info-label">Grad</span>
+                            <span class="info-label" data-i18n="jobs.ui.info_grade">Grad</span>
                             <span class="info-value" id="gradeLabel">-</span>
                         </div>
                         <div class="info-row" id="salaryRow">
-                            <span class="info-label">Salariu</span>
+                            <span class="info-label" data-i18n="jobs.ui.info_salary">Salariu</span>
                             <span class="info-value green" id="salaryLabel">$0</span>
                         </div>
                         <div class="info-row" id="typeRow">
-                            <span class="info-label">Tip</span>
+                            <span class="info-label" data-i18n="jobs.ui.info_type">Tip</span>
                             <span class="type-badge" id="typeBadge">-</span>
                         </div>
                     </div>
@@ -79,8 +79,8 @@
                     <div id="dutySection">
                         <div class="duty-row">
                             <div class="duty-info">
-                                <div class="duty-label">Tură de serviciu</div>
-                                <div class="duty-sublabel" id="dutyStatus">Inactiv</div>
+                                <div class="duty-label" data-i18n="jobs.ui.duty_label">Tură de serviciu</div>
+                                <div class="duty-sublabel" id="dutyStatus" data-i18n="jobs.ui.duty_inactive">Inactiv</div>
                             </div>
                             <button class="duty-btn off" id="dutyBtn" onclick="toggleDuty()">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -94,17 +94,17 @@
 
                     <!-- Permissions -->
                     <div id="permsSection" class="section">
-                        <div class="section-title">Permisiuni</div>
+                        <div class="section-title" data-i18n="jobs.ui.perms_title">Permisiuni</div>
                         <div id="permsList" class="perms-list">
-                            <span class="empty-inline">Nicio permisiune specială</span>
+                            <span class="empty-inline" data-i18n="jobs.ui.perms_empty">Nicio permisiune specială</span>
                         </div>
                     </div>
 
                     <!-- Coworkers online -->
                     <div class="section">
-                        <div class="section-title">Colegi online</div>
+                        <div class="section-title" data-i18n="jobs.ui.coworkers_title">Colegi online</div>
                         <div id="coworkersList" class="coworkers-list">
-                            <div class="empty-state-sm">Niciun coleg activ</div>
+                            <div class="empty-state-sm" data-i18n="jobs.ui.coworkers_empty">Niciun coleg activ</div>
                         </div>
                     </div>
 
@@ -118,7 +118,7 @@
                                 <polyline points="23 4 23 10 17 10"/>
                                 <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
                             </svg>
-                            Actualizează
+                            <span data-i18n="jobs.ui.roster_refresh">Actualizează</span>
                         </button>
                         <span class="roster-count" id="rosterCount">0 membri</span>
                     </div>
@@ -129,7 +129,7 @@
                                 <circle cx="9" cy="7" r="4"/>
                                 <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
                             </svg>
-                            <p>Apasă Actualizează pentru a vedea membrii</p>
+                            <p data-i18n="jobs.ui.roster_hint">Apasă Actualizează pentru a vedea membrii</p>
                         </div>
                     </div>
                 </div>
@@ -138,6 +138,7 @@
         </div>
     </div>
 
+    <script src="nui://core/ui/i18n.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

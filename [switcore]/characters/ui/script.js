@@ -1,6 +1,5 @@
 let currentCharacters = [];
 let selectedCharacterId = null;
-let locale = {};
 
 let currentStep = 1;
 let selectedGender = 0;
@@ -38,44 +37,24 @@ let appearanceData = {
     gender: 0
 };
 
+// Traducere prin helperul standard SwI18n (core/ui/i18n.js); fallback pe cheie.
 function t(key, ...args) {
-    let translation = locale[key];
-    if (!translation) {
-        return key;
-    }
-    
-    if (args.length > 0) {
-        args.forEach((arg, index) => {
-            translation = translation.replace(`{${index + 1}}`, arg);
-        });
-    }
-    
-    return translation;
+    return SwI18n.t(`characters.${key}`, ...args);
 }
 
 window.addEventListener('DOMContentLoaded', () => {
     setupEventListeners();
     setupAppearanceSliders();
     setupDeleteModal();
-    updateUITexts();
     if (window.lucide) lucide.createIcons();
 });
 
-function updateUITexts() {
-    document.querySelectorAll('[data-locale]').forEach(el => {
-        const key = el.getAttribute('data-locale');
-        if (locale[key]) {
-            el.textContent = locale[key];
-        }
-    });
-
-    document.querySelectorAll('[data-placeholder]').forEach(el => {
-        const key = el.getAttribute('data-placeholder');
-        if (locale[key]) {
-            el.placeholder = locale[key];
-        }
-    });
-}
+// re-randare a stringurilor generate din JS la schimbarea dictionarului
+document.addEventListener('sw:i18n', () => {
+    if (currentCharacters.length > 0) {
+        renderCharacters(currentCharacters);
+    }
+});
 
 function setupEventListeners() {
     const createBtn = document.getElementById('create-character-btn');
@@ -191,9 +170,9 @@ function setupAppearanceSliders() {
 
         const valDisplay = document.getElementById('parent-mix-value');
         if (valDisplay) {
-            if (value < 40) valDisplay.textContent = locale['more_mother'] || 'Mamă';
-            else if (value > 60) valDisplay.textContent = locale['more_father'] || 'Tată';
-            else valDisplay.textContent = locale['balanced'] || 'Echilibrat';
+            if (value < 40) valDisplay.textContent = t('more_mother');
+            else if (value > 60) valDisplay.textContent = t('more_father');
+            else valDisplay.textContent = t('balanced');
         }
 
         TriggerPreviewAppearance();
@@ -316,7 +295,7 @@ function resetCreateForm() {
     const mixSlider = document.getElementById('parent-mix');
     if (mixSlider) mixSlider.value = 50;
     const mixVal = document.getElementById('parent-mix-value');
-    if (mixVal) mixVal.textContent = locale['balanced'] || 'Echilibrat';
+    if (mixVal) mixVal.textContent = t('balanced');
 
     clearHints();
 }
@@ -533,7 +512,7 @@ function createCharacterCard(character) {
     
     card.innerHTML = `
         <div class="character-name">${character.first_name} ${character.last_name}</div>
-        <div class="character-info"><strong>${t('age_label')}:</strong> ${character.age} ani</div>
+        <div class="character-info"><strong>${t('age_label')}:</strong> ${t('age_years', character.age)}</div>
         <div class="character-info"><strong>${t('playtime_label')}:</strong> ${playtimeStr}</div>
         <div class="character-info"><strong>${t('cash_label')}:</strong> $${cashStr}</div>
         <div class="character-info"><strong>${t('bank_label')}:</strong> $${bankStr}</div>
@@ -614,8 +593,8 @@ function handleDeleteCharacter(characterId) {
 
     const titleEl = document.getElementById('delete-modal-title');
     const bodyEl  = document.getElementById('delete-modal-body');
-    if (titleEl) titleEl.textContent = name ? `Ștergi personajul "${name}"?` : (t('delete_confirm') || 'Ștergi personajul?');
-    if (bodyEl)  bodyEl.textContent  = t('delete_warning') || 'Această acțiune este ireversibilă. Toate datele personajului vor fi șterse permanent.';
+    if (titleEl) titleEl.textContent = name ? t('delete_title_named', name) : t('delete_title');
+    if (bodyEl)  bodyEl.textContent  = t('delete_warning');
 
     pendingDeleteId = characterId;
     document.getElementById('delete-modal').classList.remove('hidden');
@@ -637,10 +616,6 @@ window.addEventListener('message', (event) => {
     switch(data.action) {
         case 'open':
             document.getElementById('character-container').classList.remove('hidden');
-            break;
-        case 'setLocale':
-            locale = data.locale || {};
-            updateUITexts();
             break;
         case 'updateCharacters':
             renderCharacters(data.characters);

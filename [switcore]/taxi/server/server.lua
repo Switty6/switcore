@@ -1,3 +1,5 @@
+exports.core:registerModuleLocales(GetCurrentResourceName())
+
 local function getActiveChar(src)
     local ok, char = pcall(function()
         return exports.characters:getActiveCharacter(src)
@@ -90,8 +92,9 @@ function CheckPromotion(driverCharId, driverSrc)
             exports.jobs:SetCharacterGrade(driverCharId, grade)
             local updated = exports.jobs:GetCharacterJob(driverCharId)
             TriggerClientEvent('jobs:client:jobUpdated', driverSrc, updated)
-            notify(driverSrc, 'success', 'Promovare!',
-                'Ai avansat la ' .. (updated and updated.gradeLabel or 'grad nou') .. '!')
+            local gradeLabel = (updated and updated.gradeLabel) or Sw.TP(driverSrc, 'taxi.promotion_default_grade')
+            notify(driverSrc, 'success', Sw.TP(driverSrc, 'taxi.promotion_title'),
+                Sw.TP(driverSrc, 'taxi.promotion_message', gradeLabel))
             return
         end
     end

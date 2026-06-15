@@ -1,3 +1,4 @@
+exports.core:registerModuleLocales(GetCurrentResourceName())
 
 MDTDatabase = {}
 

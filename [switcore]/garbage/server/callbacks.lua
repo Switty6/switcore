@@ -36,7 +36,7 @@ Sw.SecureEvent('garbage:server:hire', {
 
     local job = getCharJob(char.id)
     if job and job.name == Config.JobName then
-        notify(src, 'warning', 'Salubritate', 'Esti deja angajat la Salubritate.')
+        notify(src, 'warning', Sw.TP(src, 'garbage.title_garbage'), Sw.TP(src, 'garbage.already_hired'))
         return
     end
 
@@ -45,8 +45,7 @@ Sw.SecureEvent('garbage:server:hire', {
 
     local updated = exports.jobs:GetCharacterJob(char.id)
     TriggerClientEvent('jobs:client:jobUpdated', src, updated)
-    notify(src, 'success', 'Angajat la Salubritate',
-        'Bine ai venit! Ramai la depou si apasa ALT pentru a intra in tura, apoi alege o ruta din tableta.')
+    notify(src, 'success', Sw.TP(src, 'garbage.title_hired'), Sw.TP(src, 'garbage.welcome'))
 end)
 
 Sw.SecureEvent('garbage:server:quit', {
@@ -77,7 +76,7 @@ Sw.SecureEvent('garbage:server:quit', {
     exports.jobs:SetCharacterJob(char.id, 'unemployed', 0)
     local updated = exports.jobs:GetCharacterJob(char.id)
     TriggerClientEvent('jobs:client:jobUpdated', src, updated)
-    notify(src, 'info', 'Salubritate', 'Ai parasit Salubritatea.')
+    notify(src, 'info', Sw.TP(src, 'garbage.title_garbage'), Sw.TP(src, 'garbage.quit'))
 end)
 
 Sw.SecureEvent('garbage:server:startRoute', {
@@ -94,29 +93,29 @@ Sw.SecureEvent('garbage:server:startRoute', {
 
     local job = getCharJob(char.id)
     if not job or job.name ~= Config.JobName then
-        notify(src, 'error', 'Salubritate', 'Nu esti angajat la Salubritate.')
+        notify(src, 'error', Sw.TP(src, 'garbage.title_garbage'), Sw.TP(src, 'garbage.not_hired'))
         return
     end
     if not job.isOnDuty then
-        notify(src, 'error', 'Salubritate', 'Trebuie sa fii in tura.')
+        notify(src, 'error', Sw.TP(src, 'garbage.title_garbage'), Sw.TP(src, 'garbage.not_on_duty'))
         return
     end
 
     local existing = GarbageDB.getActiveSession(char.id)
     if existing then
-        notify(src, 'warning', 'Salubritate', 'Ai deja o ruta activa.')
+        notify(src, 'warning', Sw.TP(src, 'garbage.title_garbage'), Sw.TP(src, 'garbage.already_active_route'))
         return
     end
 
     local route = getRouteById(routeId)
     if not route then
-        notify(src, 'error', 'Salubritate', 'Ruta invalida.')
+        notify(src, 'error', Sw.TP(src, 'garbage.title_garbage'), Sw.TP(src, 'garbage.invalid_route'))
         return
     end
 
     local session = GarbageDB.createSession(char.id, routeId, #route.waypoints)
     if not session then
-        notify(src, 'error', 'Salubritate', 'Eroare la crearea sesiunii.')
+        notify(src, 'error', Sw.TP(src, 'garbage.title_garbage'), Sw.TP(src, 'garbage.session_create_error'))
         return
     end
 
@@ -144,7 +143,7 @@ Sw.SecureEvent('garbage:server:collectPoint', {
 
     local session = GarbageDB.getActiveSession(char.id)
     if not session or session.id ~= sessionId then
-        notify(src, 'error', 'Salubritate', 'Sesiune invalida.')
+        notify(src, 'error', Sw.TP(src, 'garbage.title_garbage'), Sw.TP(src, 'garbage.invalid_session'))
         return
     end
 
@@ -181,7 +180,7 @@ Sw.SecureEvent('garbage:server:completeRoute', {
 
     local session = GarbageDB.getActiveSession(char.id)
     if not session or session.id ~= sessionId then
-        notify(src, 'error', 'Salubritate', 'Sesiune invalida.')
+        notify(src, 'error', Sw.TP(src, 'garbage.title_garbage'), Sw.TP(src, 'garbage.invalid_session'))
         return
     end
 

@@ -29,6 +29,11 @@ const state = {
 function $(sel, root = document) { return root.querySelector(sel); }
 function $$(sel, root = document) { return [...root.querySelectorAll(sel)]; }
 
+// Traducere prin helperul standard SwI18n (core/ui/i18n.js); fallback pe cheie.
+function t(key, ...args) {
+    return SwI18n.t(`admin.ui.${key}`, ...args);
+}
+
 function nuiPost(endpoint, body = {}) {
     return fetch(`https://${RES_NAME}/${endpoint}`, {
         method:  'POST',
@@ -126,7 +131,7 @@ function renderPlayers() {
     $('#navPlayerCount').textContent  = state.players.length;
 
     if (!list.length) {
-        playerList.innerHTML = '<div class="empty">Niciun jucător potrivit.</div>';
+        playerList.innerHTML = `<div class="empty">${esc(t('empty_no_match'))}</div>`;
         return;
     }
 
@@ -140,7 +145,7 @@ function renderPlayers() {
             <span class="p-id">${p.id}</span>
             <span class="p-name">${esc(p.name)}</span>
             <span class="p-groups">${groups}</span>
-            <span class="p-ping" style="color:${pingColor}">${p.ping}ms</span>
+            <span class="p-ping" style="color:${pingColor}">${esc(t('ping_suffix', p.ping))}</span>
         </div>`;
     }).join('');
 
@@ -163,7 +168,7 @@ function openPlayerModal(player) {
     state.pendingAction  = null;
 
     $('#modalTitle').textContent = `[${player.id}] ${player.name}`;
-    $('#modalSub').textContent   = player.dbId ? `DB #${player.dbId}` : 'fără date';
+    $('#modalSub').textContent   = player.dbId ? t('modal_db', player.dbId) : t('modal_no_data');
 
     $('#reasonBox').classList.add('hidden');
     $('#reasonInput').value = '';
@@ -179,7 +184,7 @@ function openPlayerModal(player) {
     setModalTab((firstTab && firstTab.dataset.mtab) || 'actions');
 
     nuiPost('getPlayerInfo', { targetId: player.id });
-    $('#infoBlock').innerHTML = 'Se încarcă...';
+    $('#infoBlock').innerHTML = esc(t('loading'));
 
     playerModal.classList.remove('hidden');
 }
@@ -307,7 +312,7 @@ function renderItemCatalog() {
     const dl = $('#invItemDatalist');
     if (!dl) return;
     dl.innerHTML = state.itemCatalog.map(it =>
-        `<option value="${esc(it.name)}">${esc(it.label)} (${it.weight}kg)</option>`
+        `<option value="${esc(it.name)}">${esc(t('inv_item_option', it.label, it.weight))}</option>`
     ).join('');
 }
 
@@ -316,14 +321,14 @@ function renderInventory(payload) {
     const tbl = $('#invTable');
     const sum = $('#invSummary');
     if (!payload || !payload.items || payload.items.length === 0) {
-        tbl.innerHTML = '<div class="empty">Inventar gol.</div>';
-        sum.textContent = `0 / ${payload?.maxSlots ?? '-'} sloturi`;
+        tbl.innerHTML = `<div class="empty">${esc(t('empty_inv'))}</div>`;
+        sum.textContent = t('inv_slots_empty', payload?.maxSlots ?? '-');
         return;
     }
-    sum.textContent = `${payload.items.length} / ${payload.maxSlots} sloturi · max ${payload.maxWeight}kg`;
+    sum.textContent = t('inv_summary', payload.items.length, payload.maxSlots, payload.maxWeight);
     tbl.innerHTML = `
         <div class="inv-head">
-            <span>Slot</span><span>Item</span><span>Label</span><span>Qty</span><span></span>
+            <span>${esc(t('inv_col_slot'))}</span><span>${esc(t('inv_col_item'))}</span><span>${esc(t('inv_col_label'))}</span><span>${esc(t('inv_col_qty'))}</span><span></span>
         </div>
         ${payload.items.map(it => `
             <div class="inv-row" data-name="${esc(it.name)}" data-slot="${it.slot}">
@@ -334,7 +339,7 @@ function renderInventory(payload) {
                 <span class="inv-actions">
                     <button class="btn ghost small" data-act="dec">−1</button>
                     <button class="btn ghost small" data-act="inc">+1</button>
-                    <button class="btn danger ghost small" data-act="rm">Remove</button>
+                    <button class="btn danger ghost small" data-act="rm">${esc(t('inv_remove'))}</button>
                 </span>
             </div>
         `).join('')}
@@ -407,8 +412,8 @@ $('#ma-refresh-needs').addEventListener('click', () => {
 function genderLabel(g) {
     if (g == null || g === '') return '-';
     const s = String(g).toLowerCase();
-    if (s === 'm' || s === 'male' || s === 'masculin') return 'Masculin';
-    if (s === 'f' || s === 'female' || s === 'feminin') return 'Feminin';
+    if (s === 'm' || s === 'male' || s === 'masculin') return t('gender_male');
+    if (s === 'f' || s === 'female' || s === 'feminin') return t('gender_female');
     return String(g);
 }
 
@@ -416,15 +421,15 @@ function renderCharacterInfo(payload) {
     if (!payload) return;
     const card = $('#charCard');
     if (!payload.active) {
-        card.innerHTML = '<span class="muted">Niciun personaj activ.</span>';
+        card.innerHTML = `<span class="muted">${esc(t('char_no_active'))}</span>`;
     } else {
         const a = payload.active;
         card.innerHTML = `
-            <div><span class="ik">Nume:</span> <span class="iv">${esc(a.firstName ?? '-')} ${esc(a.lastName ?? '')}</span></div>
-            <div><span class="ik">Char ID:</span> <span class="iv">${a.id ?? '-'}</span></div>
-            <div><span class="ik">Vârstă:</span> <span class="iv">${a.age ?? '-'}</span></div>
-            <div><span class="ik">Gen:</span> <span class="iv">${esc(genderLabel(a.gender))}</span></div>
-            ${payload.coords ? `<div><span class="ik">Coord:</span> <span class="iv">${payload.coords.x.toFixed(1)}, ${payload.coords.y.toFixed(1)}, ${payload.coords.z.toFixed(1)}</span></div>` : ''}
+            <div><span class="ik">${esc(t('char_name'))}</span> <span class="iv">${esc(a.firstName ?? '-')} ${esc(a.lastName ?? '')}</span></div>
+            <div><span class="ik">${esc(t('char_id'))}</span> <span class="iv">${a.id ?? '-'}</span></div>
+            <div><span class="ik">${esc(t('char_age'))}</span> <span class="iv">${a.age ?? '-'}</span></div>
+            <div><span class="ik">${esc(t('char_gender'))}</span> <span class="iv">${esc(genderLabel(a.gender))}</span></div>
+            ${payload.coords ? `<div><span class="ik">${esc(t('char_coord'))}</span> <span class="iv">${payload.coords.x.toFixed(1)}, ${payload.coords.y.toFixed(1)}, ${payload.coords.z.toFixed(1)}</span></div>` : ''}
         `;
     }
     const list = $('#charList');
@@ -435,7 +440,7 @@ function renderCharacterInfo(payload) {
             <div class="char-row">
                 <span class="iv">#${c.id}</span>
                 <span class="iv">${esc(c.firstName ?? '')} ${esc(c.lastName ?? '')}</span>
-                <span class="muted small">${esc(c.age ?? '')} ani</span>
+                <span class="muted small">${esc(t('char_age_suffix', c.age ?? ''))}</span>
                 <span class="muted small">${esc((c.lastPlayed || c.createdAt || '').toString().slice(0, 16))}</span>
             </div>
         `).join('');
@@ -454,32 +459,32 @@ function renderVehicles(payload) {
     const sum = $('#vehSummary');
     const list = $('#vehList');
     if (!state.currentVehicles.length) {
-        sum.textContent = '0 vehicule';
-        list.innerHTML = '<div class="empty">Personajul nu deține vehicule.</div>';
+        sum.textContent = t('veh_count_zero');
+        list.innerHTML = `<div class="empty">${esc(t('empty_no_veh'))}</div>`;
         return;
     }
-    sum.textContent = `${state.currentVehicles.length} vehicule`;
+    sum.textContent = t('veh_count', state.currentVehicles.length);
     list.innerHTML = state.currentVehicles.map(v => {
-        let stateLbl = 'în garaj';
+        let stateLbl = t('veh_state_garage');
         let stateCls = 'ok';
-        if (v.impounded) { stateLbl = 'sechestrat'; stateCls = 'err'; }
-        else if (!v.stored) { stateLbl = 'scos'; stateCls = 'warn'; }
+        if (v.impounded) { stateLbl = t('veh_state_impounded'); stateCls = 'err'; }
+        else if (!v.stored) { stateLbl = t('veh_state_out'); stateCls = 'warn'; }
         return `
             <div class="veh-row" data-id="${v.id}">
                 <div class="veh-head">
                     <span class="veh-plate">${esc(v.plate)}</span>
                     <span class="veh-model">${esc(v.label)} <span class="muted small">(${esc(v.model)})</span></span>
-                    <span class="veh-state ${stateCls}">${stateLbl}</span>
+                    <span class="veh-state ${stateCls}">${esc(stateLbl)}</span>
                 </div>
                 <div class="veh-meta muted small">
-                    ${v.category ? esc(v.category) + ' · ' : ''}${(v.mileage || 0).toFixed(1)} km · fuel ${Math.floor(v.fuel)}%
+                    ${v.category ? esc(v.category) + ' · ' : ''}${esc(t('veh_meta', (v.mileage || 0).toFixed(1), Math.floor(v.fuel)))}
                 </div>
                 <div class="veh-actions">
-                    <button class="btn small" data-act="spawn" ${v.impounded ? 'disabled' : ''}>Spawn</button>
-                    <button class="btn danger ghost small" data-act="impound" ${v.impounded ? 'disabled' : ''}>Impound</button>
-                    <button class="btn success ghost small" data-act="release" ${!v.impounded ? 'disabled' : ''}>Release</button>
+                    <button class="btn small" data-act="spawn" ${v.impounded ? 'disabled' : ''}>${esc(t('veh_spawn'))}</button>
+                    <button class="btn danger ghost small" data-act="impound" ${v.impounded ? 'disabled' : ''}>${esc(t('veh_impound'))}</button>
+                    <button class="btn success ghost small" data-act="release" ${!v.impounded ? 'disabled' : ''}>${esc(t('veh_release'))}</button>
                     <input type="number" class="input w-90" data-fuel-input value="${Math.floor(v.fuel)}" min="0" max="100">
-                    <button class="btn ghost small" data-act="fuel">Set fuel</button>
+                    <button class="btn ghost small" data-act="fuel">${esc(t('veh_set_fuel'))}</button>
                 </div>
             </div>
         `;
@@ -519,7 +524,7 @@ function renderJobsCatalog() {
     const sel = $('#jobSelect');
     sel.innerHTML = state.jobsCatalog.map(j =>
         `<option value="${esc(j.name)}">${esc(j.label)}</option>`
-    ).join('') || '<option value="">- niciun job -</option>';
+    ).join('') || `<option value="">${esc(t('job_none'))}</option>`;
     refreshGradeDropdown();
 }
 
@@ -537,16 +542,16 @@ function refreshGradeDropdown() {
 function renderPlayerJob(payload) {
     const card = $('#jobCard');
     if (!payload || !payload.job) {
-        card.innerHTML = '<span class="muted">Personajul nu are job.</span>';
+        card.innerHTML = `<span class="muted">${esc(t('job_no_job'))}</span>`;
         return;
     }
     const j = payload.job;
     const sym = state.primaryCurrency.symbol || '';
     card.innerHTML = `
-        <div><span class="ik">Job:</span> <span class="iv">${esc(j.label ?? j.name)} <span class="muted small">(${esc(j.name)})</span></span></div>
-        <div><span class="ik">Grad:</span> <span class="iv">${j.grade} · ${esc(j.gradeLabel ?? '-')}</span></div>
-        <div><span class="ik">Salariu:</span> <span class="iv">${esc(sym)}${j.salary ?? 0}</span></div>
-        <div><span class="ik">Duty:</span> <span class="iv">${j.onDuty ? 'on' : 'off'}</span></div>
+        <div><span class="ik">${esc(t('job_label'))}</span> <span class="iv">${esc(j.label ?? j.name)} <span class="muted small">(${esc(j.name)})</span></span></div>
+        <div><span class="ik">${esc(t('job_grade'))}</span> <span class="iv">${j.grade} · ${esc(j.gradeLabel ?? '-')}</span></div>
+        <div><span class="ik">${esc(t('job_salary'))}</span> <span class="iv">${esc(sym)}${j.salary ?? 0}</span></div>
+        <div><span class="ik">${esc(t('job_duty'))}</span> <span class="iv">${j.onDuty ? esc(t('duty_on')) : esc(t('duty_off'))}</span></div>
     `;
     const sel = $('#jobSelect');
     if (sel.value !== j.name && state.jobsCatalog.length) {
@@ -576,7 +581,7 @@ $('#ma-fire').addEventListener('click', () => {
 function populateCurrencies() {
     const opts = state.currencies.map(c =>
         `<option value="${c.id}">${esc(c.symbol || '')} ${esc(c.code)}</option>`
-    ).join('') || '<option value="">- nicio valută -</option>';
+    ).join('') || `<option value="">${esc(t('currency_none'))}</option>`;
     $('#selfCurrency').innerHTML   = opts;
     $('#playerCurrency').innerHTML = opts;
 }
@@ -584,7 +589,7 @@ function populateCurrencies() {
 function populateGroups() {
     const opts = state.groups.map(g =>
         `<option value="${esc(g.name)}">${esc(g.displayName || g.name)}</option>`
-    ).join('') || '<option value="">- niciun grup -</option>';
+    ).join('') || `<option value="">${esc(t('group_none'))}</option>`;
     $('#groupSelect').innerHTML = opts;
 }
 
@@ -593,7 +598,7 @@ function setToggleCard(btnId, on, flagKey, sidebarId) {
     if (btn) {
         btn.classList.toggle('on', !!on);
         const stateLbl = btn.querySelector('.tc-state');
-        if (stateLbl) stateLbl.textContent = on ? 'on' : 'off';
+        if (stateLbl) stateLbl.textContent = on ? t('toggle_on') : t('toggle_off');
     }
     if (flagKey) state.flags[flagKey] = !!on;
     if (sidebarId) {
@@ -602,7 +607,7 @@ function setToggleCard(btnId, on, flagKey, sidebarId) {
             el.classList.toggle('on', !!on);
             const tag = el.querySelector('.status-off, .status-on');
             if (tag) {
-                tag.textContent = on ? 'ON' : 'OFF';
+                tag.textContent = on ? t('state_on') : t('state_off');
                 tag.className   = on ? 'status-on' : 'status-off';
             }
         }
@@ -718,7 +723,7 @@ $('#btn-save-overlay').addEventListener('click', e => {
     nuiPost('saveOverlaySettings', { settings: collectOverlaySettings() });
     const btn = e.currentTarget;
     const orig = btn.innerHTML;
-    btn.innerHTML = '<i data-lucide="check"></i> Saved';
+    btn.innerHTML = `<i data-lucide="check"></i> ${esc(t('saved_btn'))}`;
     if (window.lucide) lucide.createIcons({ nodes: [btn] });
     setTimeout(() => {
         btn.innerHTML = orig;
@@ -798,7 +803,7 @@ const colorHex = (i) => {
 };
 
 colorGrid.innerHTML = Array.from({ length: 160 }, (_, i) =>
-    `<div class="color-swatch" data-idx="${i}" style="background:${colorHex(i)}" title="Color ${i}"></div>`
+    `<div class="color-swatch" data-idx="${i}" style="background:${colorHex(i)}" title="${esc(t('color_swatch_title', i))}"></div>`
 ).join('');
 
 colorGrid.addEventListener('click', e => {
@@ -819,26 +824,29 @@ colorGrid.addEventListener('click', e => {
 });
 
 const WEATHERS = [
-    { id: 'EXTRASUNNY', icon: 'sun',             label: 'Extra Sunny' },
-    { id: 'CLEAR',      icon: 'cloud-sun',       label: 'Clear' },
-    { id: 'CLOUDS',     icon: 'cloud',           label: 'Clouds' },
-    { id: 'OVERCAST',   icon: 'cloudy',          label: 'Overcast' },
-    { id: 'RAIN',       icon: 'cloud-rain',      label: 'Rain' },
-    { id: 'CLEARING',   icon: 'cloud-sun-rain',  label: 'Clearing' },
-    { id: 'THUNDER',    icon: 'cloud-lightning', label: 'Thunder' },
-    { id: 'SMOG',       icon: 'cloud-fog',       label: 'Smog' },
-    { id: 'FOGGY',      icon: 'cloud-fog',       label: 'Foggy' },
-    { id: 'SNOW',       icon: 'snowflake',       label: 'Snow' },
-    { id: 'BLIZZARD',   icon: 'cloud-snow',      label: 'Blizzard' },
-    { id: 'SNOWLIGHT',  icon: 'cloud-snow',      label: 'Snow Light' },
-    { id: 'XMAS',       icon: 'tree-pine',       label: 'Xmas' },
-    { id: 'HALLOWEEN',  icon: 'ghost',           label: 'Halloween' },
-    { id: 'NEUTRAL',    icon: 'scale',           label: 'Neutral' },
+    { id: 'EXTRASUNNY', icon: 'sun',             key: 'weather_extrasunny' },
+    { id: 'CLEAR',      icon: 'cloud-sun',       key: 'weather_clear' },
+    { id: 'CLOUDS',     icon: 'cloud',           key: 'weather_clouds' },
+    { id: 'OVERCAST',   icon: 'cloudy',          key: 'weather_overcast' },
+    { id: 'RAIN',       icon: 'cloud-rain',      key: 'weather_rain' },
+    { id: 'CLEARING',   icon: 'cloud-sun-rain',  key: 'weather_clearing' },
+    { id: 'THUNDER',    icon: 'cloud-lightning', key: 'weather_thunder' },
+    { id: 'SMOG',       icon: 'cloud-fog',       key: 'weather_smog' },
+    { id: 'FOGGY',      icon: 'cloud-fog',       key: 'weather_foggy' },
+    { id: 'SNOW',       icon: 'snowflake',       key: 'weather_snow' },
+    { id: 'BLIZZARD',   icon: 'cloud-snow',      key: 'weather_blizzard' },
+    { id: 'SNOWLIGHT',  icon: 'cloud-snow',      key: 'weather_snowlight' },
+    { id: 'XMAS',       icon: 'tree-pine',       key: 'weather_xmas' },
+    { id: 'HALLOWEEN',  icon: 'ghost',           key: 'weather_halloween' },
+    { id: 'NEUTRAL',    icon: 'scale',           key: 'weather_neutral' },
 ];
-$('#weatherGrid').innerHTML = WEATHERS.map(w =>
-    `<button class="weather-btn" data-weather="${w.id}"><i data-lucide="${w.icon}"></i> ${w.label}</button>`
-).join('');
-if (window.lucide) lucide.createIcons({ nodes: $$('#weatherGrid [data-lucide]') });
+function renderWeatherGrid() {
+    $('#weatherGrid').innerHTML = WEATHERS.map(w =>
+        `<button class="weather-btn" data-weather="${w.id}"><i data-lucide="${w.icon}"></i> ${esc(t(w.key))}</button>`
+    ).join('');
+    if (window.lucide) lucide.createIcons({ nodes: $$('#weatherGrid [data-lucide]') });
+}
+renderWeatherGrid();
 $('#weatherGrid').addEventListener('click', e => {
     const btn = e.target.closest('.weather-btn');
     if (!btn) return;
@@ -879,7 +887,7 @@ function renderResources() {
     const q = state.resourceFilter.toLowerCase();
     const filtered = state.resources.filter(r => !q || r.name.toLowerCase().includes(q));
     if (!filtered.length) {
-        resList.innerHTML = '<div class="empty">Nicio resursă.</div>';
+        resList.innerHTML = `<div class="empty">${esc(t('empty_no_resource'))}</div>`;
         return;
     }
     resList.innerHTML = filtered.map(r => `
@@ -887,10 +895,10 @@ function renderResources() {
             <span class="res-name">${esc(r.name)}</span>
             <span class="res-state ${esc(r.state)}">${esc(r.state)}</span>
             <span class="res-actions">
-                <button class="btn ghost small" data-action="restart" data-name="${esc(r.name)}" title="Restart">↻</button>
+                <button class="btn ghost small" data-action="restart" data-name="${esc(r.name)}" title="${esc(t('res_restart_title'))}">↻</button>
                 ${r.state === 'started'
-                    ? `<button class="btn danger ghost small" data-action="stop" data-name="${esc(r.name)}">Stop</button>`
-                    : `<button class="btn success small" data-action="start" data-name="${esc(r.name)}">Start</button>`
+                    ? `<button class="btn danger ghost small" data-action="stop" data-name="${esc(r.name)}">${esc(t('res_stop'))}</button>`
+                    : `<button class="btn success small" data-action="start" data-name="${esc(r.name)}">${esc(t('res_start'))}</button>`
                 }
             </span>
         </div>
@@ -926,10 +934,10 @@ function renderItemsCatalog() {
            || (it.type  || '').toLowerCase().includes(q)
     );
 
-    $('#itemsSummary').textContent = `${filtered.length} / ${state.itemsCatalog.length} iteme`;
+    $('#itemsSummary').textContent = t('items_count_filtered', filtered.length, state.itemsCatalog.length);
 
     if (!filtered.length) {
-        itemsList.innerHTML = '<div class="empty">Niciun item.</div>';
+        itemsList.innerHTML = `<div class="empty">${esc(t('empty_no_item'))}</div>`;
         return;
     }
 
@@ -948,15 +956,15 @@ function renderItemsCatalog() {
                 </div>
                 <div class="item-meta muted small">
                     ${(it.weight ?? 0)}kg ·
-                    ${it.usable ? 'usable' : 'not usable'} ·
-                    ${it.stackable ? 'stackable' : 'unique'}
-                    ${it.drop_prop ? ' · prop:' + esc(it.drop_prop) : ''}
+                    ${it.usable ? esc(t('item_usable_yes')) : esc(t('item_usable_no'))} ·
+                    ${it.stackable ? esc(t('item_stackable_yes')) : esc(t('item_stackable_no'))}
+                    ${it.drop_prop ? ' · ' + esc(t('item_prop_prefix', it.drop_prop)) : ''}
                     ${it.description ? ' · ' + esc(it.description) : ''}
                 </div>
             </div>
             <div class="item-actions">
-                <button class="btn small" data-act="edit">Edit</button>
-                <button class="btn danger ghost small" data-act="del">Delete</button>
+                <button class="btn small" data-act="edit">${esc(t('edit_btn'))}</button>
+                <button class="btn danger ghost small" data-act="del">${esc(t('delete_btn'))}</button>
             </div>
         </div>
         `;
@@ -979,7 +987,7 @@ function updateItemImagePreview() {
 
 function resetItemForm() {
     state.editingItem = null;
-    $('#itemFormTitle').textContent = 'Adaugă item';
+    $('#itemFormTitle').textContent = t('item_form_add');
     $('#itemName').value         = '';
     $('#itemName').disabled      = false;
     $('#itemLabel').value        = '';
@@ -999,7 +1007,7 @@ function loadItemIntoForm(name) {
     const it = state.itemsCatalog.find(i => i.name === name);
     if (!it) return;
     state.editingItem = name;
-    $('#itemFormTitle').textContent = 'Editează: ' + it.name;
+    $('#itemFormTitle').textContent = t('item_form_edit', it.name);
     $('#itemName').value         = it.name;
     $('#itemName').disabled      = true;
     $('#itemLabel').value        = it.label || '';
@@ -1058,7 +1066,7 @@ itemsList.addEventListener('click', e => {
         loadItemIntoForm(name);
         window.scrollTo({ top: 0, behavior: 'smooth' });
     } else if (btn.dataset.act === 'del') {
-        if (confirm('Ștergi itemul "' + name + '"?')) {
+        if (confirm(t('confirm_delete_item', name))) {
             nuiPost('deleteItem', { name });
             if (state.editingItem === name) resetItemForm();
         }
@@ -1204,9 +1212,28 @@ const ESP = {
 
 ESP.init();
 
+// re-randare a stringurilor generate din JS la schimbarea dictionarului
+document.addEventListener('sw:i18n', () => {
+    renderPlayers();
+    if (state.itemCatalog.length) renderItemCatalog();
+    if (state.currentInventory) renderInventory(state.currentInventory);
+    if (state.jobsCatalog.length) renderJobsCatalog();
+    if (state.currencies.length) populateCurrencies();
+    if (state.groups.length) populateGroups();
+    renderResources();
+    renderItemsCatalog();
+    const activeWeather = $('#weatherGrid .weather-btn.active');
+    const activeWeatherId = activeWeather && activeWeather.dataset.weather;
+    renderWeatherGrid();
+    if (activeWeatherId) {
+        const btn = $(`#weatherGrid .weather-btn[data-weather="${activeWeatherId}"]`);
+        if (btn) btn.classList.add('active');
+    }
+});
+
 function renderPlayerInfo(info) {
     if (!info) {
-        $('#infoBlock').innerHTML = '<span class="muted">Nu s-au găsit date.</span>';
+        $('#infoBlock').innerHTML = `<span class="muted">${esc(t('info_no_data'))}</span>`;
         return;
     }
     const ids = (info.identifiers || []).map(i => `<div>${esc(i)}</div>`).join('');
@@ -1215,20 +1242,20 @@ function renderPlayerInfo(info) {
         .join('') || '<span class="muted">-</span>';
 
     $('#infoBlock').innerHTML = `
-        <div><span class="ik">ID:</span>      <span class="iv">${info.id}</span></div>
-        <div><span class="ik">Nume:</span>    <span class="iv">${esc(info.name)}</span></div>
-        <div><span class="ik">DB ID:</span>   <span class="iv">${info.dbId ?? '-'}</span></div>
-        <div><span class="ik">Char ID:</span> <span class="iv">${info.characterId ?? '-'}</span></div>
-        <div><span class="ik">Ping:</span>    <span class="iv">${info.ping}ms</span></div>
-        <div><span class="ik">Bucket:</span>  <span class="iv">${info.bucket ?? 0}</span></div>
+        <div><span class="ik">${esc(t('info_id'))}</span>      <span class="iv">${info.id}</span></div>
+        <div><span class="ik">${esc(t('info_name'))}</span>    <span class="iv">${esc(info.name)}</span></div>
+        <div><span class="ik">${esc(t('info_db_id'))}</span>   <span class="iv">${info.dbId ?? '-'}</span></div>
+        <div><span class="ik">${esc(t('info_char_id'))}</span> <span class="iv">${info.characterId ?? '-'}</span></div>
+        <div><span class="ik">${esc(t('info_ping'))}</span>    <span class="iv">${esc(t('ping_suffix', info.ping))}</span></div>
+        <div><span class="ik">${esc(t('info_bucket'))}</span>  <span class="iv">${info.bucket ?? 0}</span></div>
         <hr>
-        <div><span class="ik">Grupuri:</span></div>
+        <div><span class="ik">${esc(t('info_groups'))}</span></div>
         <div>${groups}</div>
         <hr>
-        ${info.coords ? `<div><span class="ik">Coord:</span> <span class="iv">${info.coords.x.toFixed(1)}, ${info.coords.y.toFixed(1)}, ${info.coords.z.toFixed(1)}</span></div>` : ''}
-        ${info.heading != null ? `<div><span class="ik">Heading:</span> <span class="iv">${Math.floor(info.heading)}°</span></div>` : ''}
+        ${info.coords ? `<div><span class="ik">${esc(t('info_coord'))}</span> <span class="iv">${info.coords.x.toFixed(1)}, ${info.coords.y.toFixed(1)}, ${info.coords.z.toFixed(1)}</span></div>` : ''}
+        ${info.heading != null ? `<div><span class="ik">${esc(t('info_heading'))}</span> <span class="iv">${Math.floor(info.heading)}°</span></div>` : ''}
         <hr>
-        <div><span class="ik">Identifiers:</span></div>
+        <div><span class="ik">${esc(t('info_identifiers'))}</span></div>
         ${ids || '<span class="muted">-</span>'}
     `;
 
@@ -1237,5 +1264,5 @@ function renderPlayerInfo(info) {
 
     $('#currentGroups').innerHTML = (info.groups || [])
         .map(g => `<span class="group-badge ${esc(g.name || g)}">${esc(g.name || g)}</span>`)
-        .join('') || '<span class="muted small">- niciun grup -</span>';
+        .join('') || `<span class="muted small">${esc(t('group_none'))}</span>`;
 }

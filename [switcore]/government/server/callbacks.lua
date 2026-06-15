@@ -40,7 +40,7 @@ Sw.SecureEvent('government:server:open', {
     local src = ctx.source
 
     if not hasAnyGovPerm(src) then
-        notify(src, 'error', 'Acces interzis.')
+        notify(src, 'error', Sw.TP(src, 'government.access_denied'))
         return
     end
 
@@ -56,7 +56,7 @@ Sw.SecureEvent('government:server:proposeLaw', {
     local char = ctx.character
     local data = ctx.args[1]
     if not perm(src, 'government.laws') then
-        notify(src, 'error', 'Nu ai permisiunea de a propune legi.')
+        notify(src, 'error', Sw.TP(src, 'government.no_perm_propose'))
         return
     end
     local proposal = GovManager.proposeLaw(src, char.id, data or {})
@@ -74,7 +74,7 @@ Sw.SecureEvent('government:server:voteLaw', {
     local char = ctx.character
     local proposalId, vote = ctx.args[1], ctx.args[2]
     if not perm(src, 'government.laws') then
-        notify(src, 'error', 'Nu ai permisiunea de a vota.')
+        notify(src, 'error', Sw.TP(src, 'government.no_perm_vote'))
         return
     end
     local result = GovManager.voteLaw(src, char.id, proposalId, vote)
@@ -102,7 +102,7 @@ Sw.SecureEvent('government:server:repealLaw', {
     local char = ctx.character
     local lawId = ctx.args[1]
     if not perm(src, 'government.laws') then
-        notify(src, 'error', 'Nu ai permisiunea de a abroga legi.')
+        notify(src, 'error', Sw.TP(src, 'government.no_perm_repeal'))
         return
     end
     local ok = GovManager.repealLaw(src, char.id, lawId)
@@ -135,7 +135,7 @@ Sw.SecureEvent('government:server:addTransaction', {
     local char = ctx.character
     local data = ctx.args[1]
     if not perm(src, 'government.budget') then
-        notify(src, 'error', 'Nu ai permisiunea de a gestiona bugetul.')
+        notify(src, 'error', Sw.TP(src, 'government.no_perm_budget'))
         return
     end
 
@@ -146,7 +146,7 @@ Sw.SecureEvent('government:server:addTransaction', {
     local category   = tostring(data.category or 'Altele'):sub(1, 50)
 
     if #description < 3 then
-        notify(src, 'error', 'Adauga o descriere.')
+        notify(src, 'error', Sw.TP(src, 'government.add_description'))
         return
     end
 
@@ -168,7 +168,7 @@ Sw.SecureEvent('government:server:createParty', {
     local char = ctx.character
     local name, color = ctx.args[1], ctx.args[2]
     if not perm(src, 'government.parties') then
-        notify(src, 'error', 'Nu ai permisiunea de a infiinta partide.')
+        notify(src, 'error', Sw.TP(src, 'government.no_perm_parties'))
         return
     end
     local party = GovManager.createParty(src, char.id, name, color)
@@ -242,7 +242,7 @@ Sw.SecureEvent('government:server:startElection', {
     local char = ctx.character
     local position, description = ctx.args[1], ctx.args[2]
     if not perm(src, 'government.elections') then
-        notify(src, 'error', 'Nu ai permisiunea de a deschide alegeri.')
+        notify(src, 'error', Sw.TP(src, 'government.no_perm_open_elections'))
         return
     end
     local election = GovManager.startElection(src, char.id, position, description)
@@ -308,7 +308,7 @@ Sw.SecureEvent('government:server:closeElection', {
     local char = ctx.character
     local electionId = ctx.args[1]
     if not perm(src, 'government.elections') then
-        notify(src, 'error', 'Nu ai permisiunea de a inchide alegerile.')
+        notify(src, 'error', Sw.TP(src, 'government.no_perm_close_elections'))
         return
     end
     local ok = GovManager.closeElection(src, char.id, electionId)

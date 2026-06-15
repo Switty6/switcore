@@ -6,6 +6,7 @@
     <title>Clothing Store</title>
     <link rel="stylesheet" href="style.css" />
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <script src="nui://core/ui/i18n.js"></script>
 </head>
 <body>
 <div id="app" class="hidden">
@@ -22,7 +23,7 @@
                     </svg>
                 </div>
                 <div>
-                    <div id="store-title">Magazin</div>
+                    <div id="store-title" data-i18n="clothing.ui.store_default">Magazin</div>
                     <div id="store-type-badge">casual</div>
                 </div>
             </div>
@@ -30,26 +31,26 @@
         </div>
 
         <div id="tabs">
-            <button class="tab active" data-tab="items" onclick="switchTab('items')">Articole</button>
-            <button class="tab" data-tab="equipped" onclick="switchTab('equipped')">Echipate</button>
-            <button class="tab" data-tab="outfits" onclick="switchTab('outfits')">Outfit-uri</button>
+            <button class="tab active" data-tab="items" onclick="switchTab('items')" data-i18n="clothing.ui.tab_items">Articole</button>
+            <button class="tab" data-tab="equipped" onclick="switchTab('equipped')" data-i18n="clothing.ui.tab_equipped">Echipate</button>
+            <button class="tab" data-tab="outfits" onclick="switchTab('outfits')" data-i18n="clothing.ui.tab_outfits">Outfit-uri</button>
         </div>
 
         <div id="tab-items" class="tab-content active">
             <div id="items-layout">
 
                 <div id="category-sidebar">
-                    <button class="cat-btn active" data-cat="all" onclick="filterCategory('all')">Toate</button>
-                    <button class="cat-btn" data-cat="component_11" onclick="filterCategory('component_11')">Jachete</button>
-                    <button class="cat-btn" data-cat="component_8"  onclick="filterCategory('component_8')">Tricouri</button>
-                    <button class="cat-btn" data-cat="component_3"  onclick="filterCategory('component_3')">Torso</button>
-                    <button class="cat-btn" data-cat="component_4"  onclick="filterCategory('component_4')">Pantaloni</button>
-                    <button class="cat-btn" data-cat="component_6"  onclick="filterCategory('component_6')">Încălțăminte</button>
-                    <button class="cat-btn" data-cat="component_5"  onclick="filterCategory('component_5')">Gențí/Rucsac</button>
-                    <button class="cat-btn" data-cat="component_7"  onclick="filterCategory('component_7')">Accesorii</button>
-                    <button class="cat-btn" data-cat="component_1"  onclick="filterCategory('component_1')">Măști</button>
-                    <button class="cat-btn" data-cat="prop_0"        onclick="filterCategory('prop_0')">Pălării</button>
-                    <button class="cat-btn" data-cat="prop_1"        onclick="filterCategory('prop_1')">Ochelari</button>
+                    <button class="cat-btn active" data-cat="all" onclick="filterCategory('all')" data-i18n="clothing.ui.cat_all">Toate</button>
+                    <button class="cat-btn" data-cat="component_11" onclick="filterCategory('component_11')" data-i18n="clothing.ui.cat_jackets">Jachete</button>
+                    <button class="cat-btn" data-cat="component_8"  onclick="filterCategory('component_8')" data-i18n="clothing.ui.cat_shirts">Tricouri</button>
+                    <button class="cat-btn" data-cat="component_3"  onclick="filterCategory('component_3')" data-i18n="clothing.ui.cat_torso">Torso</button>
+                    <button class="cat-btn" data-cat="component_4"  onclick="filterCategory('component_4')" data-i18n="clothing.ui.cat_legs">Pantaloni</button>
+                    <button class="cat-btn" data-cat="component_6"  onclick="filterCategory('component_6')" data-i18n="clothing.ui.cat_feet">Încălțăminte</button>
+                    <button class="cat-btn" data-cat="component_5"  onclick="filterCategory('component_5')" data-i18n="clothing.ui.cat_bags">Gențí/Rucsac</button>
+                    <button class="cat-btn" data-cat="component_7"  onclick="filterCategory('component_7')" data-i18n="clothing.ui.cat_accessories">Accesorii</button>
+                    <button class="cat-btn" data-cat="component_1"  onclick="filterCategory('component_1')" data-i18n="clothing.ui.cat_masks">Măști</button>
+                    <button class="cat-btn" data-cat="prop_0"        onclick="filterCategory('prop_0')" data-i18n="clothing.ui.cat_hats">Pălării</button>
+                    <button class="cat-btn" data-cat="prop_1"        onclick="filterCategory('prop_1')" data-i18n="clothing.ui.cat_glasses">Ochelari</button>
                 </div>
 
                 <div id="items-right">
@@ -67,7 +68,7 @@
                         </div>
 
                         <div id="texture-section" class="hidden">
-                            <div class="section-title">Textură</div>
+                            <div class="section-title" data-i18n="clothing.ui.texture">Textură</div>
                             <div id="texture-selector">
                                 <button onclick="changeTextureBy(-1)">‹</button>
                                 <span id="texture-label">1 / 1</span>
@@ -76,14 +77,14 @@
                         </div>
 
                         <div id="detail-actions">
-                            <button id="btn-tryon"   class="btn-secondary" onclick="tryOnSelected()">Probează</button>
-                            <button id="btn-buy"     class="btn-primary"   onclick="buySelected()">Cumpără</button>
-                            <button id="btn-equip"   class="btn-primary hidden"  onclick="equipSelected()">Echipează</button>
-                            <button id="btn-owned-badge" class="btn-owned hidden"><i data-lucide="check"></i> Deții</button>
+                            <button id="btn-tryon"   class="btn-secondary" onclick="tryOnSelected()" data-i18n="clothing.ui.tryon">Probează</button>
+                            <button id="btn-buy"     class="btn-primary"   onclick="buySelected()" data-i18n="clothing.ui.buy">Cumpără</button>
+                            <button id="btn-equip"   class="btn-primary hidden"  onclick="equipSelected()" data-i18n="clothing.ui.equip">Echipează</button>
+                            <button id="btn-owned-badge" class="btn-owned hidden"><i data-lucide="check"></i> <span data-i18n="clothing.ui.owned">Deții</span></button>
                         </div>
 
                         <button id="btn-tryon-room" class="btn-secondary full-w" onclick="goToTryOnRoom()">
-                            <i data-lucide="camera"></i> Intră în cabina de probă
+                            <i data-lucide="camera"></i> <span data-i18n="clothing.ui.enter_fitting_room">Intră în cabina de probă</span>
                         </button>
                     </div>
                 </div>
@@ -96,8 +97,8 @@
 
         <div id="tab-outfits" class="tab-content">
             <div id="outfit-save-row">
-                <input id="outfit-name-input" type="text" placeholder="Nume outfit..." maxlength="50" />
-                <button class="btn-primary" onclick="saveOutfit()">Salvează</button>
+                <input id="outfit-name-input" type="text" placeholder="Nume outfit..." data-i18n-placeholder="clothing.ui.outfit_name_placeholder" maxlength="50" />
+                <button class="btn-primary" onclick="saveOutfit()" data-i18n="clothing.ui.save">Salvează</button>
             </div>
             <div id="outfits-list"></div>
         </div>
@@ -105,14 +106,14 @@
 
     <div id="fitting-room" class="hidden">
         <div id="fitting-controls">
-            <div id="fitting-title">Cabina de Probă</div>
+            <div id="fitting-title" data-i18n="clothing.ui.fitting_room_title">Cabina de Probă</div>
             <div id="view-buttons">
-                <button onclick="rotateView('left')"><i data-lucide="chevron-left"></i> Stânga</button>
-                <button id="btn-auto-rotate" onclick="toggleAutoRotate()"><i data-lucide="play"></i> 360° Auto</button>
-                <button onclick="rotateView('right')">Dreapta <i data-lucide="chevron-right"></i></button>
+                <button onclick="rotateView('left')"><i data-lucide="chevron-left"></i> <span data-i18n="clothing.ui.rotate_left">Stânga</span></button>
+                <button id="btn-auto-rotate" onclick="toggleAutoRotate()"><i data-lucide="play"></i> <span data-i18n="clothing.ui.auto_360">360° Auto</span></button>
+                <button onclick="rotateView('right')"><span data-i18n="clothing.ui.rotate_right">Dreapta</span> <i data-lucide="chevron-right"></i></button>
             </div>
             <button class="btn-secondary" onclick="exitTryOnRoom()" style="margin-top:8px; width:100%;">
-                <i data-lucide="x"></i> Ieși din cabină
+                <i data-lucide="x"></i> <span data-i18n="clothing.ui.exit_fitting_room">Ieși din cabină</span>
             </button>
         </div>
     </div>

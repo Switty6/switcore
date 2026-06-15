@@ -23,11 +23,11 @@ function Sw.SecureEvent(name, opts, handler)
 
         local rl = opts.rateLimit
         if rl and not exports.core:checkRateLimit(source, name, rl.max, rl.window) then
-            return fail(opts.rateLimitMessage or 'Prea multe cereri. Asteapta o clipa.')
+            return fail(opts.rateLimitMessage or Sw.TP(source, 'core.secure.rate_limited'))
         end
 
         if opts.permission and not exports.core:hasPermission(source, opts.permission) then
-            return fail(opts.permissionMessage or 'Nu ai permisiunea necesara.')
+            return fail(opts.permissionMessage or Sw.TP(source, 'core.secure.no_permission'))
         end
 
         local args
@@ -43,7 +43,7 @@ function Sw.SecureEvent(name, opts, handler)
         if opts.character then
             character = exports.characters:getActiveCharacter(source)
             if not character then
-                return fail(opts.characterMessage or 'Nu ai un personaj activ.')
+                return fail(opts.characterMessage or Sw.TP(source, 'core.secure.no_character'))
             end
         end
 

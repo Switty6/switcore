@@ -29,6 +29,18 @@ local function Send(data)
     SendNUIMessage(data)
 end
 
+local function pushI18n()
+    SendNUIMessage({ action = 'sw:i18n', dict = exports.core:getLocaleDict() })
+end
+
+AddEventHandler('switcore:client:localeUpdated', pushI18n)
+
+-- UI mereu vizibil: push o data la pornire, cu un mic delay
+CreateThread(function()
+    Wait(2000)
+    pushI18n()
+end)
+
 local function getTankVolume(veh)
     -- Cache pe (handle + model hash). Handle singur nu e sigur: GTA refoloseste
     -- handle-uri pentru entitati noi dupa despawn. Daca un Adder (tank 65L) e

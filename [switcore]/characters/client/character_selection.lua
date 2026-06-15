@@ -4,6 +4,12 @@ local isSelectionOpen   = false
 local currentCharacters = {}
 local pedFather, pedMother, creatorCam
 
+local function pushI18n()
+    SendNUIMessage({ action = 'sw:i18n', dict = exports.core:getLocaleDict() })
+end
+
+AddEventHandler('switcore:client:localeUpdated', pushI18n)
+
 local function LoadModel(modelName)
     local hash = (type(modelName) == 'number') and modelName or GetHashKey(modelName)
     if IsModelInCdimage(hash) and not HasModelLoaded(hash) then
@@ -16,6 +22,7 @@ end
 function CharacterSelection.open()
     if isSelectionOpen then return end
     isSelectionOpen = true
+    pushI18n()
     SetNuiFocus(true, true)
     SendNUIMessage({ action = 'open' })
     DisplayRadar(false)

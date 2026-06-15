@@ -31,6 +31,14 @@ window.addEventListener('message', function(e) {
     }
 });
 
+// Re-randare la schimbarea limbii pentru continutul generat din JS.
+document.addEventListener('sw:i18n', () => {
+    if (state.currentPatient &&
+        !document.getElementById('patient-menu').classList.contains('hidden')) {
+        openPatientMenu(state.currentPatient);
+    }
+});
+
 function showUnconsciousTimer(seconds) {
     state.timerSeconds   = seconds;
     state.respawnAllowed = false;
@@ -72,7 +80,7 @@ function openPatientMenu(data) {
     state.currentPatient = data;
     document.getElementById('patient-menu').classList.remove('hidden');
 
-    document.getElementById('pm-name').textContent = data.name || 'Pacient';
+    document.getElementById('pm-name').textContent = data.name || SwI18n.t('ems.ui.patient');
 
     const uncBadge = document.getElementById('pm-unconscious-badge');
     const pmTimer  = document.getElementById('pm-timer');
@@ -81,7 +89,7 @@ function openPatientMenu(data) {
         if (data.timerRemaining > 0) {
             const m = Math.floor(data.timerRemaining / 60).toString().padStart(2, '0');
             const s = (data.timerRemaining % 60).toString().padStart(2, '0');
-            pmTimer.textContent = `⏳ ${m}:${s} ramas`;
+            pmTimer.textContent = SwI18n.t('ems.ui.timer_remaining', `${m}:${s}`);
             pmTimer.classList.remove('hidden');
         }
     } else {
@@ -93,36 +101,36 @@ function openPatientMenu(data) {
     const conditions    = data.conditions || {};
     const condKeys      = Object.keys(conditions);
     if (condKeys.length === 0) {
-        condContainer.innerHTML = '<div class="empty-msg">Nicio boala activa.</div>';
+        condContainer.innerHTML = `<div class="empty-msg">${escHtml(SwI18n.t('ems.ui.no_conditions'))}</div>`;
     } else {
         condContainer.innerHTML = condKeys.map(cond => {
             const c = conditions[cond];
             return `<div class="condition-row">
                 <span class="cond-name">${escHtml(c.label || cond)}</span>
-                <span class="badge badge-yellow">Stadiu ${c.stage || 1}</span>
+                <span class="badge badge-yellow">${escHtml(SwI18n.t('ems.ui.condition_stage', c.stage || 1))}</span>
             </div>`;
         }).join('');
     }
 
     const injContainer = document.getElementById('pm-injuries');
     const injuries     = data.injuries || [];
-    const injLabels    = {
-        gunshot_leg: 'Împușcătură picior', gunshot_chest: 'Împușcătură piept',
-        bruise: 'Vânătăi', broken_bone: 'Os rupt', stab: 'Înjunghiat'
+    const injLabelKeys = {
+        gunshot_leg: 'ems.ui.injury_gunshot_leg', gunshot_chest: 'ems.ui.injury_gunshot_chest',
+        bruise: 'ems.ui.injury_bruise', broken_bone: 'ems.ui.injury_broken_bone', stab: 'ems.ui.injury_stab'
     };
-    const sevLabels = { 1: 'Minor', 2: 'Moderat', 3: 'Sever' };
+    const sevKeys = { 1: 'ems.ui.sev_minor', 2: 'ems.ui.sev_moderate', 3: 'ems.ui.sev_severe' };
 
     if (injuries.length === 0) {
-        injContainer.innerHTML = '<div class="empty-msg">Nicio rană activă.</div>';
+        injContainer.innerHTML = `<div class="empty-msg">${escHtml(SwI18n.t('ems.ui.no_injuries'))}</div>`;
     } else {
         injContainer.innerHTML = injuries.map(inj => `
             <div class="injury-row">
                 <div>
-                    <span class="inj-type">${injLabels[inj.type] || inj.type}</span>
-                    <span class="inj-loc">${inj.location || ''}</span>
-                    <span class="badge badge-red">${sevLabels[inj.severity] || inj.severity}</span>
+                    <span class="inj-type">${escHtml(injLabelKeys[inj.type] ? SwI18n.t(injLabelKeys[inj.type]) : inj.type)}</span>
+                    <span class="inj-loc">${escHtml(inj.location || '')}</span>
+                    <span class="badge badge-red">${escHtml(sevKeys[inj.severity] ? SwI18n.t(sevKeys[inj.severity]) : inj.severity)}</span>
                 </div>
-                <button class="btn-sm btn-success" onclick="treatInjury(${inj.id})">Tratează</button>
+                <button class="btn-sm btn-success" onclick="treatInjury(${inj.id})">${escHtml(SwI18n.t('ems.ui.btn_treat'))}</button>
             </div>
         `).join('');
     }
@@ -194,7 +202,7 @@ function openVehicleInventory(items, plate, ivTreatments) {
 
     const container = document.getElementById('vi-items');
     if (!items || items.length === 0) {
-        container.innerHTML = '<div class="empty-msg">Inventar gol.</div>';
+        container.innerHTML = `<div class="empty-msg">${escHtml(SwI18n.t('ems.ui.empty_inventory'))}</div>`;
         return;
     }
 
@@ -202,7 +210,7 @@ function openVehicleInventory(items, plate, ivTreatments) {
         <div class="vi-item">
             <span class="vi-name">${escHtml(item.item_name)}</span>
             <span class="vi-amount">x${item.amount}</span>
-            <button class="btn-sm btn-secondary" onclick="takeItem('${escHtml(item.item_name)}', 1)">Ia 1</button>
+            <button class="btn-sm btn-secondary" onclick="takeItem('${escHtml(item.item_name)}', 1)">${escHtml(SwI18n.t('ems.ui.btn_take_one'))}</button>
         </div>
     `).join('');
 }

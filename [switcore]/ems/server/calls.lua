@@ -72,7 +72,7 @@ Sw.SecureEvent('ems:server:call112', {
     local message = ctx.args[1]
 
     if not message or #message < 3 then
-        TriggerClientEvent('switcore:notify', src, 'warning', 'Mesajul este prea scurt.', 3000)
+        TriggerClientEvent('switcore:notify', src, 'warning', Sw.TP(src, 'ems.call_too_short'), 3000)
         return
     end
 
@@ -97,7 +97,7 @@ Sw.SecureEvent('ems:server:call112', {
     }
 
     BroadcastToEMS('ems:client:new112Call', activeCalls[callId])
-    Notify(src, 'info', 'Apelul tau 112 a fost trimis. Asteapta EMS.', 6000)
+    Notify(src, 'info', Sw.TP(src, 'ems.call_sent'), 6000)
     print(('[EMS] Apel 112 #%d de la %s: %s'):format(callId, name, message))
 end)
 
@@ -123,7 +123,7 @@ Sw.SecureEvent('ems:server:acceptCall', {
 
     local callerSrc = FindSourceByCharId(call.callerId)
     if callerSrc then
-        Notify(callerSrc, 'success', 'EMS a acceptat apelul tau! Se indreapta spre tine.', 7000)
+        Notify(callerSrc, 'success', Sw.TP(callerSrc, 'ems.call_accepted'), 7000)
     end
 end)
 

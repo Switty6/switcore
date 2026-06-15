@@ -56,7 +56,7 @@ CreateThread(function()
                         if dist <= maxDist then
                             local id = exports.proximity:AddEntityInteraction(
                                 targetPed,
-                                'Incatuseza Jucator',
+                                Sw.T('police.prox_handcuff'),
                                 'police_handcuff',
                                 { targetSrc = targetSrc },
                                 function(data)
@@ -105,6 +105,7 @@ RegisterNetEvent('police:client:unhandcuffed', function()
 end)
 
 RegisterNetEvent('police:client:openArrestForm', function(targetSrc)
+    PushPoliceI18n()
     SendNUIMessage({ action = 'openArrestForm', targetSrc = targetSrc })
     SetNuiFocus(true, true)
 end)
@@ -136,7 +137,7 @@ RegisterNetEvent('police:client:playerHandcuffedByMe', function(targetSrc)
 
     local uncuffId = exports.proximity:AddEntityInteraction(
         targetPed,
-        'Scoate Catusele',
+        Sw.T('police.prox_uncuff'),
         'police_uncuff',
         { targetSrc = targetSrc },
         function(data)
@@ -147,7 +148,7 @@ RegisterNetEvent('police:client:playerHandcuffedByMe', function(targetSrc)
 
     local arrestId = exports.proximity:AddEntityInteraction(
         targetPed,
-        'Trimite la Inchisoare',
+        Sw.T('police.prox_arrest'),
         'police_arrest',
         { targetSrc = targetSrc },
         function(data)

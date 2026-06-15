@@ -25,7 +25,7 @@ Sw.SecureEvent('shops:server:openShop', {
 
     local shop = ShopsDatabase.getShopByName(shopName)
     if not shop or not shop.is_open then
-        return ctx.error('Magazin indisponibil', 3000)
+        return ctx.error(Sw.TP(ctx.source, 'shops.shop_unavailable'), 3000)
     end
 
     local items = ShopsDatabase.getShopItems(shopName)
@@ -43,7 +43,7 @@ Sw.SecureEvent('shops:server:openShop', {
                 accountNumber = account.account_number,
                 accountType = account.account_type,
                 balance = balance,
-                bankName = bank and bank.name or 'Bancă'
+                bankName = bank and bank.name or Sw.TP(src, 'shops.bank_fallback')
             })
         end
     end

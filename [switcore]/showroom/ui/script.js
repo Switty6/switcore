@@ -1,6 +1,11 @@
 
 const isFiveM = typeof window.invokeNative !== 'undefined';
 
+// Traducere prin helperul standard SwI18n (core/ui/i18n.js); fallback pe cheie.
+function t(key, ...args) {
+    return SwI18n.t(`showroom.${key}`, ...args);
+}
+
 const app             = document.getElementById('app');
 const dealerName      = document.getElementById('dealerName');
 const categoryList    = document.getElementById('categoryList');
@@ -50,33 +55,40 @@ function postNUI(action, data = {}) {
 }
 
 // `r` is the GTA V paint index passed to SetVehicleColours
+// `key` indexeaza showroom.colors.* in dictionar; numele e fallback.
 const COLORS = [
-    { name: 'Alb Arctic',     hex: '#e8edf2', r: 0 },
-    { name: 'Alb Pur',        hex: '#f8f8f8', r: 1 },
-    { name: 'Negru',          hex: '#111418', r: 12 },
-    { name: 'Antracit',       hex: '#2a2e35', r: 147 },
-    { name: 'Gri Grafit',     hex: '#4b5260', r: 68 },
-    { name: 'Gri Argintiu',   hex: '#8b939e', r: 4 },
-    { name: 'Roșu Clasic',    hex: '#c0392b', r: 27 },
-    { name: 'Roșu Torino',    hex: '#e53935', r: 28 },
-    { name: 'Roșu Vin',       hex: '#7b1a2e', r: 30 },
-    { name: 'Portocaliu',     hex: '#e65100', r: 38 },
-    { name: 'Galben Cursa',   hex: '#f9c20a', r: 88 },
-    { name: 'Auriu',          hex: '#d4a017', r: 99 },
-    { name: 'Verde Electric', hex: '#1de73b', r: 53 },
-    { name: 'Verde Army',     hex: '#3a5940', r: 56 },
-    { name: 'Verde Petrol',   hex: '#0d5c4e', r: 62 },
-    { name: 'Albastru Cobalt',hex: '#0a3d91', r: 63 },
-    { name: 'Albastru Police',hex: '#1565c0', r: 70 },
-    { name: 'Albastru Sky',   hex: '#0288d1', r: 71 },
-    { name: 'Cyan Neon',      hex: '#00b4ff', r: 73 },
-    { name: 'Mov Royal',      hex: '#6a1b9a', r: 142 },
-    { name: 'Roz Hot',        hex: '#e91e8c', r: 135 },
-    { name: 'Maro Lemn',      hex: '#5d3a1a', r: 120 },
-    { name: 'Bronz',          hex: '#8b6914', r: 118 },
-    { name: 'Argintiu Metal', hex: '#b0b8c4', r: 5  },
-    { name: 'Champagne',      hex: '#d4c5a0', r: 104 },
+    { key: 'arctic_white',   name: 'Alb Arctic',     hex: '#e8edf2', r: 0 },
+    { key: 'pure_white',     name: 'Alb Pur',        hex: '#f8f8f8', r: 1 },
+    { key: 'black',          name: 'Negru',          hex: '#111418', r: 12 },
+    { key: 'anthracite',     name: 'Antracit',       hex: '#2a2e35', r: 147 },
+    { key: 'graphite_gray',  name: 'Gri Grafit',     hex: '#4b5260', r: 68 },
+    { key: 'silver_gray',    name: 'Gri Argintiu',   hex: '#8b939e', r: 4 },
+    { key: 'classic_red',    name: 'Roșu Clasic',    hex: '#c0392b', r: 27 },
+    { key: 'torino_red',     name: 'Roșu Torino',    hex: '#e53935', r: 28 },
+    { key: 'wine_red',       name: 'Roșu Vin',       hex: '#7b1a2e', r: 30 },
+    { key: 'orange',         name: 'Portocaliu',     hex: '#e65100', r: 38 },
+    { key: 'race_yellow',    name: 'Galben Cursa',   hex: '#f9c20a', r: 88 },
+    { key: 'gold',           name: 'Auriu',          hex: '#d4a017', r: 99 },
+    { key: 'electric_green', name: 'Verde Electric', hex: '#1de73b', r: 53 },
+    { key: 'army_green',     name: 'Verde Army',     hex: '#3a5940', r: 56 },
+    { key: 'petrol_green',   name: 'Verde Petrol',   hex: '#0d5c4e', r: 62 },
+    { key: 'cobalt_blue',    name: 'Albastru Cobalt',hex: '#0a3d91', r: 63 },
+    { key: 'police_blue',    name: 'Albastru Police',hex: '#1565c0', r: 70 },
+    { key: 'sky_blue',       name: 'Albastru Sky',   hex: '#0288d1', r: 71 },
+    { key: 'neon_cyan',      name: 'Cyan Neon',      hex: '#00b4ff', r: 73 },
+    { key: 'royal_purple',   name: 'Mov Royal',      hex: '#6a1b9a', r: 142 },
+    { key: 'hot_pink',       name: 'Roz Hot',        hex: '#e91e8c', r: 135 },
+    { key: 'wood_brown',     name: 'Maro Lemn',      hex: '#5d3a1a', r: 120 },
+    { key: 'bronze',         name: 'Bronz',          hex: '#8b6914', r: 118 },
+    { key: 'metal_silver',   name: 'Argintiu Metal', hex: '#b0b8c4', r: 5  },
+    { key: 'champagne',      name: 'Champagne',      hex: '#d4c5a0', r: 104 },
 ];
+
+// numele tradus al unei culori, cu fallback pe numele RO din COLORS
+function colorName(c) {
+    const translated = SwI18n.t(`showroom.colors.${c.key}`);
+    return translated === `showroom.colors.${c.key}` ? c.name : translated;
+}
 
 function buildColorSwatches() {
     colorSwatches.innerHTML = '';
@@ -84,7 +96,7 @@ function buildColorSwatches() {
         const sw = document.createElement('button');
         sw.className = 'swatch' + (i === 0 ? ' active' : '');
         sw.style.background = c.hex;
-        sw.title = c.name;
+        sw.title = colorName(c);
         sw.dataset.idx = String(i);
         sw.addEventListener('click', () => selectColor(i));
         colorSwatches.appendChild(sw);
@@ -98,7 +110,7 @@ function selectColor(idx) {
         s.classList.toggle('active', i === idx);
     });
     selectedColorDot.style.background = COLORS[idx].hex;
-    selectedColorName.textContent = COLORS[idx].name;
+    selectedColorName.textContent = colorName(COLORS[idx]);
 
     postNUI('previewColor', { colorIndex: COLORS[idx].r });
 }
@@ -115,7 +127,7 @@ function validatePlate() {
         return true;
     }
     if (val.length < 3) {
-        plateHint.textContent = 'Minim 3 caractere';
+        plateHint.textContent = t('ui.plate_hint_min');
         return false;
     }
     plateHint.textContent = '';
@@ -127,13 +139,15 @@ function getPlate() {
 }
 
 function buildCategories() {
-    const cats = ['Toate', ...new Set(state.catalog.map(c => c.category))];
+    const allLabel = t('ui.category_all');
+    const cats = ['all', ...new Set(state.catalog.map(c => c.category))];
     categoryList.innerHTML = '';
     cats.forEach(cat => {
+        const isAll = cat === 'all';
         const btn = document.createElement('button');
-        btn.className = 'cat-btn' + (cat === 'Toate' ? ' active' : '');
-        btn.textContent = cat;
-        btn.dataset.cat = cat === 'Toate' ? 'all' : cat;
+        btn.className = 'cat-btn' + (isAll ? ' active' : '');
+        btn.textContent = isAll ? allLabel : cat;
+        btn.dataset.cat = cat;
         btn.addEventListener('click', () => {
             document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
@@ -152,7 +166,7 @@ function renderVehicleList() {
     vehicleList.innerHTML = '';
 
     if (items.length === 0) {
-        vehicleList.innerHTML = `<div style="padding:20px;text-align:center;color:var(--text-3);font-size:12px;">Niciun vehicul disponibil</div>`;
+        vehicleList.innerHTML = `<div style="padding:20px;text-align:center;color:var(--text-3);font-size:12px;">${esc(t('ui.no_vehicle_available'))}</div>`;
         return;
     }
 
@@ -166,7 +180,7 @@ function renderVehicleList() {
             </div>
             <div class="vi-right">
                 <div class="vi-price">$${fmt(item.price)}</div>
-                ${item.vip_only ? '<div class="vi-badge">VIP</div>' : ''}
+                ${item.vip_only ? `<div class="vi-badge">${esc(t('ui.vip_badge'))}</div>` : ''}
             </div>
         `;
         el.addEventListener('click', () => selectVehicle(item));
@@ -221,7 +235,7 @@ function updateFinance() {
     if (!state.selectedItem) return;
     const price  = parseFloat(state.selectedItem.price);
     const months = parseInt(termSlider.value);
-    termLabel.textContent = months + ' luni';
+    termLabel.textContent = t('ui.term_months', months);
 
     const mr = state.interestRate / 12;
     const monthly = mr === 0
@@ -230,9 +244,9 @@ function updateFinance() {
 
     const total = monthly * months;
 
-    document.getElementById('monthlyRate').textContent  = '$' + fmt(Math.ceil(monthly)) + ' / lună';
+    document.getElementById('monthlyRate').textContent  = t('ui.monthly_rate_value', fmt(Math.ceil(monthly)));
     document.getElementById('totalRepay').textContent   = '$' + fmt(Math.round(total));
-    document.getElementById('interestLabel').textContent = Math.round(state.interestRate * 100) + '%';
+    document.getElementById('interestLabel').textContent = t('ui.interest_percent', Math.round(state.interestRate * 100));
 }
 
 buyBtn.addEventListener('click', () => {
@@ -299,7 +313,7 @@ function open(data) {
         activeMethod:      'cash',
     });
 
-    dealerName.textContent = data.dealership?.name || 'Showroom';
+    dealerName.textContent = data.dealership?.name || t('ui.showroom_fallback');
     plateInput.value = '';
     plateHint.textContent = '';
     overlayName.textContent = '-';
@@ -327,6 +341,22 @@ function open(data) {
 
     if (state.catalog.length > 0) selectVehicle(state.catalog[0]);
 }
+
+// re-randare a stringurilor generate din JS la schimbarea dictionarului
+document.addEventListener('sw:i18n', () => {
+    if (state.catalog.length > 0) {
+        buildCategories();
+        renderVehicleList();
+        if (state.selectedItem) updateFinance();
+    }
+    // actualizeaza titlurile swatch-urilor si numele culorii selectate
+    if (state.selectedColor) {
+        colorSwatches.querySelectorAll('.swatch').forEach((s, i) => {
+            if (COLORS[i]) s.title = colorName(COLORS[i]);
+        });
+        selectedColorName.textContent = colorName(state.selectedColor);
+    }
+});
 
 window.addEventListener('message', e => {
     const msg = e.data;

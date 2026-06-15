@@ -1,3 +1,5 @@
+exports.core:registerModuleLocales(GetCurrentResourceName())
+
 local function getActiveChar(src)
     local ok, char = pcall(function()
         return exports.characters:getActiveCharacter(src)
@@ -70,25 +72,25 @@ end)
 function CompleteService(mechanicSrc, clientSrc, vehicleId, serviceType, price, clientCharId, mechanicCharId)
     local currencyId = MecanicDB.getRonCurrencyId()
     if not currencyId then
-        notify(mechanicSrc, 'error', 'Eroare', 'Valuta RON nu a fost gasita.')
+        notify(mechanicSrc, 'error', Sw.TP(mechanicSrc, 'mecanic.err_generic'), Sw.TP(mechanicSrc, 'mecanic.ron_currency_missing'))
         return false
     end
 
     if not exports.banking:tryDeductCharacterCash(clientCharId, currencyId, price) then
-        notify(mechanicSrc, 'error', 'Plata esecata', 'Clientul nu are fonduri suficiente.')
-        notify(clientSrc, 'error', 'Fonduri insuficiente', 'Nu ai destui bani pentru acest serviciu.')
+        notify(mechanicSrc, 'error', Sw.TP(mechanicSrc, 'mecanic.payment_failed'), Sw.TP(mechanicSrc, 'mecanic.client_no_funds'))
+        notify(clientSrc, 'error', Sw.TP(clientSrc, 'mecanic.insufficient_funds'), Sw.TP(clientSrc, 'mecanic.client_insufficient_funds'))
         return false
     end
 
     local orgOk = pcall(function()
         exports.banking:orgSystemCredit(
             Config.OrgCode, price, currencyId,
-            'Serviciu: ' .. serviceType
+            Sw.T('mecanic.tx_service', serviceType)
         )
     end)
     if not orgOk then
         exports.banking:addCharacterCash(clientCharId, currencyId, price)
-        notify(mechanicSrc, 'error', 'Eroare interna', 'Banii au fost restituiti clientului.')
+        notify(mechanicSrc, 'error', Sw.TP(mechanicSrc, 'mecanic.err_internal'), Sw.TP(mechanicSrc, 'mecanic.money_refunded'))
         return false
     end
 
@@ -100,17 +102,17 @@ function CompleteService(mechanicSrc, clientSrc, vehicleId, serviceType, price, 
 
     if bonus > 0 then
         pcall(function()
-            exports.banking:orgSystemDebit(Config.OrgCode, bonus, currencyId, 'Bonus mecanic')
+            exports.banking:orgSystemDebit(Config.OrgCode, bonus, currencyId, Sw.T('mecanic.tx_bonus'))
             exports.banking:addCharacterCash(mechanicCharId, currencyId, bonus)
         end)
     end
 
     MecanicDB.logService(mechanicCharId, clientCharId, vehicleId, serviceType, price, bonus)
 
-    notify(clientSrc, 'error', 'Plata serviciu',
-        string.format('Ai platit %d RON pentru %s.', price, serviceType))
-    notify(mechanicSrc, 'success', 'Serviciu finalizat',
-        string.format('Ai primit bonus %d RON (%d%%).', bonus, bonusPct))
+    notify(clientSrc, 'error', Sw.TP(clientSrc, 'mecanic.service_paid_title'),
+        Sw.TP(clientSrc, 'mecanic.service_paid_msg', price, serviceType))
+    notify(mechanicSrc, 'success', Sw.TP(mechanicSrc, 'mecanic.service_done_title'),
+        Sw.TP(mechanicSrc, 'mecanic.service_bonus_msg', bonus, bonusPct))
 
     return true
 end

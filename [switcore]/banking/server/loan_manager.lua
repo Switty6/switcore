@@ -2,24 +2,24 @@ LoanManager = {}
 
 function LoanManager.createLoan(characterId, bankId, loanType, principalAmount, termMonths, currencyId)
     if not characterId or not bankId or not loanType or not principalAmount or principalAmount <= 0 or not termMonths or not currencyId then
-        return false, 'Parametri invalizi'
+        return false, Sw.T('banking.error_invalid_parameters')
     end
 
     characterId = tonumber(characterId)
     bankId = tonumber(bankId)
     currencyId = tonumber(currencyId)
     if not characterId or characterId <= 0 or not bankId or bankId <= 0 or not currencyId or currencyId <= 0 then
-        return false, 'ID-uri invalide'
+        return false, Sw.T('banking.error_invalid_ids')
     end
     
     if loanType ~= 'personal' and loanType ~= 'mortgage' and loanType ~= 'business' then
-        return false, 'Tip credit invalid'
+        return false, Sw.T('banking.loan_type_invalid')
     end
     
     local minTerm = exports.settings:GetSettingNumber('banking.min_loan_term_months', 6)
     local maxTerm = exports.settings:GetSettingNumber('banking.max_loan_term_months', 60)
     if termMonths < minTerm or termMonths > maxTerm then
-        return false, 'Termen credit invalid'
+        return false, Sw.T('banking.loan_term_invalid')
     end
 
     local interestRate = exports.settings:GetSettingNumber('banking.loan_rate_' .. loanType, 10.0)
@@ -55,7 +55,7 @@ function LoanManager.createLoan(characterId, bankId, loanType, principalAmount, 
     )
     
     if not loan then
-        return false, 'Eroare la crearea creditului'
+        return false, Sw.T('banking.loan_creation_failed')
     end
 
     local accounts = BankingManager.getCharacterAccounts(characterId)
@@ -74,7 +74,7 @@ function LoanManager.createLoan(characterId, bankId, loanType, principalAmount, 
         currencyId,
         0.0,
         nil,
-        'Credit acordat',
+        Sw.T('banking.tx.loan_granted_desc'),
         {loan_id = loan.id, loan_type = loanType}
     )
     
@@ -93,13 +93,13 @@ end
 
 function LoanManager.makeLoanPayment(characterId, loanId, amount)
     if not characterId or not loanId or not amount or amount <= 0 then
-        return false, 'Parametri invalizi'
+        return false, Sw.T('banking.error_invalid_parameters')
     end
 
     characterId = tonumber(characterId)
     loanId = tonumber(loanId)
     if not characterId or characterId <= 0 or not loanId or loanId <= 0 then
-        return false, 'ID-uri invalide'
+        return false, Sw.T('banking.error_invalid_ids')
     end
 
     local amountValid, amountErr = BankingHelpers.validateTransactionAmount(amount)
@@ -109,19 +109,19 @@ function LoanManager.makeLoanPayment(characterId, loanId, amount)
     
     local loan = BankingDatabase.getLoanById(loanId)
     if not loan then
-        return false, 'Credit nu există'
+        return false, Sw.T('banking.loan_not_found')
     end
     
     if loan.character_id ~= characterId then
-        return false, 'Creditul nu aparține caracterului'
+        return false, Sw.T('banking.loan_not_yours')
     end
     
     if loan.status ~= 'active' then
-        return false, 'Creditul nu este activ'
+        return false, Sw.T('banking.loan_not_active')
     end
     
     if amount < loan.monthly_payment then
-        return false, 'Sumă insuficientă pentru plată'
+        return false, Sw.T('banking.loan_payment_insufficient')
     end
     
     local accounts = BankingManager.getCharacterAccounts(characterId)
@@ -144,11 +144,11 @@ function LoanManager.makeLoanPayment(characterId, loanId, amount)
         if cash >= amount then
             balance = cash
         else
-            return false, 'Fonduri insuficiente'
+            return false, Sw.T('banking.error_insufficient_funds')
         end
     else
         if balance < amount then
-            return false, 'Fonduri insuficiente'
+            return false, Sw.T('banking.error_insufficient_funds')
         end
     end
     
@@ -205,14 +205,14 @@ function LoanManager.makeLoanPayment(characterId, loanId, amount)
                 loan.currency_id,
                 0.0,
                 nil,
-                'Plată credit',
+                Sw.T('banking.tx.loan_payment_desc'),
                 {loan_id = loanId, is_on_time = isOnTime}
             )
         end)
     end)
     
     if not success then
-        return false, 'Eroare la plată'
+        return false, Sw.T('banking.loan_payment_failed')
     end
     
     TriggerEvent('banking:loanPaymentMade', characterId, loanId, paymentAmount, loan.currency_id)
@@ -245,4 +245,4 @@ function LoanManager.getCharacterTotalDebt(characterId)
 end
 
 return LoanManager
-
+

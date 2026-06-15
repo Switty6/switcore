@@ -25,7 +25,7 @@ window.addEventListener('message', (e) => {
         renderSidebar();
         renderContent();
         overlay.classList.add('visible');
-        titleSub.textContent = `${allSettings.length} setări`;
+        titleSub.textContent = SwI18n.t('settings.ui.count_settings', allSettings.length);
     }
 
     if (action === 'close') {
@@ -38,7 +38,9 @@ window.addEventListener('message', (e) => {
         const { key, success, error } = data;
         const fb = document.querySelector(`.save-feedback[data-key="${CSS.escape(key)}"]`);
         if (!fb) return;
-        fb.innerHTML = success ? '<i data-lucide="check"></i> Salvat' : `<i data-lucide="x"></i> ${error || 'Eroare'}`;
+        fb.innerHTML = success
+            ? `<i data-lucide="check"></i> ${SwI18n.t('settings.ui.saved')}`
+            : `<i data-lucide="x"></i> ${error || SwI18n.t('settings.ui.error')}`;
         fb.className = `save-feedback ${success ? 'ok' : 'err'}`;
         if (window.lucide) lucide.createIcons({ nodes: fb.querySelectorAll('[data-lucide]') });
         clearTimeout(pendingSaves[key]);
@@ -46,6 +48,15 @@ window.addEventListener('message', (e) => {
             fb.innerHTML = '';
             fb.className = 'save-feedback';
         }, 3000);
+    }
+});
+
+// Re-randare la schimbarea dictionarului de limba (stringuri generate din JS)
+document.addEventListener('sw:i18n', () => {
+    if (overlay.classList.contains('visible')) {
+        titleSub.textContent = SwI18n.t('settings.ui.count_settings', allSettings.length);
+        renderSidebar();
+        renderContent();
     }
 });
 
@@ -105,13 +116,13 @@ function renderContent() {
     }
 
     const catLabel = query
-        ? `Căutare: "${query}"`
+        ? SwI18n.t('settings.ui.search_results', query)
         : (categories.find(c => c.id === activeCategory)?.label || activeCategory || '-');
 
     content.innerHTML = `
         <div class="content-header">
             <div class="content-title">${catLabel}</div>
-            <div class="content-count">${filtered.length} setări</div>
+            <div class="content-count">${SwI18n.t('settings.ui.count_settings', filtered.length)}</div>
         </div>
         <div class="settings-grid" id="settingsGrid"></div>
     `;
@@ -122,7 +133,7 @@ function renderContent() {
         grid.innerHTML = `
             <div class="empty-state">
                 <i data-lucide="inbox"></i>
-                <div>Nicio setare găsită</div>
+                <div>${SwI18n.t('settings.ui.no_settings')}</div>
             </div>`;
         lucide.createIcons({ nodes: grid.querySelectorAll('[data-lucide]') });
         return;
@@ -155,7 +166,7 @@ function buildCard(s) {
             ${s.readonly ? '' : `
             <div class="save-row">
                 <button class="btn-save" data-key="${escHtml(s.key)}">
-                    <i data-lucide="save"></i> Salvează
+                    <i data-lucide="save"></i> ${SwI18n.t('settings.ui.save')}
                 </button>
                 <span class="save-feedback" data-key="${escHtml(s.key)}"></span>
             </div>`}
@@ -195,7 +206,7 @@ function buildToggle(s) {
                 <input type="checkbox" data-key="${escHtml(s.key)}" ${checked ? 'checked' : ''}>
                 <span class="toggle-track"></span>
             </label>
-            <span class="toggle-label">${checked ? 'Activat' : 'Dezactivat'}</span>
+            <span class="toggle-label">${checked ? SwI18n.t('settings.ui.enabled') : SwI18n.t('settings.ui.disabled')}</span>
         </div>`;
 }
 
@@ -223,19 +234,19 @@ function buildLocationList(s) {
             <table class="loc-table">
                 <thead>
                     <tr>
-                        <th class="col-label">Label</th>
-                        <th class="col-code">Cod bancă</th>
-                        <th class="col-coord">X</th>
-                        <th class="col-coord">Y</th>
-                        <th class="col-coord">Z</th>
-                        <th class="col-coord">Heading</th>
+                        <th class="col-label">${SwI18n.t('settings.ui.col_label')}</th>
+                        <th class="col-code">${SwI18n.t('settings.ui.col_bankcode')}</th>
+                        <th class="col-coord">${SwI18n.t('settings.ui.col_x')}</th>
+                        <th class="col-coord">${SwI18n.t('settings.ui.col_y')}</th>
+                        <th class="col-coord">${SwI18n.t('settings.ui.col_z')}</th>
+                        <th class="col-coord">${SwI18n.t('settings.ui.col_heading')}</th>
                         <th class="col-act"></th>
                     </tr>
                 </thead>
                 <tbody id="locRows_${escHtml(s.key).replace(/\./g,'_')}">${rows}</tbody>
             </table>
             <button class="btn-add-row loc-add" data-key="${escHtml(s.key)}">
-                <i data-lucide="plus"></i> Adaugă locație
+                <i data-lucide="plus"></i> ${SwI18n.t('settings.ui.add_location')}
             </button>
         </div>`;
 }
@@ -264,23 +275,23 @@ function buildGarageList(s) {
             <table class="loc-table loc-table--wide">
                 <thead>
                     <tr>
-                        <th class="col-code">Cod</th>
-                        <th class="col-label">Nume</th>
-                        <th class="col-type">Tip</th>
-                        <th class="col-coord">X</th>
-                        <th class="col-coord">Y</th>
-                        <th class="col-coord">Z</th>
-                        <th class="col-coord">SpX</th>
-                        <th class="col-coord">SpY</th>
-                        <th class="col-coord">SpZ</th>
-                        <th class="col-coord">SpH</th>
+                        <th class="col-code">${SwI18n.t('settings.ui.col_code')}</th>
+                        <th class="col-label">${SwI18n.t('settings.ui.col_name')}</th>
+                        <th class="col-type">${SwI18n.t('settings.ui.col_type')}</th>
+                        <th class="col-coord">${SwI18n.t('settings.ui.col_x')}</th>
+                        <th class="col-coord">${SwI18n.t('settings.ui.col_y')}</th>
+                        <th class="col-coord">${SwI18n.t('settings.ui.col_z')}</th>
+                        <th class="col-coord">${SwI18n.t('settings.ui.col_spx')}</th>
+                        <th class="col-coord">${SwI18n.t('settings.ui.col_spy')}</th>
+                        <th class="col-coord">${SwI18n.t('settings.ui.col_spz')}</th>
+                        <th class="col-coord">${SwI18n.t('settings.ui.col_sph')}</th>
                         <th class="col-act"></th>
                     </tr>
                 </thead>
                 <tbody>${rows}</tbody>
             </table>
             <button class="btn-add-row garage-add" data-key="${escHtml(s.key)}">
-                <i data-lucide="plus"></i> Adaugă garaj
+                <i data-lucide="plus"></i> ${SwI18n.t('settings.ui.add_garage')}
             </button>
         </div>`;
 }
@@ -319,23 +330,23 @@ function buildDealerList(s) {
             <table class="loc-table loc-table--wide">
                 <thead>
                     <tr>
-                        <th class="col-code">Cod</th>
-                        <th class="col-label">Nume</th>
-                        <th class="col-coord">X</th>
-                        <th class="col-coord">Y</th>
-                        <th class="col-coord">Z</th>
-                        <th class="col-label">Model NPC</th>
-                        <th class="col-coord">SpX</th>
-                        <th class="col-coord">SpY</th>
-                        <th class="col-coord">SpZ</th>
-                        <th class="col-coord">SpH</th>
+                        <th class="col-code">${SwI18n.t('settings.ui.col_code')}</th>
+                        <th class="col-label">${SwI18n.t('settings.ui.col_name')}</th>
+                        <th class="col-coord">${SwI18n.t('settings.ui.col_x')}</th>
+                        <th class="col-coord">${SwI18n.t('settings.ui.col_y')}</th>
+                        <th class="col-coord">${SwI18n.t('settings.ui.col_z')}</th>
+                        <th class="col-label">${SwI18n.t('settings.ui.col_npcmodel')}</th>
+                        <th class="col-coord">${SwI18n.t('settings.ui.col_spx')}</th>
+                        <th class="col-coord">${SwI18n.t('settings.ui.col_spy')}</th>
+                        <th class="col-coord">${SwI18n.t('settings.ui.col_spz')}</th>
+                        <th class="col-coord">${SwI18n.t('settings.ui.col_sph')}</th>
                         <th class="col-act"></th>
                     </tr>
                 </thead>
                 <tbody>${rows}</tbody>
             </table>
             <button class="btn-add-row dealer-add" data-key="${escHtml(s.key)}">
-                <i data-lucide="plus"></i> Adaugă dealership
+                <i data-lucide="plus"></i> ${SwI18n.t('settings.ui.add_dealership')}
             </button>
         </div>`;
 }
@@ -372,7 +383,7 @@ function buildModelList(s) {
             ${items}
         </div>
         <button class="btn-add-row model-add" data-key="${escHtml(s.key)}">
-            <i data-lucide="plus"></i> Adaugă model
+            <i data-lucide="plus"></i> ${SwI18n.t('settings.ui.add_model')}
         </button>`;
 }
 
@@ -382,7 +393,7 @@ function attachCardHandlers(card, s) {
         const lbl = card.querySelector('.toggle-label');
         if (cb && lbl) {
             cb.addEventListener('change', () => {
-                lbl.textContent = cb.checked ? 'Activat' : 'Dezactivat';
+                lbl.textContent = cb.checked ? SwI18n.t('settings.ui.enabled') : SwI18n.t('settings.ui.disabled');
             });
         }
     }
@@ -485,7 +496,7 @@ function readCardValue(card, s) {
             try {
                 return JSON.stringify(JSON.parse(ta.value));
             } catch {
-                showFeedback(card, s.key, false, 'JSON invalid');
+                showFeedback(card, s.key, false, SwI18n.t('settings.ui.invalid_json'));
                 return null;
             }
         }
@@ -577,7 +588,9 @@ function saveCard(card, s) {
 function showFeedback(card, key, success, msg) {
     const fb = card.querySelector(`.save-feedback[data-key="${CSS.escape(key)}"]`);
     if (!fb) return;
-    fb.innerHTML = success ? '<i data-lucide="check"></i> Salvat' : `<i data-lucide="x"></i> ${msg || 'Eroare'}`;
+    fb.innerHTML = success
+        ? `<i data-lucide="check"></i> ${SwI18n.t('settings.ui.saved')}`
+        : `<i data-lucide="x"></i> ${msg || SwI18n.t('settings.ui.error')}`;
     fb.className = `save-feedback ${success ? 'ok' : 'err'}`;
     if (window.lucide) lucide.createIcons({ nodes: fb.querySelectorAll('[data-lucide]') });
 }

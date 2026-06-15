@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Guvern</title>
 <link rel="stylesheet" href="style.css">
+<script src="nui://core/ui/i18n.js"></script>
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 </head>
 <body>
@@ -14,13 +15,13 @@
 
     <div class="panel-header">
       <div class="panel-icon"><i data-lucide="scale"></i></div>
-      <span class="panel-title">GUVERNUL ROMÂNIEI</span>
+      <span class="panel-title" data-i18n="government.ui.panel_title">GUVERNUL ROMÂNIEI</span>
       <div class="header-stats">
         <span class="stat-item" id="hdr-balance">Trezorerie: -</span>
         <span class="stat-sep">·</span>
         <span class="stat-item" id="hdr-laws">Legi: -</span>
         <span class="stat-sep">·</span>
-        <span class="stat-item" id="hdr-officials">Funcționari online: -</span>
+        <span class="stat-item" id="hdr-officials" data-i18n="government.ui.hdr_officials_static">Funcționari online: -</span>
       </div>
       <button class="btn-close" id="btnClose"><i data-lucide="x"></i></button>
     </div>
@@ -28,19 +29,19 @@
     <div class="panel-body">
       <nav class="sidebar">
         <button class="nav-btn active" data-tab="dashboard">
-          <span class="nav-icon"><i data-lucide="layout-dashboard"></i></span> Dashboard
+          <span class="nav-icon"><i data-lucide="layout-dashboard"></i></span> <span data-i18n="government.ui.nav_dashboard">Dashboard</span>
         </button>
         <button class="nav-btn" data-tab="laws">
-          <span class="nav-icon"><i data-lucide="scale"></i></span> Legi
+          <span class="nav-icon"><i data-lucide="scale"></i></span> <span data-i18n="government.ui.nav_laws">Legi</span>
         </button>
         <button class="nav-btn" data-tab="budget">
-          <span class="nav-icon"><i data-lucide="wallet"></i></span> Buget
+          <span class="nav-icon"><i data-lucide="wallet"></i></span> <span data-i18n="government.ui.nav_budget">Buget</span>
         </button>
         <button class="nav-btn" data-tab="parties">
-          <span class="nav-icon"><i data-lucide="users"></i></span> Partide
+          <span class="nav-icon"><i data-lucide="users"></i></span> <span data-i18n="government.ui.nav_parties">Partide</span>
         </button>
         <button class="nav-btn" data-tab="elections">
-          <span class="nav-icon"><i data-lucide="vote"></i></span> Alegeri
+          <span class="nav-icon"><i data-lucide="vote"></i></span> <span data-i18n="government.ui.nav_elections">Alegeri</span>
         </button>
       </nav>
 
@@ -49,75 +50,75 @@
         <div class="tab-panel active" id="panel-dashboard">
           <div class="dash-cards">
             <div class="dash-card accent">
-              <div class="dash-card-label">Trezorerie</div>
+              <div class="dash-card-label" data-i18n="government.ui.dash_treasury">Trezorerie</div>
               <div class="dash-card-value" id="dash-balance">-</div>
             </div>
             <div class="dash-card">
-              <div class="dash-card-label">Legi active</div>
+              <div class="dash-card-label" data-i18n="government.ui.dash_active_laws">Legi active</div>
               <div class="dash-card-value" id="dash-laws">-</div>
             </div>
             <div class="dash-card">
-              <div class="dash-card-label">Propuneri în așteptare</div>
+              <div class="dash-card-label" data-i18n="government.ui.dash_pending_proposals">Propuneri în așteptare</div>
               <div class="dash-card-value" id="dash-proposals">-</div>
             </div>
             <div class="dash-card">
-              <div class="dash-card-label">Funcționari online</div>
+              <div class="dash-card-label" data-i18n="government.ui.dash_officials">Funcționari online</div>
               <div class="dash-card-value" id="dash-officials">-</div>
             </div>
           </div>
-          <div class="section-title">Funcționari online</div>
+          <div class="section-title" data-i18n="government.ui.officials_online">Funcționari online</div>
           <div id="officials-list" class="officials-list"></div>
-          <div class="section-title" style="margin-top:16px">Ultimele tranzacții</div>
+          <div class="section-title" style="margin-top:16px" data-i18n="government.ui.recent_transactions">Ultimele tranzacții</div>
           <div id="dash-recent-tx" class="recent-tx-list"></div>
         </div>
 
         <div class="tab-panel" id="panel-laws">
           <div class="sub-tabs">
-            <button class="sub-btn active" data-sub="proposals">Propuneri</button>
-            <button class="sub-btn" data-sub="active-laws">Legi active</button>
+            <button class="sub-btn active" data-sub="proposals" data-i18n="government.ui.sub_proposals">Propuneri</button>
+            <button class="sub-btn" data-sub="active-laws" data-i18n="government.ui.sub_active_laws">Legi active</button>
           </div>
 
           <div class="sub-panel active" id="sub-proposals">
             <div class="toolbar" id="propose-toolbar">
-              <button class="btn-primary" id="btnProposeLaw">+ Propune lege</button>
+              <button class="btn-primary" id="btnProposeLaw" data-i18n="government.ui.btn_propose_law">+ Propune lege</button>
             </div>
             <div id="propose-form" class="form-card hidden">
-              <div class="form-title">Propunere lege nouă</div>
+              <div class="form-title" data-i18n="government.ui.form_new_proposal">Propunere lege nouă</div>
               <div class="form-row">
-                <input type="text" id="law-title" placeholder="Titlu *" maxlength="200">
+                <input type="text" id="law-title" placeholder="Titlu *" data-i18n-placeholder="government.ui.ph_law_title" maxlength="200">
               </div>
               <div class="form-row">
                 <select id="law-category">
-                  <option value="">Categorie *</option>
-                  <option value="Penal">Penal</option>
-                  <option value="Rutier">Rutier</option>
-                  <option value="Civil">Civil</option>
-                  <option value="Fiscal">Fiscal</option>
-                  <option value="Ordine Publica">Ordine Publică</option>
-                  <option value="Muncii">Muncii</option>
+                  <option value="" data-i18n="government.ui.opt_category">Categorie *</option>
+                  <option value="Penal" data-i18n="government.ui.cat_penal">Penal</option>
+                  <option value="Rutier" data-i18n="government.ui.cat_rutier">Rutier</option>
+                  <option value="Civil" data-i18n="government.ui.cat_civil">Civil</option>
+                  <option value="Fiscal" data-i18n="government.ui.cat_fiscal">Fiscal</option>
+                  <option value="Ordine Publica" data-i18n="government.ui.cat_ordine_publica">Ordine Publică</option>
+                  <option value="Muncii" data-i18n="government.ui.cat_muncii">Muncii</option>
                 </select>
               </div>
               <div class="form-row">
-                <textarea id="law-desc" placeholder="Descriere / text lege *" rows="4" maxlength="2000"></textarea>
+                <textarea id="law-desc" placeholder="Descriere / text lege *" data-i18n-placeholder="government.ui.ph_law_desc" rows="4" maxlength="2000"></textarea>
               </div>
               <div class="form-row two-col">
-                <input type="text" id="law-penalty" placeholder="Sancțiune (opțional)" maxlength="200">
-                <input type="number" id="law-fine" placeholder="Amendă (RON)" min="0">
+                <input type="text" id="law-penalty" placeholder="Sancțiune (opțional)" data-i18n-placeholder="government.ui.ph_law_penalty" maxlength="200">
+                <input type="number" id="law-fine" placeholder="Amendă (RON)" data-i18n-placeholder="government.ui.ph_law_fine" min="0">
               </div>
               <div class="form-row">
                 <select id="law-duration">
-                  <option value="5">Termen vot: 5 minute</option>
-                  <option value="30">Termen vot: 30 minute</option>
-                  <option value="60">Termen vot: 1 oră</option>
-                  <option value="360">Termen vot: 6 ore</option>
-                  <option value="1440" selected>Termen vot: 24 ore</option>
-                  <option value="2880">Termen vot: 48 ore</option>
-                  <option value="10080">Termen vot: 7 zile</option>
+                  <option value="5" data-i18n="government.ui.duration_5min">Termen vot: 5 minute</option>
+                  <option value="30" data-i18n="government.ui.duration_30min">Termen vot: 30 minute</option>
+                  <option value="60" data-i18n="government.ui.duration_1h">Termen vot: 1 oră</option>
+                  <option value="360" data-i18n="government.ui.duration_6h">Termen vot: 6 ore</option>
+                  <option value="1440" selected data-i18n="government.ui.duration_24h">Termen vot: 24 ore</option>
+                  <option value="2880" data-i18n="government.ui.duration_48h">Termen vot: 48 ore</option>
+                  <option value="10080" data-i18n="government.ui.duration_7d">Termen vot: 7 zile</option>
                 </select>
               </div>
               <div class="form-actions">
-                <button class="btn-secondary" id="btnCancelLaw">Anulează</button>
-                <button class="btn-primary" id="btnSubmitLaw">Propune</button>
+                <button class="btn-secondary" id="btnCancelLaw" data-i18n="government.ui.btn_cancel">Anulează</button>
+                <button class="btn-primary" id="btnSubmitLaw" data-i18n="government.ui.btn_propose">Propune</button>
               </div>
             </div>
             <div id="proposals-list" class="list-container"></div>
@@ -131,43 +132,43 @@
         <div class="tab-panel" id="panel-budget">
           <div class="budget-header">
             <div class="balance-display">
-              <div class="balance-label">Sold Trezorerie</div>
+              <div class="balance-label" data-i18n="government.ui.treasury_balance">Sold Trezorerie</div>
               <div class="balance-value" id="budget-balance">-</div>
             </div>
-            <button class="btn-primary" id="btnAddTx">+ Tranzacție</button>
+            <button class="btn-primary" id="btnAddTx" data-i18n="government.ui.btn_add_tx">+ Tranzacție</button>
           </div>
 
           <div id="tx-form" class="form-card hidden">
-            <div class="form-title">Adaugă tranzacție</div>
+            <div class="form-title" data-i18n="government.ui.form_add_tx">Adaugă tranzacție</div>
             <div class="form-row two-col">
               <select id="tx-type">
-                <option value="income">Venit</option>
-                <option value="expense">Cheltuială</option>
+                <option value="income" data-i18n="government.ui.tx_income">Venit</option>
+                <option value="expense" data-i18n="government.ui.tx_expense">Cheltuială</option>
               </select>
               <select id="tx-category">
-                <option value="Taxe">Taxe</option>
-                <option value="Amenzi">Amenzi</option>
-                <option value="Magazine">Magazine</option>
-                <option value="Salarii">Salarii</option>
-                <option value="Infrastructura">Infrastructură</option>
-                <option value="Sanatate">Sănătate</option>
-                <option value="Securitate">Securitate</option>
-                <option value="Altele">Altele</option>
+                <option value="Taxe" data-i18n="government.ui.cat_taxe">Taxe</option>
+                <option value="Amenzi" data-i18n="government.ui.cat_amenzi">Amenzi</option>
+                <option value="Magazine" data-i18n="government.ui.cat_magazine">Magazine</option>
+                <option value="Salarii" data-i18n="government.ui.cat_salarii">Salarii</option>
+                <option value="Infrastructura" data-i18n="government.ui.cat_infrastructura">Infrastructură</option>
+                <option value="Sanatate" data-i18n="government.ui.cat_sanatate">Sănătate</option>
+                <option value="Securitate" data-i18n="government.ui.cat_securitate">Securitate</option>
+                <option value="Altele" data-i18n="government.ui.cat_altele">Altele</option>
               </select>
             </div>
             <div class="form-row">
-              <input type="number" id="tx-amount" placeholder="Sumă (RON) *" min="1">
+              <input type="number" id="tx-amount" placeholder="Sumă (RON) *" data-i18n-placeholder="government.ui.ph_tx_amount" min="1">
             </div>
             <div class="form-row">
-              <input type="text" id="tx-desc" placeholder="Descriere *" maxlength="500">
+              <input type="text" id="tx-desc" placeholder="Descriere *" data-i18n-placeholder="government.ui.ph_tx_desc" maxlength="500">
             </div>
             <div class="form-actions">
-              <button class="btn-secondary" id="btnCancelTx">Anulează</button>
-              <button class="btn-primary" id="btnSubmitTx">Salvează</button>
+              <button class="btn-secondary" id="btnCancelTx" data-i18n="government.ui.btn_cancel">Anulează</button>
+              <button class="btn-primary" id="btnSubmitTx" data-i18n="government.ui.btn_save">Salvează</button>
             </div>
           </div>
 
-          <div class="section-title">Istoric tranzacții</div>
+          <div class="section-title" data-i18n="government.ui.tx_history">Istoric tranzacții</div>
           <div id="budget-log" class="list-container tx-list"></div>
         </div>
 
@@ -175,50 +176,50 @@
           <div class="parties-layout">
             <div class="parties-left">
               <div class="toolbar">
-                <button class="btn-primary" id="btnCreateParty">+ Înființează partid</button>
-                <button class="btn-secondary hidden" id="btnLeaveParty">Ieși din partid</button>
+                <button class="btn-primary" id="btnCreateParty" data-i18n="government.ui.btn_create_party">+ Înființează partid</button>
+                <button class="btn-secondary hidden" id="btnLeaveParty" data-i18n="government.ui.btn_leave_party">Ieși din partid</button>
               </div>
               <div id="create-party-form" class="form-card hidden">
-                <div class="form-title">Înființare partid</div>
+                <div class="form-title" data-i18n="government.ui.form_create_party">Înființare partid</div>
                 <div class="form-row">
-                  <input type="text" id="party-name" placeholder="Nume partid *" maxlength="100">
+                  <input type="text" id="party-name" placeholder="Nume partid *" data-i18n-placeholder="government.ui.ph_party_name" maxlength="100">
                 </div>
                 <div class="form-row color-row">
-                  <label>Culoare partid:</label>
+                  <label data-i18n="government.ui.party_color_label">Culoare partid:</label>
                   <input type="color" id="party-color" value="#00b4ff">
                 </div>
                 <div class="form-actions">
-                  <button class="btn-secondary" id="btnCancelParty">Anulează</button>
-                  <button class="btn-primary" id="btnSubmitParty">Înființează</button>
+                  <button class="btn-secondary" id="btnCancelParty" data-i18n="government.ui.btn_cancel">Anulează</button>
+                  <button class="btn-primary" id="btnSubmitParty" data-i18n="government.ui.btn_found">Înființează</button>
                 </div>
               </div>
               <div id="parties-list" class="list-container parties-list"></div>
             </div>
             <div class="parties-right" id="party-detail">
-              <div class="empty-state">Selectează un partid</div>
+              <div class="empty-state" data-i18n="government.ui.select_party">Selectează un partid</div>
             </div>
           </div>
         </div>
 
         <div class="tab-panel" id="panel-elections">
           <div class="toolbar" id="election-toolbar">
-            <button class="btn-primary hidden" id="btnStartElection">+ Deschide alegeri</button>
+            <button class="btn-primary hidden" id="btnStartElection" data-i18n="government.ui.btn_start_election">+ Deschide alegeri</button>
           </div>
           <div id="start-election-form" class="form-card hidden">
-            <div class="form-title">Deschide alegeri</div>
+            <div class="form-title" data-i18n="government.ui.form_start_election">Deschide alegeri</div>
             <div class="form-row">
-              <input type="text" id="el-position" placeholder="Funcție (ex: Președinte) *" maxlength="100">
+              <input type="text" id="el-position" placeholder="Funcție (ex: Președinte) *" data-i18n-placeholder="government.ui.ph_position" maxlength="100">
             </div>
             <div class="form-row">
-              <textarea id="el-desc" placeholder="Descriere (opțional)" rows="2" maxlength="500"></textarea>
+              <textarea id="el-desc" placeholder="Descriere (opțional)" data-i18n-placeholder="government.ui.ph_election_desc" rows="2" maxlength="500"></textarea>
             </div>
             <div class="form-actions">
-              <button class="btn-secondary" id="btnCancelElection">Anulează</button>
-              <button class="btn-primary" id="btnSubmitElection">Deschide</button>
+              <button class="btn-secondary" id="btnCancelElection" data-i18n="government.ui.btn_cancel">Anulează</button>
+              <button class="btn-primary" id="btnSubmitElection" data-i18n="government.ui.btn_open">Deschide</button>
             </div>
           </div>
           <div id="elections-list" class="list-container elections-list"></div>
-          <div class="section-title" style="margin-top:16px">Alegeri încheiate</div>
+          <div class="section-title" style="margin-top:16px" data-i18n="government.ui.closed_elections">Alegeri încheiate</div>
           <div id="closed-elections-list" class="list-container"></div>
         </div>
 
@@ -233,19 +234,19 @@
     <div class="laws-pub-header">
       <div class="laws-pub-icon"><i data-lucide="scale"></i></div>
       <div>
-        <div class="laws-pub-title">CODUL LEGISLATIV</div>
-        <div class="laws-pub-sub">Legile în vigoare pe teritoriul statului</div>
+        <div class="laws-pub-title" data-i18n="government.ui.laws_pub_title">CODUL LEGISLATIV</div>
+        <div class="laws-pub-sub" data-i18n="government.ui.laws_pub_sub">Legile în vigoare pe teritoriul statului</div>
       </div>
       <button class="laws-pub-close" id="btnCloseLaws"><i data-lucide="x"></i></button>
     </div>
     <div class="laws-pub-filters">
-      <button class="law-filter active" data-cat="">Toate</button>
-      <button class="law-filter" data-cat="Penal">Penal</button>
-      <button class="law-filter" data-cat="Rutier">Rutier</button>
-      <button class="law-filter" data-cat="Civil">Civil</button>
-      <button class="law-filter" data-cat="Fiscal">Fiscal</button>
-      <button class="law-filter" data-cat="Ordine Publica">Ordine Publică</button>
-      <button class="law-filter" data-cat="Muncii">Muncii</button>
+      <button class="law-filter active" data-cat="" data-i18n="government.ui.filter_all">Toate</button>
+      <button class="law-filter" data-cat="Penal" data-i18n="government.ui.cat_penal">Penal</button>
+      <button class="law-filter" data-cat="Rutier" data-i18n="government.ui.cat_rutier">Rutier</button>
+      <button class="law-filter" data-cat="Civil" data-i18n="government.ui.cat_civil">Civil</button>
+      <button class="law-filter" data-cat="Fiscal" data-i18n="government.ui.cat_fiscal">Fiscal</button>
+      <button class="law-filter" data-cat="Ordine Publica" data-i18n="government.ui.cat_ordine_publica">Ordine Publică</button>
+      <button class="law-filter" data-cat="Muncii" data-i18n="government.ui.cat_muncii">Muncii</button>
     </div>
     <div id="laws-pub-list" class="laws-pub-list"></div>
     <div class="laws-pub-footer">
@@ -260,8 +261,8 @@
     <div class="laws-pub-header">
       <div class="laws-pub-icon"><i data-lucide="vote"></i></div>
       <div>
-        <div class="laws-pub-title">ALEGERI</div>
-        <div class="laws-pub-sub">Votează candidatul preferat</div>
+        <div class="laws-pub-title" data-i18n="government.ui.vote_pub_title">ALEGERI</div>
+        <div class="laws-pub-sub" data-i18n="government.ui.vote_pub_sub">Votează candidatul preferat</div>
       </div>
       <button class="laws-pub-close" id="btnCloseVote"><i data-lucide="x"></i></button>
     </div>

@@ -1,4 +1,6 @@
 -- IMPORTANT: PRIMUL server_script in fxmanifest - alte module se bazeaza pe Config global.
+exports.core:registerModuleLocales(GetCurrentResourceName())
+
 Config = {}
 
 local function FixKeys(t)

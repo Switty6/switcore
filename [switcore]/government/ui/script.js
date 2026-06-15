@@ -43,6 +43,11 @@ window.addEventListener('message', (event) => {
     }
 });
 
+// Re-randare a panoului principal la schimbarea limbii (data-i18n e aplicat automat de helper).
+document.addEventListener('sw:i18n', () => {
+    if (state.data && !app.classList.contains('hidden')) renderAll();
+});
+
 function closePanel() {
     app.classList.add('hidden');
     nuiFetch('close');
@@ -112,9 +117,9 @@ function renderAll() {
 }
 
 function renderHeader(d) {
-    document.getElementById('hdr-balance').textContent   = 'Trezorerie: ' + fmt(d.balance);
-    document.getElementById('hdr-laws').textContent      = 'Legi: ' + (d.laws || []).length;
-    document.getElementById('hdr-officials').textContent = 'Funcționari: ' + (d.officials || []).length;
+    document.getElementById('hdr-balance').textContent   = SwI18n.t('government.ui.hdr_treasury', fmt(d.balance));
+    document.getElementById('hdr-laws').textContent      = SwI18n.t('government.ui.hdr_laws', (d.laws || []).length);
+    document.getElementById('hdr-officials').textContent = SwI18n.t('government.ui.hdr_officials', (d.officials || []).length);
 }
 
 function renderDashboard(d) {
@@ -125,7 +130,7 @@ function renderDashboard(d) {
 
     const offList = document.getElementById('officials-list');
     if ((d.officials || []).length === 0) {
-        offList.innerHTML = '<span style="color:var(--text-dim);font-size:11px">Niciun funcționar online</span>';
+        offList.innerHTML = `<span style="color:var(--text-dim);font-size:11px">${SwI18n.t('government.ui.no_officials_online')}</span>`;
     } else {
         offList.innerHTML = d.officials.map(o =>
             `<span class="official-chip">${o.name}</span>`
@@ -135,7 +140,7 @@ function renderDashboard(d) {
     const recentLog = document.getElementById('dash-recent-tx');
     const recent = (d.budgetLog || []).slice(0, 5);
     if (recent.length === 0) {
-        recentLog.innerHTML = '<span style="color:var(--text-dim);font-size:11px">Nicio tranzacție</span>';
+        recentLog.innerHTML = `<span style="color:var(--text-dim);font-size:11px">${SwI18n.t('government.ui.no_transactions')}</span>`;
     } else {
         recentLog.innerHTML = recent.map(tx => {
             const sign = tx.type === 'income' ? '+' : '-';
@@ -199,18 +204,18 @@ function renderProposals(d) {
     const canVote   = d.perms && d.perms.laws;
 
     if (proposals.length === 0) {
-        list.innerHTML = '<div class="empty-state">Nicio propunere în așteptare</div>';
+        list.innerHTML = `<div class="empty-state">${SwI18n.t('government.ui.no_pending_proposals')}</div>`;
         return;
     }
 
     list.innerHTML = proposals.map(p => {
         const yesVotes = p.yes_votes || 0;
         const noVotes  = p.no_votes  || 0;
-        const tally = `<span class="vote-tally"><span class="vote-yes">${yesVotes}</span> Da · <span class="vote-no">${noVotes}</span> Nu · cvorum ${quorum}</span>`;
+        const tally = `<span class="vote-tally">${SwI18n.t('government.ui.vote_tally', `<span class="vote-yes">${yesVotes}</span>`, `<span class="vote-no">${noVotes}</span>`, quorum)}</span>`;
         const footer = canVote ? `
             <div class="proposal-vote">
-                <button class="vote-btn vote-btn-yes" data-id="${p.id}" data-vote="yes">Da</button>
-                <button class="vote-btn vote-btn-no"  data-id="${p.id}" data-vote="no">Nu</button>
+                <button class="vote-btn vote-btn-yes" data-id="${p.id}" data-vote="yes">${SwI18n.t('government.ui.vote_yes')}</button>
+                <button class="vote-btn vote-btn-no"  data-id="${p.id}" data-vote="no">${SwI18n.t('government.ui.vote_no')}</button>
             </div>
             ${tally}
         ` : tally;
@@ -221,12 +226,12 @@ function renderProposals(d) {
                 ${catBadge(p.category)}
             </div>
             <div class="proposal-sub">
-                <span>Propus de ${p.proposed_by_name || '-'}</span>
+                <span>${SwI18n.t('government.ui.proposed_by', p.proposed_by_name || '-')}</span>
                 <span>${fmtDate(p.created_at)}</span>
-                ${p.voting_ends_at ? `<span>Termen vot: ${fmtDate(p.voting_ends_at)}</span>` : ''}
+                ${p.voting_ends_at ? `<span>${SwI18n.t('government.ui.vote_deadline', fmtDate(p.voting_ends_at))}</span>` : ''}
             </div>
             <div class="proposal-desc">${p.description}</div>
-            ${(p.penalty || p.fine_amount) ? `<div class="proposal-penalty">${p.penalty || ''}${p.fine_amount ? (p.penalty ? ' · ' : '') + 'Amendă: ' + fmt(p.fine_amount) : ''}</div>` : ''}
+            ${(p.penalty || p.fine_amount) ? `<div class="proposal-penalty">${p.penalty || ''}${p.fine_amount ? (p.penalty ? ' · ' : '') + SwI18n.t('government.ui.fine_label', fmt(p.fine_amount)) : ''}</div>` : ''}
             <div class="proposal-footer">${footer}</div>
         </div>`;
     }).join('');
@@ -244,7 +249,7 @@ function renderActiveLaws(d) {
     const canRepeal = d.perms && d.perms.laws;
 
     if (laws.length === 0) {
-        list.innerHTML = '<div class="empty-state">Nicio lege activă</div>';
+        list.innerHTML = `<div class="empty-state">${SwI18n.t('government.ui.no_active_laws')}</div>`;
         return;
     }
 
@@ -253,12 +258,12 @@ function renderActiveLaws(d) {
             <div class="law-header">
                 <span class="law-title">${l.title}</span>
                 ${catBadge(l.category)}
-                <span class="badge badge-success">Activă</span>
+                <span class="badge badge-success">${SwI18n.t('government.ui.law_active')}</span>
             </div>
-            <div class="law-meta">Adoptată de ${l.created_by_name || '-'} · ${fmtDate(l.created_at)}</div>
+            <div class="law-meta">${SwI18n.t('government.ui.law_adopted_by', l.created_by_name || '-', fmtDate(l.created_at))}</div>
             <div class="law-desc">${l.description}</div>
-            ${l.penalty ? `<div class="law-penalty"><i data-lucide="alert-triangle"></i> ${l.penalty}${l.fine_amount ? ' · Amendă: ' + fmt(l.fine_amount) : ''}</div>` : ''}
-            ${canRepeal ? `<div class="law-actions"><button class="btn-danger repeal-btn" data-id="${l.id}">Abrogă</button></div>` : ''}
+            ${l.penalty ? `<div class="law-penalty"><i data-lucide="alert-triangle"></i> ${l.penalty}${l.fine_amount ? ' · ' + SwI18n.t('government.ui.fine_label', fmt(l.fine_amount)) : ''}</div>` : ''}
+            ${canRepeal ? `<div class="law-actions"><button class="btn-danger repeal-btn" data-id="${l.id}">${SwI18n.t('government.ui.btn_repeal')}</button></div>` : ''}
         </div>
     `).join('');
 
@@ -301,22 +306,22 @@ function renderBudget(d) {
     const txs = d.budgetLog || [];
 
     if (txs.length === 0) {
-        log.innerHTML = '<div class="empty-state">Nicio tranzacție înregistrată</div>';
+        log.innerHTML = `<div class="empty-state">${SwI18n.t('government.ui.no_tx_recorded')}</div>`;
         return;
     }
 
     log.innerHTML = txs.map(tx => {
         const sign = tx.type === 'income' ? '+' : '-';
         const cls  = tx.type === 'income' ? 'tx-income' : 'tx-expense';
-        const desc = tx.description || (tx.type === 'income' ? 'Venit' : 'Cheltuială');
+        const desc = tx.description || (tx.type === 'income' ? SwI18n.t('government.ui.tx_income') : SwI18n.t('government.ui.tx_expense'));
         return `<div class="tx-row tx-row-${tx.type === 'income' ? 'income' : 'expense'}">
             <div class="tx-main">
-                <span class="badge badge-gray">${tx.category || 'Altele'}</span>
+                <span class="badge badge-gray">${tx.category || SwI18n.t('government.ui.cat_altele')}</span>
                 <span class="tx-desc-full">${desc}</span>
             </div>
             <div class="tx-side">
                 <span class="tx-amount ${cls}">${sign}${fmt(tx.amount)}</span>
-                <span class="tx-meta">${tx.created_by_name || 'Auto'} · ${fmtDate(tx.created_at)}</span>
+                <span class="tx-meta">${tx.created_by_name || SwI18n.t('government.ui.tx_auto')} · ${fmtDate(tx.created_at)}</span>
             </div>
         </div>`;
     }).join('');
@@ -351,13 +356,13 @@ function renderParties(d) {
     const partyList = document.getElementById('parties-list');
 
     if (parties.length === 0) {
-        partyList.innerHTML = '<div class="empty-state">Niciun partid înființat</div>';
+        partyList.innerHTML = `<div class="empty-state">${SwI18n.t('government.ui.no_parties')}</div>`;
     } else {
         partyList.innerHTML = parties.map(p => `
             <div class="party-item ${state.selectedPartyId === p.id ? 'selected' : ''}" data-id="${p.id}">
                 <span class="party-dot" style="background:${p.color}"></span>
                 <span class="party-name">${p.name}</span>
-                <span class="party-members">${p.member_count} m.</span>
+                <span class="party-members">${SwI18n.t('government.ui.members_short', p.member_count)}</span>
             </div>
         `).join('');
 
@@ -373,30 +378,30 @@ function renderParties(d) {
     const party  = parties.find(p => p.id === state.selectedPartyId);
 
     if (!party) {
-        detail.innerHTML = '<div class="empty-state">Selectează un partid</div>';
+        detail.innerHTML = `<div class="empty-state">${SwI18n.t('government.ui.select_party')}</div>`;
         return;
     }
 
-    const manifesto = party.manifesto || '<em style="color:var(--text-dim)">Niciun manifest înregistrat.</em>';
+    const manifesto = party.manifesto || `<em style="color:var(--text-dim)">${SwI18n.t('government.ui.no_manifesto')}</em>`;
 
     detail.innerHTML = `
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
             <span class="party-dot" style="background:${party.color};width:14px;height:14px"></span>
             <span class="party-detail-name">${party.name}</span>
         </div>
-        <div class="party-detail-meta">Lider: ${party.leader_name || '-'} · ${party.member_count} membri</div>
-        <div class="section-title">Manifest</div>
+        <div class="party-detail-meta">${SwI18n.t('government.ui.party_leader', party.leader_name || '-', party.member_count)}</div>
+        <div class="section-title">${SwI18n.t('government.ui.manifesto')}</div>
         <div class="party-manifesto">${manifesto}</div>
-        <div class="section-title">Acțiuni</div>
+        <div class="section-title">${SwI18n.t('government.ui.actions')}</div>
         <div style="display:flex;gap:6px;flex-wrap:wrap">
-            <button class="btn-primary" id="btn-join-party" data-id="${party.id}">Alătură-te</button>
-            <button class="btn-secondary" id="btn-edit-manifesto" data-id="${party.id}">Editează manifest</button>
+            <button class="btn-primary" id="btn-join-party" data-id="${party.id}">${SwI18n.t('government.ui.btn_join')}</button>
+            <button class="btn-secondary" id="btn-edit-manifesto" data-id="${party.id}">${SwI18n.t('government.ui.btn_edit_manifesto')}</button>
         </div>
         <div id="manifesto-edit-form" class="hidden" style="margin-top:10px">
-            <textarea id="manifesto-text" rows="5" placeholder="Manifestul partidului..." maxlength="5000">${party.manifesto || ''}</textarea>
+            <textarea id="manifesto-text" rows="5" placeholder="${SwI18n.t('government.ui.ph_manifesto')}" maxlength="5000">${party.manifesto || ''}</textarea>
             <div style="display:flex;gap:6px;margin-top:6px;justify-content:flex-end">
-                <button class="btn-secondary" id="btn-cancel-manifesto">Anulează</button>
-                <button class="btn-primary" id="btn-save-manifesto">Salvează</button>
+                <button class="btn-secondary" id="btn-cancel-manifesto">${SwI18n.t('government.ui.btn_cancel')}</button>
+                <button class="btn-primary" id="btn-save-manifesto">${SwI18n.t('government.ui.btn_save')}</button>
             </div>
         </div>
     `;
@@ -448,31 +453,31 @@ function renderElections(d) {
     const closedList    = document.getElementById('closed-elections-list');
 
     if (elections.length === 0) {
-        list.innerHTML = '<div class="empty-state">Nicio alegere activă</div>';
+        list.innerHTML = `<div class="empty-state">${SwI18n.t('government.ui.no_active_election')}</div>`;
     } else {
         list.innerHTML = elections.map(el => {
             const candidates = el.candidates || [];
             const candRows = candidates.length === 0
-                ? '<div style="color:var(--text-dim);font-size:11px">Niciun candidat</div>'
+                ? `<div style="color:var(--text-dim);font-size:11px">${SwI18n.t('government.ui.no_candidates')}</div>`
                 : candidates.map(c => `
                     <div class="candidate-row">
                         <span class="candidate-name">${c.char_name}</span>
                         ${c.party_name ? `<span class="candidate-party" style="color:${c.party_color||'var(--text-dim)'}">● ${c.party_name}</span>` : ''}
-                        <span class="candidate-votes">${c.votes} vot${c.votes !== 1 ? 'uri' : ''}</span>
-                        <button class="btn-primary vote-cand" style="padding:3px 8px;font-size:11px" data-eid="${el.id}" data-cid="${c.id}">Votează</button>
+                        <span class="candidate-votes">${SwI18n.t(c.votes === 1 ? 'government.ui.votes_one' : 'government.ui.votes_many', c.votes)}</span>
+                        <button class="btn-primary vote-cand" style="padding:3px 8px;font-size:11px" data-eid="${el.id}" data-cid="${c.id}">${SwI18n.t('government.ui.btn_vote')}</button>
                     </div>
                 `).join('');
 
             return `<div class="election-card">
                 <div class="election-header">
                     <span class="election-position">${el.position}</span>
-                    <span class="badge badge-success">Activ</span>
+                    <span class="badge badge-success">${SwI18n.t('government.ui.election_active')}</span>
                 </div>
                 ${el.description ? `<div class="election-desc">${el.description}</div>` : ''}
                 <div class="candidates-grid">${candRows}</div>
                 <div class="election-actions">
-                    <button class="btn-secondary candidate-btn" data-id="${el.id}">Candidează</button>
-                    ${canManageEl ? `<button class="btn-danger close-el-btn" data-id="${el.id}">Închide alegerile</button>` : ''}
+                    <button class="btn-secondary candidate-btn" data-id="${el.id}">${SwI18n.t('government.ui.btn_candidate')}</button>
+                    ${canManageEl ? `<button class="btn-danger close-el-btn" data-id="${el.id}">${SwI18n.t('government.ui.btn_close_election')}</button>` : ''}
                 </div>
             </div>`;
         }).join('');
@@ -495,7 +500,7 @@ function renderElections(d) {
     }
 
     if (closedEl.length === 0) {
-        closedList.innerHTML = '<div class="empty-state" style="height:40px">Nicio alegere închisă</div>';
+        closedList.innerHTML = `<div class="empty-state" style="height:40px">${SwI18n.t('government.ui.no_closed_election')}</div>`;
     } else {
         closedList.innerHTML = closedEl.map(el => `
             <div class="closed-election-row">
@@ -524,12 +529,12 @@ function renderElections(d) {
             ? allLaws.filter(l => l.category === activeFilter)
             : allLaws;
 
-        lawsPubCount.textContent = filtered.length + ' lege' + (filtered.length !== 1 ? 'i' : '') + ' în vigoare';
+        lawsPubCount.textContent = SwI18n.t(filtered.length === 1 ? 'government.ui.laws_count_one' : 'government.ui.laws_count_many', filtered.length);
 
         if (filtered.length === 0) {
             lawsPubList.innerHTML = `<div class="laws-pub-empty">
                 <span class="laws-pub-empty-icon"><i data-lucide="scale"></i></span>
-                <span>Nicio lege în această categorie</span>
+                <span>${SwI18n.t('government.ui.no_laws_in_category')}</span>
             </div>`;
             return;
         }
@@ -537,12 +542,12 @@ function renderElections(d) {
         lawsPubList.innerHTML = filtered.map((l, i) => `
             <div class="laws-pub-card" data-cat="${l.category}">
                 <div class="laws-pub-card-header">
-                    <span class="laws-pub-card-title">Art. ${i + 1}. ${l.title}</span>
+                    <span class="laws-pub-card-title">${SwI18n.t('government.ui.article', i + 1, l.title)}</span>
                     <span class="badge ${catColors[l.category] || 'badge-gray'}">${l.category}</span>
                 </div>
                 <div class="laws-pub-card-desc">${l.description}</div>
                 ${l.penalty || l.fine_amount ? `<span class="laws-pub-card-penalty">
-                    <i data-lucide="alert-triangle"></i> ${l.penalty || ''}${l.fine_amount ? (l.penalty ? ' · ' : '') + 'Amendă: ' + new Intl.NumberFormat('ro-RO').format(l.fine_amount) + ' RON' : ''}
+                    <i data-lucide="alert-triangle"></i> ${l.penalty || ''}${l.fine_amount ? (l.penalty ? ' · ' : '') + SwI18n.t('government.ui.fine_label', new Intl.NumberFormat('ro-RO').format(l.fine_amount) + ' RON') : ''}
                 </span>` : ''}
             </div>
         `).join('');
@@ -580,35 +585,41 @@ function renderElections(d) {
         lawsPub.classList.add('hidden');
         nuiFetch('closeLaws');
     });
+
+    document.addEventListener('sw:i18n', () => {
+        if (!lawsPub.classList.contains('hidden')) renderPublicLaws();
+    });
 })();
 
 // Vot public la alegeri (comanda /vot) - orice cetatean poate vota, fara restul panoului.
 (function () {
     const votePub     = document.getElementById('vote-public');
     const votePubList = document.getElementById('vote-pub-list');
+    let lastElections = [];
 
     function renderVote(elections) {
-        const list = Array.isArray(elections) ? elections : [];
+        lastElections = Array.isArray(elections) ? elections : [];
+        const list = lastElections;
         if (list.length === 0) {
-            votePubList.innerHTML = '<div class="empty-state">Nicio alegere activă în acest moment</div>';
+            votePubList.innerHTML = `<div class="empty-state">${SwI18n.t('government.ui.no_active_election_now')}</div>`;
             return;
         }
         votePubList.innerHTML = list.map(el => {
             const candidates = Array.isArray(el.candidates) ? el.candidates : [];
             const candRows = candidates.length === 0
-                ? '<div style="color:var(--text-dim);font-size:11px">Niciun candidat înscris</div>'
+                ? `<div style="color:var(--text-dim);font-size:11px">${SwI18n.t('government.ui.no_candidates_registered')}</div>`
                 : candidates.map(c => `
                     <div class="candidate-row">
                         <span class="candidate-name">${c.char_name}</span>
                         ${c.party_name ? `<span class="candidate-party" style="color:${c.party_color || 'var(--text-dim)'}">● ${c.party_name}</span>` : ''}
-                        <span class="candidate-votes">${c.votes} vot${c.votes !== 1 ? 'uri' : ''}</span>
-                        <button class="btn-primary vote-cand" style="padding:3px 8px;font-size:11px" data-eid="${el.id}" data-cid="${c.id}">Votează</button>
+                        <span class="candidate-votes">${SwI18n.t(c.votes === 1 ? 'government.ui.votes_one' : 'government.ui.votes_many', c.votes)}</span>
+                        <button class="btn-primary vote-cand" style="padding:3px 8px;font-size:11px" data-eid="${el.id}" data-cid="${c.id}">${SwI18n.t('government.ui.btn_vote')}</button>
                     </div>
                 `).join('');
             return `<div class="election-card">
                 <div class="election-header">
                     <span class="election-position">${el.position}</span>
-                    <span class="badge badge-success">Activ</span>
+                    <span class="badge badge-success">${SwI18n.t('government.ui.election_active')}</span>
                 </div>
                 ${el.description ? `<div class="election-desc">${el.description}</div>` : ''}
                 <div class="candidates-grid">${candRows}</div>
@@ -642,6 +653,10 @@ function renderElections(d) {
     document.getElementById('vote-pub-overlay').addEventListener('click', close);
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && !votePub.classList.contains('hidden')) close();
+    });
+
+    document.addEventListener('sw:i18n', () => {
+        if (!votePub.classList.contains('hidden')) renderVote(lastElections);
     });
 })();
 

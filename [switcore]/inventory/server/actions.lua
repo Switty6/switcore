@@ -60,7 +60,7 @@ Sw.SecureEvent('switcore:inventoryMoveItem', {
     local toWeight = exports.inventory:GetInventoryTotalWeight(toInvId)
     if toInvId ~= fromInvId then
         if toWeight + (cfg.weight * amount) > toInv.maxWeight then
-            TriggerClientEvent("switcore:showNotification", src, "Inventar prea plin!", "error")
+            TriggerClientEvent("switcore:showNotification", src, Sw.TP(src, 'inventory.notify.inventory_too_full'), "error")
             return
         end
     end
@@ -85,7 +85,7 @@ Sw.SecureEvent('switcore:inventoryMoveItem', {
                     local targetW = (targetCfg and targetCfg.weight) or 0
                     local currentFromW = exports.inventory:GetInventoryTotalWeight(fromInvId)
                     if (currentFromW - (cfg.weight*amount) + (targetW*targetSlotData.amount)) > fromInv.maxWeight then
-                        TriggerClientEvent("switcore:showNotification", src, "Inventarul sursă nu poate susține schimbul de greutate!", "error")
+                        TriggerClientEvent("switcore:showNotification", src, Sw.TP(src, 'inventory.notify.source_weight_cannot_support'), "error")
                         return
                     end
                 end
@@ -96,7 +96,7 @@ Sw.SecureEvent('switcore:inventoryMoveItem', {
                 InventoryDB.saveSlot(fromInvId, fromSlot, targetSlotData)
                 InventoryDB.saveSlot(toInvId, toSlot, item)
             else
-                TriggerClientEvent("switcore:showNotification", src, "Slot ocupat!", "error")
+                TriggerClientEvent("switcore:showNotification", src, Sw.TP(src, 'inventory.notify.slot_occupied'), "error")
                 return
             end
         end
@@ -143,7 +143,7 @@ Sw.SecureEvent('switcore:inventoryUseItem', {
 
     local cfg = GetItemConfig(item.name)
     if not cfg or not cfg.usable then
-        TriggerClientEvent("switcore:showNotification", src, "Acest item nu se poate folosi.")
+        TriggerClientEvent("switcore:showNotification", src, Sw.TP(src, 'inventory.notify.item_not_usable'))
         return
     end
 
@@ -266,7 +266,7 @@ Sw.SecureEvent('switcore:inventoryGiveItem', {
     local targetPed = GetPlayerPed(targetSrc)
     if srcPed == 0 or targetPed == 0 then return end
     if #(GetEntityCoords(srcPed) - GetEntityCoords(targetPed)) > 3.5 then
-        TriggerClientEvent('switcore:showNotification', src, 'Jucătorul este prea departe.', 'error')
+        TriggerClientEvent('switcore:showNotification', src, Sw.TP(src, 'inventory.notify.player_too_far'), 'error')
         return
     end
 
@@ -277,7 +277,7 @@ Sw.SecureEvent('switcore:inventoryGiveItem', {
 
     local targetCharacter = exports.characters:getActiveCharacter(targetSrc)
     if not targetCharacter or not targetCharacter.id then
-        TriggerClientEvent('switcore:showNotification', src, 'Țintă invalidă.', 'error')
+        TriggerClientEvent('switcore:showNotification', src, Sw.TP(src, 'inventory.notify.invalid_target'), 'error')
         return
     end
 
@@ -285,7 +285,7 @@ Sw.SecureEvent('switcore:inventoryGiveItem', {
 
     local okAdd, errAdd = exports.inventory:AddItem(targetInvId, item.name, amount, item.metadata)
     if not okAdd then
-        TriggerClientEvent('switcore:showNotification', src, 'Eroare: ' .. tostring(errAdd), 'error')
+        TriggerClientEvent('switcore:showNotification', src, Sw.TP(src, 'inventory.notify.give_error', tostring(errAdd)), 'error')
         return
     end
 
@@ -293,8 +293,8 @@ Sw.SecureEvent('switcore:inventoryGiveItem', {
 
     local cfg = GetItemConfig(item.name)
     local label = (cfg and cfg.label) or item.name
-    TriggerClientEvent('switcore:notify', src,       'success', ('Ai oferit %dx %s.'):format(amount, label), 3000)
-    TriggerClientEvent('switcore:notify', targetSrc, 'success', ('Ai primit %dx %s.'):format(amount, label), 3000)
+    TriggerClientEvent('switcore:notify', src,       'success', Sw.TP(src, 'inventory.notify.gave_item', amount, label), 3000)
+    TriggerClientEvent('switcore:notify', targetSrc, 'success', Sw.TP(targetSrc, 'inventory.notify.received_item', amount, label), 3000)
 end)
 
 RegisterNetEvent('switcore:characterLoaded')

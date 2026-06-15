@@ -38,4 +38,9 @@ client_scripts {
     'client/npc_management.lua'
 }
 
+-- helper de i18n pentru NUI, referit de alte resurse ca nui://core/ui/i18n.js
+files {
+    'ui/i18n.js'
+}
+
 lua54 'yes'

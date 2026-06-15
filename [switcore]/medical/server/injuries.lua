@@ -1,14 +1,6 @@
 local playerInjuries = {}
 local playerLastHP   = {}
 
-local INJURY_LABELS = {
-    gunshot_leg   = 'Impuscat in picior',
-    gunshot_chest = 'Impuscat in piept',
-    bruise        = 'Vanatai',
-    broken_bone   = 'Os rupt',
-    stab          = 'Injunghiat',
-}
-
 local VALID_INJURY_TYPES = {
     gunshot_leg = true, gunshot_chest = true,
     bruise = true, broken_bone = true, stab = true,
@@ -83,8 +75,9 @@ function ApplyInjury(source, injuryType, location, severity)
 
     SyncInjuriesToClient(source)
 
-    local label = INJURY_LABELS[injuryType] or injuryType
-    Notify(source, 'error', label .. ' - Ai nevoie de ingrijiri medicale!', 6000)
+    local label = Sw.TP(source, 'medical.injury_label.' .. injuryType)
+    if label == 'medical.injury_label.' .. injuryType then label = injuryType end
+    Notify(source, 'error', Sw.TP(source, 'medical.injury_needs_care', label), 6000)
 
     return id
 end

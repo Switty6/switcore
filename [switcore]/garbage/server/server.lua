@@ -1,3 +1,5 @@
+exports.core:registerModuleLocales(GetCurrentResourceName())
+
 local function getActiveChar(src)
     local ok, char = pcall(function()
         return exports.characters:getActiveCharacter(src)
@@ -72,8 +74,8 @@ function CheckGarbagePromotion(charId, src)
             exports.jobs:SetCharacterGrade(charId, grade)
             local updated = exports.jobs:GetCharacterJob(charId)
             TriggerClientEvent('jobs:client:jobUpdated', src, updated)
-            notify(src, 'success', 'Promovare!',
-                'Ai avansat la ' .. (updated and updated.gradeLabel or 'grad nou') .. '!')
+            notify(src, 'success', Sw.TP(src, 'garbage.title_promotion'),
+                Sw.TP(src, 'garbage.promoted', (updated and updated.gradeLabel) or Sw.TP(src, 'garbage.promotion_new_grade')))
             return
         end
     end

@@ -98,7 +98,7 @@ Sw.SecureEvent('mecanic:server:openTablet', {
     local char = ctx.character
 
     if not hasPermission(char.id, 'inspect') then
-        notify(src, 'error', 'Acces interzis', 'Nu esti mecanic.')
+        notify(src, 'error', Sw.TP(src, 'mecanic.err_access_denied'), Sw.TP(src, 'mecanic.err_no_mechanic'))
         return
     end
 
@@ -134,12 +134,12 @@ Sw.SecureEvent('mecanic:server:requestService', {
 
     local call = MecanicDB.createCall(char.id, vehicleId, problemType, location)
     if not call then
-        notify(src, 'error', 'Eroare', 'Nu s-a putut crea cererea de serviciu.')
+        notify(src, 'error', Sw.TP(src, 'mecanic.err_generic'), Sw.TP(src, 'mecanic.call_create_failed'))
         return
     end
 
-    notify(src, 'info', 'Mecanic chemat',
-        'Cererea a fost trimisa. Asteapta un mecanic disponibil.')
+    notify(src, 'info', Sw.TP(src, 'mecanic.mechanic_called_title'),
+        Sw.TP(src, 'mecanic.mechanic_called_msg'))
 
     local callData = {
         id          = call.id,
@@ -165,23 +165,23 @@ Sw.SecureEvent('mecanic:server:acceptCall', {
     local callId = ctx.args.callId
 
     if not hasPermission(char.id, 'roadside') then
-        notify(src, 'error', 'Acces interzis', 'Nu ai permisiunea de asistenta rutiera.')
+        notify(src, 'error', Sw.TP(src, 'mecanic.err_access_denied'), Sw.TP(src, 'mecanic.err_no_roadside_perm'))
         return
     end
 
     local call = MecanicDB.getCallById(callId)
     if not call or call.status ~= 'pending' then
-        notify(src, 'error', 'Cerere invalida', 'Cererea nu mai este disponibila.')
+        notify(src, 'error', Sw.TP(src, 'mecanic.call_invalid_title'), Sw.TP(src, 'mecanic.call_unavailable'))
         return
     end
 
     local ok = MecanicDB.acceptCall(callId, char.id)
     if not ok then
-        notify(src, 'error', 'Eroare', 'Nu s-a putut accepta cererea.')
+        notify(src, 'error', Sw.TP(src, 'mecanic.err_generic'), Sw.TP(src, 'mecanic.call_accept_failed'))
         return
     end
 
-    notify(src, 'success', 'Cerere acceptata', 'Deplaseaza-te la locatia clientului.')
+    notify(src, 'success', Sw.TP(src, 'mecanic.call_accepted_title'), Sw.TP(src, 'mecanic.call_accepted_msg'))
     TriggerClientEvent('mecanic:client:callAccepted', src, {
         callId   = callId,
         location = type(call.location) == 'string' and json.decode(call.location) or call.location,
@@ -189,10 +189,8 @@ Sw.SecureEvent('mecanic:server:acceptCall', {
 
     local clientSrc = findSourceForChar(call.client_char_id)
     if clientSrc then
-        local job = exports.jobs:GetCharacterJob(char.id)
-        notify(clientSrc, 'info', 'Mecanic in drum',
-            string.format('Mecanicul %s %s se deplaseaza catre tine.',
-                char.first_name, char.last_name))
+        notify(clientSrc, 'info', Sw.TP(clientSrc, 'mecanic.mechanic_enroute_title'),
+            Sw.TP(clientSrc, 'mecanic.mechanic_enroute_msg', char.first_name, char.last_name))
     end
 end)
 
@@ -212,7 +210,7 @@ Sw.SecureEvent('mecanic:server:cancelCall', {
     if not call or call.client_char_id ~= char.id then return end
 
     MecanicDB.cancelCall(callId)
-    notify(src, 'warning', 'Cerere anulata', 'Cererea de mecanic a fost anulata.')
+    notify(src, 'warning', Sw.TP(src, 'mecanic.call_cancelled_title'), Sw.TP(src, 'mecanic.call_cancelled_msg'))
 end)
 
 Sw.SecureEvent('mecanic:server:performService', {
@@ -235,7 +233,7 @@ Sw.SecureEvent('mecanic:server:performService', {
     local clientChar  = getActiveChar(clientSrc)
 
     if not clientChar then
-        notify(src, 'error', 'Eroare', 'Clientul nu mai este conectat.')
+        notify(src, 'error', Sw.TP(src, 'mecanic.err_generic'), Sw.TP(src, 'mecanic.client_disconnected'))
         return
     end
 
@@ -256,13 +254,13 @@ Sw.SecureEvent('mecanic:server:performService', {
 
     local requiredPerm = permMap[serviceType]
     if not requiredPerm or not hasPermission(char.id, requiredPerm) then
-        notify(src, 'error', 'Acces interzis', 'Nu ai permisiunea pentru acest serviciu.')
+        notify(src, 'error', Sw.TP(src, 'mecanic.err_access_denied'), Sw.TP(src, 'mecanic.err_no_service_perm'))
         return
     end
 
     local vehicle = exports.vehicles:getOwnedVehicle(vehicleId)
     if not vehicle then
-        notify(src, 'error', 'Eroare', 'Vehiculul nu a fost gasit.')
+        notify(src, 'error', Sw.TP(src, 'mecanic.err_generic'), Sw.TP(src, 'mecanic.vehicle_not_found'))
         return
     end
 
@@ -271,7 +269,7 @@ Sw.SecureEvent('mecanic:server:performService', {
         local components = MecanicDB.getComponents(vehicleId)
         local price      = Config.Prices.inspect
 
-        local paid = CompleteService(src, clientSrc, vehicleId, 'Diagnoza',
+        local paid = CompleteService(src, clientSrc, vehicleId, Sw.T('mecanic.service.inspect'),
             price, clientChar.id, char.id)
         if not paid then return end
 
@@ -317,19 +315,19 @@ Sw.SecureEvent('mecanic:server:performService', {
         price      = Config.Prices.oil_change
         itemNeeded = 'ulei_motor'
         newComps.oil = 100
-        description  = 'Schimb ulei'
+        description  = Sw.T('mecanic.service.oil_change')
 
     elseif serviceType == 'brakes' then
         price      = Config.Prices.brakes
         itemNeeded = 'placute_frana'
         newComps.brakes = 100
-        description     = 'Schimb placute frana'
+        description     = Sw.T('mecanic.service.brakes')
 
     elseif serviceType == 'battery' then
         price      = Config.Prices.battery
         itemNeeded = 'baterie_auto'
         newComps.battery = 100
-        description      = 'Inlocuire baterie'
+        description      = Sw.T('mecanic.service.battery')
 
     elseif serviceType == 'tire' then
         local positions = data.tirePositions or { 'fl', 'fr', 'rl', 'rr' }
@@ -340,7 +338,7 @@ Sw.SecureEvent('mecanic:server:performService', {
         for _, pos in ipairs(positions) do
             newComps.tires[pos] = 100
         end
-        description = 'Schimb anvelope (' .. itemAmount .. ' buc)'
+        description = Sw.T('mecanic.service.tire', itemAmount)
 
     elseif serviceType == 'suspension' then
         local positions = data.suspensionPositions or { 'fl', 'fr', 'rl', 'rr' }
@@ -351,42 +349,42 @@ Sw.SecureEvent('mecanic:server:performService', {
         for _, pos in ipairs(positions) do
             newComps.suspension[pos] = 100
         end
-        description = 'Reparatie suspensie'
+        description = Sw.T('mecanic.service.suspension')
 
     elseif serviceType == 'engine' then
         price      = Config.Prices.engine
         itemNeeded = 'piesa_motor'
         newState.engine_health = 1000
         newComps.exhaust       = 100
-        description            = 'Reparatie motor'
+        description            = Sw.T('mecanic.service.engine')
 
     elseif serviceType == 'bodywork' then
         price      = Config.Prices.bodywork
         itemNeeded = 'piesa_caroserie'
         newState.body_health = 1000
-        description          = 'Reparatie caroserie'
+        description          = Sw.T('mecanic.service.bodywork')
 
     elseif serviceType == 'roadside_engine' then
         price      = Config.Prices.roadside_engine
         itemNeeded = 'piesa_motor'
         newState.engine_health = 400
-        description            = 'Urgenta motor (rutier)'
+        description            = Sw.T('mecanic.service.roadside_engine')
 
     elseif serviceType == 'roadside_tire' then
         local pos  = data.tirePositions and data.tirePositions[1] or 'fl'
         price      = Config.Prices.roadside_tire
         itemNeeded = 'anvelopa'
         newComps.tires = { [pos] = 100 }
-        description    = 'Schimb anvelopa (rutier)'
+        description    = Sw.T('mecanic.service.roadside_tire')
 
     elseif serviceType == 'roadside_battery' then
         price = Config.Prices.roadside_battery
         newComps.battery = 50
-        description      = 'Jump start baterie'
+        description      = Sw.T('mecanic.service.roadside_battery')
 
     elseif serviceType == 'roadside_tow' then
         price       = Config.Prices.roadside_tow
-        description = 'Tractare la atelier'
+        description = Sw.T('mecanic.service.roadside_tow')
     end
 
     if itemNeeded then
@@ -395,8 +393,8 @@ Sw.SecureEvent('mecanic:server:performService', {
             return exports.inventory:RemoveItem(invId, itemNeeded, itemAmount)
         end)
         if not ok or not removed then
-            notify(src, 'error', 'Piesa lipsa',
-                string.format('Ai nevoie de %dx %s pentru acest serviciu.', itemAmount, itemNeeded))
+            notify(src, 'error', Sw.TP(src, 'mecanic.part_missing_title'),
+                Sw.TP(src, 'mecanic.part_missing_msg', itemAmount, itemNeeded))
             return
         end
     end
@@ -448,8 +446,8 @@ Sw.SecureEvent('mecanic:server:performService', {
     if serviceType == 'roadside_tow' then
         exports.vehicles:saveVehicleState(vehicleId, { stored = true })
         TriggerClientEvent('mecanic:client:vehicleTowed', clientSrc, { vehicleId = vehicleId })
-        notify(clientSrc, 'info', 'Vehicul tractat',
-            'Vehiculul tau a fost dus la service. Il poti ridica din garaj.')
+        notify(clientSrc, 'info', Sw.TP(clientSrc, 'mecanic.vehicle_towed_title'),
+            Sw.TP(clientSrc, 'mecanic.vehicle_towed_msg'))
     end
 end)
 
@@ -466,7 +464,7 @@ Sw.SecureEvent('mecanic:server:buyParts', {
     local data = ctx.args.data
 
     if not hasPermission(char.id, 'buy_parts') then
-        notify(src, 'error', 'Acces interzis', 'Doar managerul poate cumpara piese.')
+        notify(src, 'error', Sw.TP(src, 'mecanic.err_access_denied'), Sw.TP(src, 'mecanic.err_only_manager_parts'))
         return
     end
 
@@ -482,12 +480,12 @@ Sw.SecureEvent('mecanic:server:buyParts', {
     local ok, errMsg = pcall(function()
         return exports.banking:orgSystemDebit(
             Config.OrgCode, total, currencyId,
-            'Cumparare piese: ' .. data.itemName .. ' x' .. amount
+            Sw.T('mecanic.tx_buy_parts', data.itemName, amount)
         )
     end)
 
     if not ok then
-        notify(src, 'error', 'Fonduri insuficiente', 'Firma nu are suficienti bani.')
+        notify(src, 'error', Sw.TP(src, 'mecanic.insufficient_funds'), Sw.TP(src, 'mecanic.firm_no_funds'))
         return
     end
 
@@ -496,8 +494,8 @@ Sw.SecureEvent('mecanic:server:buyParts', {
     end)
 
     if added then
-        notify(src, 'success', 'Piese cumparate',
-            string.format('Ai cumparat %dx %s (%d RON din contul firmei).', amount, data.itemName, total))
+        notify(src, 'success', Sw.TP(src, 'mecanic.parts_bought_title'),
+            Sw.TP(src, 'mecanic.parts_bought_msg', amount, data.itemName, total))
     end
 end)
 
@@ -517,7 +515,7 @@ Sw.SecureEvent('mecanic:server:getVehicleByPlate', {
 
     local vehicle = exports.vehicles:getOwnedVehicleByPlate(plate)
     if not vehicle then
-        notify(src, 'error', 'Vehicul negasit', 'Vehiculul cu placa ' .. plate .. ' nu e inregistrat.')
+        notify(src, 'error', Sw.TP(src, 'mecanic.vehicle_not_registered_title'), Sw.TP(src, 'mecanic.vehicle_not_registered_msg', plate))
         return
     end
 

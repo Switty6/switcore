@@ -3,6 +3,17 @@ PoliceConfig   = {}
 local myJob    = nil
 local proximityIds = {}
 
+function PushPoliceI18n()
+    SendNUIMessage({ action = 'sw:i18n', dict = exports.core:getLocaleDict() })
+end
+
+AddEventHandler('switcore:client:localeUpdated', PushPoliceI18n)
+
+CreateThread(function()
+    Wait(1500)
+    PushPoliceI18n()
+end)
+
 local isJailed      = false
 local jailRemaining = 0
 local savedComponents = {}
@@ -42,7 +53,7 @@ function RegisterPoliceBlips()
         SetBlipScale(blip, data.scale or 0.8)
         SetBlipAsShortRange(blip, true)
         BeginTextCommandSetBlipName('STRING')
-        AddTextComponentSubstringPlayerName(data.label or 'Politie')
+        AddTextComponentSubstringPlayerName(data.label or Sw.T('police.blip_default'))
         EndTextCommandSetBlipName(blip)
         table.insert(blipHandles, blip)
     end
@@ -75,7 +86,7 @@ function RegisterPoliceZones()
         if hasArmory then
             proximityIds['armory'] = exports.proximity:AddInteraction(
                 PoliceConfig.armoryCoords,
-                'Armament - Ridica Echipament',
+                Sw.T('police.prox_armory'),
                 'police_armory',
                 {},
                 function() TriggerServerEvent('police:server:openArmory') end,
@@ -87,7 +98,7 @@ function RegisterPoliceZones()
     if myJob.isOnDuty and PoliceConfig.cloakroomCoords then
         proximityIds['cloakroom'] = exports.proximity:AddInteraction(
             PoliceConfig.cloakroomCoords,
-            'Vestiar - Schimba Tinuta',
+            Sw.T('police.prox_cloakroom'),
             'police_cloakroom',
             {},
             function() TriggerServerEvent('police:server:openCloakroom') end,
@@ -134,6 +145,7 @@ RegisterNetEvent('police:client:released', function(data)
 end)
 
 RegisterNetEvent('police:client:openArmory', function(weapons, equipment)
+    PushPoliceI18n()
     SendNUIMessage({ action = 'openArmory', weapons = weapons, equipment = equipment })
     SetNuiFocus(true, true)
 end)
@@ -149,6 +161,7 @@ RegisterNUICallback('takeArmoryItem', function(data, cb)
 end)
 
 RegisterNetEvent('police:client:openCloakroom', function(gender)
+    PushPoliceI18n()
     SendNUIMessage({ action = 'openCloakroom', gender = gender })
     SetNuiFocus(true, true)
 end)

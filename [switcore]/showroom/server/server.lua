@@ -1,3 +1,5 @@
+exports.core:registerModuleLocales(GetCurrentResourceName())
+
 local function SeedDefaultSettings()
     local defaults = {
         {

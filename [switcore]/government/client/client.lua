@@ -2,6 +2,12 @@ local isUIOpen   = false
 local isLawsOpen = false
 local isVoteOpen = false
 
+local function pushI18n()
+    SendNUIMessage({ action = 'sw:i18n', dict = exports.core:getLocaleDict() })
+end
+
+AddEventHandler('switcore:client:localeUpdated', pushI18n)
+
 local function OpenGov()
     if isUIOpen then return end
     TriggerServerEvent('government:server:open')
@@ -16,6 +22,7 @@ end
 RegisterNetEvent('government:client:open', function(data)
     isUIOpen = true
     SetNuiFocus(true, true)
+    pushI18n()
     SendNUIMessage({ action = 'open', data = data })
 end)
 
@@ -39,6 +46,7 @@ end, false)
 RegisterNetEvent('government:client:openLaws', function(laws)
     isLawsOpen = true
     SetNuiFocus(true, true)
+    pushI18n()
     SendNUIMessage({ action = 'openLaws', laws = laws })
 end)
 
@@ -57,6 +65,7 @@ end, false)
 RegisterNetEvent('government:client:openVote', function(elections)
     isVoteOpen = true
     SetNuiFocus(true, true)
+    pushI18n()
     SendNUIMessage({ action = 'openVote', elections = elections })
 end)
 
