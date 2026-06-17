@@ -2,6 +2,7 @@ return {
     showroom = {
         -- erori server / validari
         error_catalog = 'Eroare catalog',
+        error_purchase_failed = 'Achiziția a eșuat. Încearcă din nou.',
         error_invalid_params = 'Parametri invalizi',
         error_dealership_not_found = 'Dealership inexistent',
         error_vehicle_not_in_catalog = 'Vehicul inexistent în catalog',

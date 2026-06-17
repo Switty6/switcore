@@ -40,7 +40,22 @@ Sw.SecureEvent('showroom:server:purchaseVehicle', {
 }, function(ctx)
     local source = ctx.source
 
-    local ok, err, vehicleId = ShowroomManager.purchaseVehicle(source, ctx.character.id, ctx.args.catalogId, ctx.args.paymentMethod, ctx.args.customPlate, ctx.args.colorIndex)
+    -- pcall: daca un modul din lant (ex. finantare/credit) arunca o eroare Lua,
+    -- tot trimitem un raspuns clientului ca butonul de cumparare sa nu ramana blocat.
+    local pcOk, ok, err, vehicleId = pcall(
+        ShowroomManager.purchaseVehicle,
+        source, ctx.character.id, ctx.args.catalogId,
+        ctx.args.paymentMethod, ctx.args.customPlate, ctx.args.colorIndex
+    )
+
+    if not pcOk then
+        print('[SHOWROOM] Eroare la cumparare (' .. tostring(ctx.args.paymentMethod) .. '): ' .. tostring(ok))
+        local msg = Sw.TP(source, 'showroom.error_purchase_failed')
+        ctx.error(msg, 5000)
+        TriggerClientEvent('showroom:client:purchaseResult', source, { success = false, error = msg })
+        return
+    end
+
     if not ok then
         ctx.error(err, 5000)
         TriggerClientEvent('showroom:client:purchaseResult', source, { success = false, error = err })

@@ -2,6 +2,7 @@ return {
     showroom = {
         -- server errors / validation
         error_catalog = 'Catalog error',
+        error_purchase_failed = 'Purchase failed. Please try again.',
         error_invalid_params = 'Invalid parameters',
         error_dealership_not_found = 'Dealership does not exist',
         error_vehicle_not_in_catalog = 'Vehicle not found in catalog',
