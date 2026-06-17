@@ -17,6 +17,7 @@ end)
 local isJailed      = false
 local jailRemaining = 0
 local savedComponents = {}
+local isWearingUniform = false
 
 local function isMale()
     return GetEntityModel(PlayerPedId()) ~= GetHashKey('mp_f_freemode_01')
@@ -172,13 +173,20 @@ RegisterNUICallback('closeCloakroom', function(_, cb)
 end)
 
 RegisterNUICallback('wearUniform', function(_, cb)
-    saveCurrentComponents()
+    -- Salvam tinuta civila DOAR cand nu suntem deja in uniforma. Altfel un al doilea
+    -- click pe "Uniforma" ar suprascrie snapshot-ul cu uniforma si nu te-ai mai putea
+    -- intoarce in civil (raman blocat in uniforma).
+    if not isWearingUniform then
+        saveCurrentComponents()
+    end
+    isWearingUniform = true
     TriggerServerEvent('police:server:applyUniform', isMale() and 'male' or 'female')
     SetNuiFocus(false, false)
     cb('ok')
 end)
 
 RegisterNUICallback('wearCivilian', function(_, cb)
+    isWearingUniform = false
     TriggerServerEvent('police:server:setCivilianClothes')
     SetNuiFocus(false, false)
     cb('ok')

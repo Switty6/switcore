@@ -41,6 +41,7 @@ local currencySymbol    = '$'
 
 local holdingNozzle         = false
 local nozzleInVehicle       = false
+local takingNozzle          = false
 local isHolding             = false
 local vehicleInteractId     = nil
 local vehicleInteractEntity = nil
@@ -188,6 +189,7 @@ end
 local function ResetState()
     holdingNozzle    = false
     nozzleInVehicle  = false
+    takingNozzle     = false
     isHolding        = false
     IsFueling        = false
     fillAdded        = 0.0
@@ -255,6 +257,18 @@ CreateThread(function()
             else
                 RegisterVehicleInteraction()
             end
+        elseif nozzleInVehicle then
+            -- Furtun atasat la masina: daca jucatorul/masina se indeparteaza de pompa
+            -- fara sa alimenteze (nu tine E, fara plata in asteptare), rupem furtunul
+            -- si curatam capul (altfel ramanea atasat de masina la nesfarsit).
+            if not isHolding and not pendingPayment
+               and pumpEntityRef and DoesEntityExist(pumpEntityRef) then
+                local ref = (fillVehicle and DoesEntityExist(fillVehicle)) and fillVehicle or ped
+                if #(GetEntityCoords(ref) - GetEntityCoords(pumpEntityRef)) >= CABLE_MAX then
+                    SnapNozzleInHand()
+                    snapped = true
+                end
+            end
         elseif not holdingNozzle then
             CleanupVehicleInteraction()
         end
@@ -293,9 +307,15 @@ RegisterNetEvent('switcore:proximity:interact', function(interaction)
             ReturnNozzleToPump()
             return
         end
+        -- Guard impotriva re-intrarii: holdingNozzle se seteaza abia dupa animatia de
+        -- ~1s din SpawnNozzleInHand. Fara acest flag, doua apasari rapide pe pompa ar
+        -- crea doua nozzle-uri (al doilea suprascrie variabila, primul ramane orfan in mana).
+        if takingNozzle then return end
+        takingNozzle = true
 
         pumpEntityRef = interaction.entity
         if not pumpEntityRef or not DoesEntityExist(pumpEntityRef) then
+            takingNozzle = false
             TriggerEvent('switcore:notify:local', 'error', Sw.T('vehicles.pump_gone'), 3000)
             return
         end
@@ -303,12 +323,14 @@ RegisterNetEvent('switcore:proximity:interact', function(interaction)
         local ped = PlayerPedId()
         nozzleProp = SpawnNozzleInHand(ped)
         if not nozzleProp then
+            takingNozzle = false
             TriggerEvent('switcore:notify:local', 'error', Sw.T('vehicles.nozzle_pickup_failed'), 3000)
             return
         end
         AttachRopeToPump()
 
         holdingNozzle = true
+        takingNozzle  = false
 
         if RegisterVehicleInteraction() then
             TriggerEvent('switcore:notify:local', 'info',

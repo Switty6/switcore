@@ -144,6 +144,17 @@ RegisterNetEvent('garbage:client:routeAbandoned', function(data)
     end
 end)
 
+-- Serverul a respins sesiunea (ex. dublu-trigger la depou): resetam starea locala
+-- ca jucatorul sa nu ramana blocat cu interactiunea de retur si eroarea in bucla.
+RegisterNetEvent('garbage:client:sessionInvalid', function()
+    TriggerEvent('garbage:route:cleanup')
+    if returnProxId then
+        exports.proximity:RemoveInteraction(returnProxId)
+        returnProxId = nil
+    end
+    SetupHiringProximity()
+end)
+
 RegisterNetEvent('garbage:client:tabletData', function(data)
     isUIOpen = true
     SetNuiFocus(true, true)

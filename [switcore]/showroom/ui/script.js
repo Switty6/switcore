@@ -254,6 +254,10 @@ buyBtn.addEventListener('click', () => {
     if (!validatePlate()) return;
 
     buyBtn.disabled = true;
+    // Plasa de siguranta: daca serverul nu raspunde (eroare neasteptata), reactivam
+    // butonul ca sa nu ramana blocat permanent.
+    clearTimeout(buyBtn._safetyTimer);
+    buyBtn._safetyTimer = setTimeout(function() { buyBtn.disabled = false; }, 8000);
     postNUI('purchaseVehicle', {
         catalogId:     state.selectedItem.id,
         paymentMethod: state.activeMethod,
@@ -363,7 +367,7 @@ window.addEventListener('message', e => {
     if (!msg?.action) return;
     switch (msg.action) {
         case 'open':           open(msg); break;
-        case 'purchaseError':  buyBtn.disabled = false; break;
+        case 'purchaseError':  clearTimeout(buyBtn._safetyTimer); buyBtn.disabled = false; break;
         case 'close':          closeUI(); break;
         case 'testDriveStarted':
             startBanner(msg.label, msg.durationSecs);

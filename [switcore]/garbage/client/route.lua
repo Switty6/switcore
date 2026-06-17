@@ -541,8 +541,11 @@ AddEventHandler('garbage:route:pointConfirmed', function(data)
     end
 end)
 
+local completingRoute = false
 AddEventHandler('garbage:route:returnedToDepot', function()
     if not activeSession then return end
+    if completingRoute then return end
+    completingRoute = true
     TriggerServerEvent('garbage:server:completeRoute', activeSession.sessionId)
 end)
 
@@ -554,6 +557,7 @@ local function revokeTruckKey()
 end
 
 AddEventHandler('garbage:route:cleanup', function()
+    completingRoute = false
     isCollecting = false
     clearCarryState()
     clearWaypointProximities()

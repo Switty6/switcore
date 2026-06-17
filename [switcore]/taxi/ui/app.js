@@ -11,17 +11,16 @@ const esc = s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
 const fmt = n => Number(n ?? 0).toLocaleString('ro-RO');
 const fmtDate = s => s ? new Date(s).toLocaleDateString('ro-RO', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' }) : '-';
 
+const RESOURCE_NAME = (typeof window.invokeNative !== 'undefined' && typeof window.GetParentResourceName === 'function')
+    ? window.GetParentResourceName()
+    : 'taxi';
+
 function postNUI(action, data) {
-    return fetch(`https://${GetParentResourceName()}/${action}`, {
+    return fetch(`https://${RESOURCE_NAME}/${action}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data ?? {}),
     }).catch(() => {});
-}
-
-// Stub for browser-based dev preview (FiveM provides this natively)
-function GetParentResourceName() {
-    return typeof window.invokeNative !== 'undefined' ? window.GetParentResourceName?.() ?? 'taxi' : 'taxi';
 }
 
 document.querySelectorAll('.tab').forEach(btn => {
@@ -46,6 +45,7 @@ document.getElementById('btnDuty').addEventListener('click', () => {
 document.getElementById('btnQuit').addEventListener('click', () => {
     if (!confirm(SwI18n.t('taxi.ui.confirm_quit'))) return;
     postNUI('quitJob');
+    hidePanel();
 });
 
 function renderStats() {

@@ -62,7 +62,6 @@ function SetupHiringProximity()
     end
 
     local c = Config.HiringCoords
-    hiringProxId = 'taxi_hiring'
 
     local label
     if not isTaxi then
@@ -73,10 +72,10 @@ function SetupHiringProximity()
         label = Sw.T('taxi.prox_open_tablet')
     end
 
-    exports.proximity:AddInteraction(
+    hiringProxId = exports.proximity:AddInteraction(
         vector3(c.x, c.y, c.z),
         label,
-        hiringProxId,
+        'taxi_hiring',
         {},
         function()
             if not isTaxi then
@@ -182,6 +181,8 @@ RegisterNUICallback('close', function(_, cb)
 end)
 
 RegisterNUICallback('acceptOrder', function(data, cb)
+    isUIOpen = false
+    SetNuiFocus(false, false)
     if data and data.orderId then
         TriggerServerEvent('taxi:server:acceptOrder', tonumber(data.orderId))
     end
@@ -189,6 +190,8 @@ RegisterNUICallback('acceptOrder', function(data, cb)
 end)
 
 RegisterNUICallback('clockIn', function(_, cb)
+    isUIOpen = false
+    SetNuiFocus(false, false)
     TriggerServerEvent('jobs:server:clockIn')
     cb('ok')
 end)

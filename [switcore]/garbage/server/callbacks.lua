@@ -141,9 +141,10 @@ Sw.SecureEvent('garbage:server:collectPoint', {
     local sessionId  = ctx.args.sessionId
     local pointIndex = ctx.args.pointIndex
 
-    local session = GarbageDB.getActiveSession(char.id)
-    if not session or session.id ~= sessionId then
+    local session = GarbageDB.getSessionById(sessionId)
+    if not session or session.character_id ~= char.id or session.status ~= 'active' then
         notify(src, 'error', Sw.TP(src, 'garbage.title_garbage'), Sw.TP(src, 'garbage.invalid_session'))
+        TriggerClientEvent('garbage:client:sessionInvalid', src)
         return
     end
 
@@ -178,9 +179,10 @@ Sw.SecureEvent('garbage:server:completeRoute', {
     local char = ctx.character
     local sessionId = ctx.args.sessionId
 
-    local session = GarbageDB.getActiveSession(char.id)
-    if not session or session.id ~= sessionId then
+    local session = GarbageDB.getSessionById(sessionId)
+    if not session or session.character_id ~= char.id or session.status ~= 'active' then
         notify(src, 'error', Sw.TP(src, 'garbage.title_garbage'), Sw.TP(src, 'garbage.invalid_session'))
+        TriggerClientEvent('garbage:client:sessionInvalid', src)
         return
     end
 
@@ -218,8 +220,11 @@ Sw.SecureEvent('garbage:server:abandonRoute', {
     local char = ctx.character
     local sessionId = ctx.args.sessionId
 
-    local session = GarbageDB.getActiveSession(char.id)
-    if not session or session.id ~= sessionId then return end
+    local session = GarbageDB.getSessionById(sessionId)
+    if not session or session.character_id ~= char.id or session.status ~= 'active' then
+        TriggerClientEvent('garbage:client:sessionInvalid', src)
+        return
+    end
 
     local pay = CalculateSessionPay(char.id, session.collected_count, false)
 

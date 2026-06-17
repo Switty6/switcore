@@ -11,6 +11,7 @@ local isUIOpen = false
 local testDriveEntity = 0
 local testDriveTimer  = nil
 local testDriveActive = false
+local testDriveReturnCoords = nil
 
 local dealershipLocations = {}
 local registeredInteractions = {}
@@ -167,6 +168,8 @@ RegisterNetEvent('showroom:client:startTestDrive', function(data)
     for _, loc in ipairs(dealershipLocations) do
         if loc.code == currentDealershipCode then
             spawnPoint = loc.testDriveSpawn
+            -- Retinem punctul de intoarcere (intrarea dealership-ului) pentru finalul testului.
+            testDriveReturnCoords = loc.coords
             break
         end
     end
@@ -237,6 +240,12 @@ RegisterNetEvent('showroom:client:endTestDrive', function()
         DeleteVehicle(testDriveEntity)
     end
     testDriveEntity = 0
+
+    -- Punctul de iesire din test-drive: aducem jucatorul inapoi la dealership.
+    if testDriveReturnCoords then
+        SetEntityCoords(ped, testDriveReturnCoords.x, testDriveReturnCoords.y, testDriveReturnCoords.z, false, false, false, false)
+        testDriveReturnCoords = nil
+    end
 
     SendNUIMessage({ action = 'testDriveEnded' })
 end)
