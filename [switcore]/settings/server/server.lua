@@ -1,4 +1,11 @@
-exports.core:registerModuleLocales(GetCurrentResourceName())
+-- settings si core se referentiaza reciproc, asa ca nu putem garanta ca core
+-- e pornit cand se incarca scriptul asta. Asteptam sa fie 'started' inainte de
+-- a-i apela exportul, altfel apelul sincron arunca si opreste restul fisierului
+-- (inclusiv inregistrarea exportului IsReady, de care depind toate modulele).
+CreateThread(function()
+    while GetResourceState('core') ~= 'started' do Wait(50) end
+    exports.core:registerModuleLocales(GetCurrentResourceName())
+end)
 
 local cache    = {}
 local cacheMeta = {}
