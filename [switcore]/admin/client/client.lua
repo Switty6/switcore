@@ -285,10 +285,31 @@ RegisterNUICallback('toggleNoclip', function(_, cb)
     cb('ok')
 end)
 
+local godmodeThread = false
 RegisterNUICallback('toggleGodmode', function(_, cb)
     godmode = not godmode
-    SetEntityInvincible(PlayerPedId(), godmode)
+    local ped = PlayerPedId()
+    SetEntityInvincible(ped, godmode)
+    SetPlayerInvincible(PlayerId(), godmode)
     SendNUIMessage({ action = 'godmodeState', active = godmode })
+
+    -- Re-aplica invincibilitatea pe ped-ul curent: dupa moarte/respawn ped-ul e
+    -- recreat si SetEntityInvincible setat o singura data se pierde.
+    if godmode and not godmodeThread then
+        godmodeThread = true
+        CreateThread(function()
+            while godmode do
+                local p = PlayerPedId()
+                SetEntityInvincible(p, true)
+                SetPlayerInvincible(PlayerId(), true)
+                local maxHp = GetEntityMaxHealth(p)
+                if GetEntityHealth(p) < maxHp then SetEntityHealth(p, maxHp) end
+                ClearPedBloodDamage(p)
+                Wait(500)
+            end
+            godmodeThread = false
+        end)
+    end
     cb('ok')
 end)
 
@@ -708,7 +729,11 @@ AddEventHandler('onResourceStop', function(name)
     if isUIOpen then CloseAdmin() end
     if IsNoclipActive() then ToggleNoclip() end
     if IsSpectating() then StopSpectate() end
-    if godmode then SetEntityInvincible(PlayerPedId(), false) end
+    if godmode then
+        godmode = false
+        SetEntityInvincible(PlayerPedId(), false)
+        SetPlayerInvincible(PlayerId(), false)
+    end
     if invisible then SetEntityVisible(PlayerPedId(), true, false) end
     if IsOverlayActive() then SetOverlayActive(false) end
     if noWantedActive then
