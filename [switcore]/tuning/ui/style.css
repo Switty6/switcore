@@ -186,13 +186,16 @@ html, body {
     min-width: 0;
     height: 100%;
     position: relative;
-    pointer-events: none;  /* pass-through la GTA */
+    pointer-events: auto;  /* capteaza drag-ul pentru rotirea camerei */
+    cursor: grab;
     background: transparent;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: flex-end;
 }
+
+.center-area.grabbing { cursor: grabbing; }
 
 #carSvg {
     position: absolute;

@@ -881,6 +881,12 @@ function onCartApplied(results, finalMods) {
         var cat = state.config && state.config.categories && state.config.categories.find(function(c) { return c.id === state.activeCatId; });
         if (cat) buildModList(cat);
     }
+
+    // Inchide automat panoul dupa o achizitie reusita (toate articolele aplicate).
+    var allOk = results && results.length && results.every(function(r) { return r.success; });
+    if (allOk) {
+        setTimeout(closeUI, 700);
+    }
 }
 
 function onModsReset(finalMods) {
@@ -948,6 +954,49 @@ document.addEventListener('keydown', function(e) {
         else closeUI();
     }
 });
+
+// Orbit camera: trage cu mouse-ul peste zona centrala pentru a roti masina,
+// scroll pentru zoom. Delta-urile se trimit catre client.lua care misca camera.
+(function setupCameraOrbit() {
+    var carArea = document.getElementById('carArea');
+    if (!carArea) return;
+
+    var dragging = false, lastX = 0, lastY = 0, accDx = 0, accDy = 0, rafPending = false;
+
+    function flush() {
+        rafPending = false;
+        if (accDx !== 0 || accDy !== 0) {
+            nuiPost('orbitCamera', { dx: accDx, dy: accDy });
+            accDx = 0; accDy = 0;
+        }
+    }
+
+    carArea.addEventListener('mousedown', function(e) {
+        if (e.button !== 0) return;
+        if (e.target.closest('.close-btn')) return;
+        dragging = true;
+        lastX = e.clientX; lastY = e.clientY;
+        carArea.classList.add('grabbing');
+    });
+
+    window.addEventListener('mousemove', function(e) {
+        if (!dragging) return;
+        accDx += e.clientX - lastX;
+        accDy += e.clientY - lastY;
+        lastX = e.clientX; lastY = e.clientY;
+        if (!rafPending) { rafPending = true; requestAnimationFrame(flush); }
+    });
+
+    window.addEventListener('mouseup', function() {
+        dragging = false;
+        carArea.classList.remove('grabbing');
+    });
+
+    carArea.addEventListener('wheel', function(e) {
+        e.preventDefault();
+        nuiPost('zoomCamera', { delta: e.deltaY > 0 ? 0.5 : -0.5 });
+    }, { passive: false });
+})();
 
 function injectCarSvg() {
     var carArea = document.getElementById('carArea');
