@@ -234,6 +234,14 @@ payCardBtn.addEventListener('click', () => {
     postNUI('fuel:pay', { method: 'card' });
 });
 
+// ESC anuleaza modalul de plata (NUI are focus, deci prinde keydown-ul direct).
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && state.phase === 'payment') {
+        e.preventDefault();
+        postNUI('fuel:cancelPayment', {});
+    }
+});
+
 // Re-randare stringuri generate din JS la schimbarea dictionarului (sw:i18n).
 document.addEventListener('sw:i18n', () => {
     if (state.phase === 'filling') {
