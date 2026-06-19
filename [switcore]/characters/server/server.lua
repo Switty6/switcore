@@ -1,8 +1,7 @@
+exports.core:registerModuleLocales(GetCurrentResourceName())
+
 CreateThread(function()
     while not exports.postgres:isReady() do Wait(100) end
-    local res = GetCurrentResourceName()
-    exports.core:loadLocaleFile(res, 'ro', 'locales/ro.lua')
-    exports.core:loadLocaleFile(res, 'en', 'locales/en.lua')
     print('[CHARACTERS] PostgreSQL gata, sistem inițializat')
 end)
 
@@ -43,7 +42,7 @@ Sw.SecureEvent('switcore:selectCharacter', {
     if success then
         TriggerClientEvent('switcore:characterSelected', source, character)
     else
-        TriggerClientEvent('switcore:characterError', source, err or exports.core:translate('characters.error_selecting_character', source))
+        TriggerClientEvent('switcore:characterError', source, err or Sw.TP(source, 'characters.error_selecting_character'))
     end
 end)
 
@@ -63,7 +62,7 @@ Sw.SecureEvent('switcore:createCharacter', {
         TriggerClientEvent('switcore:characterCreated', source, character)
         TriggerClientEvent('switcore:characterSelected', source, character)
     else
-        TriggerClientEvent('switcore:characterError', source, err or exports.core:translate('characters.error_creating_character', source))
+        TriggerClientEvent('switcore:characterError', source, err or Sw.TP(source, 'characters.error_creating_character'))
     end
 end)
 
@@ -80,7 +79,7 @@ Sw.SecureEvent('switcore:deleteCharacter', {
         TriggerClientEvent('switcore:characterDeleted', source, id)
         TriggerClientEvent('switcore:charactersList', source, CharacterManager.getPlayerCharacters(source))
     else
-        TriggerClientEvent('switcore:characterError', source, err or exports.core:translate('characters.error_deleting_character', source))
+        TriggerClientEvent('switcore:characterError', source, err or Sw.TP(source, 'characters.error_deleting_character'))
     end
 end)
 
@@ -89,16 +88,6 @@ Sw.SecureEvent('switcore:requestCharacters', {
 }, function(ctx)
     local source = ctx.source
     local characters = CharacterManager.getPlayerCharacters(source)
-
-    local lang = exports.core:getPlayerLanguage(source) or 'ro'
-    local localeData = exports.core:getLocaleData(lang)
-    if not localeData or not localeData.characters then
-        exports.core:loadLocaleFile(GetCurrentResourceName(), lang, 'locales/' .. lang .. '.lua')
-        localeData = exports.core:getLocaleData(lang)
-    end
-    if localeData and localeData.characters then
-        TriggerClientEvent('switcore:charactersLocale', source, localeData.characters)
-    end
 
     local creatorRoom = exports.settings:GetSettingJSON('characters.creator_room', nil)
     if creatorRoom then

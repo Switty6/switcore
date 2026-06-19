@@ -1,3 +1,5 @@
+exports.core:registerModuleLocales(GetCurrentResourceName())
+
 CreateThread(function()
     while not exports.postgres:isReady() or not exports.settings:IsReady() do
         Wait(500)

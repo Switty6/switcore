@@ -11,17 +11,16 @@ const esc = s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
 const fmt = n => Number(n ?? 0).toLocaleString('ro-RO');
 const fmtDate = s => s ? new Date(s).toLocaleDateString('ro-RO', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' }) : '-';
 
+const RESOURCE_NAME = (typeof window.invokeNative !== 'undefined' && typeof window.GetParentResourceName === 'function')
+    ? window.GetParentResourceName()
+    : 'taxi';
+
 function postNUI(action, data) {
-    return fetch(`https://${GetParentResourceName()}/${action}`, {
+    return fetch(`https://${RESOURCE_NAME}/${action}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data ?? {}),
     }).catch(() => {});
-}
-
-// Stub for browser-based dev preview (FiveM provides this natively)
-function GetParentResourceName() {
-    return typeof window.invokeNative !== 'undefined' ? window.GetParentResourceName?.() ?? 'taxi' : 'taxi';
 }
 
 document.querySelectorAll('.tab').forEach(btn => {
@@ -44,8 +43,9 @@ document.getElementById('btnDuty').addEventListener('click', () => {
 });
 
 document.getElementById('btnQuit').addEventListener('click', () => {
-    if (!confirm('Ești sigur că vrei să renunți la job?')) return;
+    if (!confirm(SwI18n.t('taxi.ui.confirm_quit'))) return;
     postNUI('quitJob');
+    hidePanel();
 });
 
 function renderStats() {
@@ -55,11 +55,11 @@ function renderStats() {
     document.getElementById('gradeLabel').textContent = job.gradeLabel ?? '-';
 
     document.getElementById('statTrips').textContent  = fmt(stats.total_trips);
-    document.getElementById('statEarned').textContent = fmt(stats.total_earned) + ' lei';
+    document.getElementById('statEarned').textContent = fmt(stats.total_earned) + ' ' + SwI18n.t('taxi.ui.currency_suffix');
 
     const btn = document.getElementById('btnDuty');
     const isOnDuty = job.isOnDuty ?? false;
-    btn.textContent = isOnDuty ? 'Ieși din tură' : 'Intră în tură';
+    btn.textContent = isOnDuty ? SwI18n.t('taxi.ui.btn_clock_out') : SwI18n.t('taxi.ui.btn_clock_in');
     btn.classList.toggle('on-duty', isOnDuty);
 }
 
@@ -72,17 +72,17 @@ function renderOrders() {
     badge.style.display = orders.length ? 'inline' : 'none';
 
     if (!orders.length) {
-        list.innerHTML = '<div class="empty-msg">Nu există cereri active.</div>';
+        list.innerHTML = `<div class="empty-msg">${esc(SwI18n.t('taxi.ui.no_orders'))}</div>`;
         return;
     }
 
     list.innerHTML = orders.map(o => `
         <div class="order-item" data-id="${o.id}">
             <div class="order-info">
-                <div class="order-name">${esc(o.passenger_name ?? 'Pasager')}</div>
+                <div class="order-name">${esc(o.passenger_name ?? SwI18n.t('taxi.ui.default_passenger'))}</div>
                 <div class="order-time">${fmtDate(o.created_at)}</div>
             </div>
-            <button class="accept-btn" data-orderid="${o.id}">Acceptă</button>
+            <button class="accept-btn" data-orderid="${o.id}">${esc(SwI18n.t('taxi.ui.btn_accept'))}</button>
         </div>
     `).join('');
 
@@ -100,7 +100,7 @@ function renderHistory() {
     const trips  = state.recent ?? [];
 
     if (!trips.length) {
-        list.innerHTML = '<div class="empty-msg">Nu ai curse efectuate.</div>';
+        list.innerHTML = `<div class="empty-msg">${esc(SwI18n.t('taxi.ui.no_history'))}</div>`;
         return;
     }
 
@@ -109,7 +109,7 @@ function renderHistory() {
             <div>
                 <div class="history-km">${parseFloat(t.distance_km ?? 0).toFixed(1)} km</div>
             </div>
-            <div class="history-pay">+${fmt(t.pay_amount)} lei</div>
+            <div class="history-pay">+${fmt(t.pay_amount)} ${esc(SwI18n.t('taxi.ui.currency_suffix'))}</div>
             <div class="history-date">${fmtDate(t.completed_at)}</div>
         </div>
     `).join('');
@@ -122,6 +122,13 @@ function showPanel() {
 function hidePanel() {
     document.getElementById('panel').classList.add('hidden');
 }
+
+// re-randare a stringurilor generate din JS la schimbarea dictionarului
+document.addEventListener('sw:i18n', () => {
+    renderStats();
+    renderOrders();
+    renderHistory();
+});
 
 window.addEventListener('message', e => {
     const d = e.data;

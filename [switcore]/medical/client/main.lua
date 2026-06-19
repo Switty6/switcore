@@ -43,10 +43,10 @@ AddEventHandler('medical:client:equipMask', function()
     local current = GetPedDrawableVariation(ped, 1)
     if current > 0 then
         SetPedComponentVariation(ped, 1, 0, 0, 2)
-        exports.notifications:Notify('info', 'Masca scoasa.', 3000)
+        exports.notifications:Notify('info', Sw.T('medical.mask_removed'), 3000)
     else
         SetPedComponentVariation(ped, 1, 1, 0, 2)
-        exports.notifications:Notify('success', 'Masca echipata.', 3000)
+        exports.notifications:Notify('success', Sw.T('medical.mask_equipped'), 3000)
     end
 end)
 

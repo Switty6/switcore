@@ -74,7 +74,7 @@ Sw.SecureEvent('mdt:server:getCriminalHistory', {
     local data = ctx.args.data
     if not data.characterId then return end
     if not hasPoliceMDTAccess(char.id) then
-        notify(src, 'error', 'Acces refuzat', 'Nu ai acces la dosarele MDT.')
+        notify(src, 'error', Sw.TP(src, 'mdt.notify.access_denied_title'), Sw.TP(src, 'mdt.notify.access_denied_records'))
         return
     end
 
@@ -98,14 +98,14 @@ Sw.SecureEvent('mdt:server:createCitation', {
     local char = ctx.character
     local data = ctx.args.data
     if not hasArrestPerm(char.id) then
-        notify(src, 'error', 'Acces refuzat', 'Nu ai permisiunea sa emiti citatii.')
+        notify(src, 'error', Sw.TP(src, 'mdt.notify.access_denied_title'), Sw.TP(src, 'mdt.notify.access_denied_citations'))
         return
     end
     if not data.characterId or not data.offense or not data.fineAmount then return end
 
     MDTDatabase.createCitation(char.id, data.characterId, data.offense, tonumber(data.fineAmount) or 500, function(row)
         if row then
-            notify(src, 'success', 'Citatie emisa', 'Amenda de $' .. (data.fineAmount or 0) .. ' a fost emisa.')
+            notify(src, 'success', Sw.TP(src, 'mdt.notify.citation_emitted_title'), Sw.TP(src, 'mdt.notify.citation_emitted', data.fineAmount or 0))
             TriggerClientEvent('mdt:client:citationCreated', src, row)
         end
     end)
@@ -144,9 +144,9 @@ Sw.SecureEvent('mdt:server:payCitationOfficer', {
 
     MDTDatabase.markCitationPaid(citationId, function(updated)
         if updated then
-            notify(src, 'success', 'Citatie', 'Citatie marcata ca platita.')
+            notify(src, 'success', Sw.TP(src, 'mdt.notify.citation_title'), Sw.TP(src, 'mdt.notify.citation_marked_paid'))
         else
-            notify(src, 'warning', 'Citatie', 'Citatia era deja platita.')
+            notify(src, 'warning', Sw.TP(src, 'mdt.notify.citation_title'), Sw.TP(src, 'mdt.notify.citation_already_paid'))
         end
     end)
 end)
@@ -163,14 +163,14 @@ Sw.SecureEvent('mdt:server:createBOLO', {
     local char = ctx.character
     local data = ctx.args.data
     if not hasArrestPerm(char.id) then
-        notify(src, 'error', 'Acces refuzat', 'Nu ai permisiunea sa emiti BOLO.')
+        notify(src, 'error', Sw.TP(src, 'mdt.notify.access_denied_title'), Sw.TP(src, 'mdt.notify.access_denied_bolos'))
         return
     end
     if not data.subjectName or not data.description then return end
 
     MDTDatabase.createBOLO(char.id, data.subjectName, data.description, data.vehicleInfo or '', function(row)
         if row then
-            notify(src, 'success', 'BOLO emis', 'BOLO pentru ' .. data.subjectName .. ' a fost emis.')
+            notify(src, 'success', Sw.TP(src, 'mdt.notify.bolo_emitted_title'), Sw.TP(src, 'mdt.notify.bolo_emitted', data.subjectName))
             TriggerClientEvent('mdt:client:boloCreated', src, row)
         end
     end)
@@ -204,7 +204,7 @@ Sw.SecureEvent('mdt:server:closeBOLO', {
     if not data.boloId then return end
 
     MDTDatabase.closeBOLO(data.boloId, char.id, function()
-        notify(src, 'success', 'BOLO', 'BOLO inchis.')
+        notify(src, 'success', Sw.TP(src, 'mdt.notify.bolo_title'), Sw.TP(src, 'mdt.notify.bolo_closed'))
     end)
 end)
 
@@ -220,7 +220,7 @@ Sw.SecureEvent('mdt:server:createIncident', {
     local char = ctx.character
     local data = ctx.args.data
     if not hasArrestPerm(char.id) then
-        notify(src, 'error', 'Acces refuzat', 'Nu ai permisiunea sa creezi incidente.')
+        notify(src, 'error', Sw.TP(src, 'mdt.notify.access_denied_title'), Sw.TP(src, 'mdt.notify.access_denied_incidents'))
         return
     end
 
@@ -233,7 +233,7 @@ Sw.SecureEvent('mdt:server:createIncident', {
 
     MDTDatabase.createIncident(char.id, title, description, involvedJson, function(row)
         if row then
-            notify(src, 'success', 'Incident', 'Raport de incident salvat.')
+            notify(src, 'success', Sw.TP(src, 'mdt.notify.incident_title'), Sw.TP(src, 'mdt.notify.incident_saved'))
             TriggerClientEvent('mdt:client:incidentCreated', src, row)
         end
     end)
@@ -265,7 +265,7 @@ Sw.SecureEvent('mdt:server:impoundVehicle', {
     local char = ctx.character
     local data = ctx.args.data
     if not hasArrestPerm(char.id) then
-        notify(src, 'error', 'Acces refuzat', 'Nu ai permisiunea sa sechestru vehicule.')
+        notify(src, 'error', Sw.TP(src, 'mdt.notify.access_denied_title'), Sw.TP(src, 'mdt.notify.access_denied_impounds'))
         return
     end
     if not data.plate or not data.reason then return end
@@ -273,7 +273,7 @@ Sw.SecureEvent('mdt:server:impoundVehicle', {
     local fee = tonumber(data.fee) or 2500
     MDTDatabase.createImpound(char.id, data.plate:upper(), data.model or '', data.reason, fee, function(row)
         if row then
-            notify(src, 'success', 'Sechestru', 'Vehiculul ' .. data.plate .. ' a fost sechestrat.')
+            notify(src, 'success', Sw.TP(src, 'mdt.notify.impound_title'), Sw.TP(src, 'mdt.notify.impound_done', data.plate))
             TriggerClientEvent('mdt:client:impoundCreated', src, row)
         end
     end)
@@ -311,6 +311,6 @@ Sw.SecureEvent('mdt:server:retrieveImpound', {
     if not impoundId then return end
 
     MDTDatabase.retrieveImpound(impoundId, function()
-        notify(src, 'success', 'Sechestru', 'Vehicul eliberat din sechestru.')
+        notify(src, 'success', Sw.TP(src, 'mdt.notify.impound_title'), Sw.TP(src, 'mdt.notify.impound_released'))
     end)
 end)

@@ -1,4 +1,4 @@
-version '1.1.0'
+version '1.2.0'
 description 'Sistem de interacțiuni pentru FiveM'
 author 'Switty'
 repository ''
@@ -7,7 +7,12 @@ fx_version 'bodacious'
 game 'gta5'
 
 dependencies {
+    'core',
     'settings'
+}
+
+shared_scripts {
+    '@core/shared/lib.lua'
 }
 
 server_scripts {

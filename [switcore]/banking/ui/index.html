@@ -72,7 +72,7 @@
                     </div>
                     <div class="atm-logo-text">
                         <h1>ATM</h1>
-                        <p>Bancomat</p>
+                        <p data-i18n="banking.atm.subtitle">Bancomat</p>
                     </div>
                 </div>
                 <button class="atm-close-btn" onclick="closeUI()"><i data-lucide="x"></i></button>
@@ -81,42 +81,42 @@
             <div class="atm-screen">
                 <div id="atm-view-balance" class="atm-view active">
                     <div class="atm-welcome">
-                        <h2>Bine ai venit!</h2>
-                        <p>Selectează o operațiune</p>
+                        <h2 data-i18n="banking.atm.welcome">Bine ai venit!</h2>
+                        <p data-i18n="banking.atm.select_operation">Selectează o operațiune</p>
                     </div>
                     <div class="atm-cash-display">
-                        <span class="atm-cash-label">Cash disponibil</span>
+                        <span class="atm-cash-label" data-i18n="banking.atm.cash_available">Cash disponibil</span>
                         <span class="atm-cash-amount" id="atm-cash">$0.00</span>
                     </div>
                     <div class="atm-accounts-list" id="atm-accounts-list"></div>
                     <div class="atm-actions">
                         <button class="atm-btn atm-btn-primary" onclick="atmShowView('withdraw')">
                             <span class="atm-btn-icon"><i data-lucide="arrow-up-from-line"></i></span>
-                            Retragere
+                            <span data-i18n="banking.atm.withdraw">Retragere</span>
                         </button>
                         <button class="atm-btn atm-btn-success" onclick="atmShowView('deposit')">
                             <span class="atm-btn-icon"><i data-lucide="arrow-down-to-line"></i></span>
-                            Depunere
+                            <span data-i18n="banking.atm.deposit">Depunere</span>
                         </button>
                         <button class="atm-btn atm-btn-info" onclick="atmShowView('transfer')">
                             <span class="atm-btn-icon"><i data-lucide="repeat-2"></i></span>
-                            Transfer
+                            <span data-i18n="banking.atm.transfer">Transfer</span>
                         </button>
                     </div>
                 </div>
 
                 <div id="atm-view-withdraw" class="atm-view">
                     <div class="atm-view-header">
-                        <button class="atm-back-btn" onclick="atmShowView('balance')">← Înapoi</button>
-                        <h3>Retragere</h3>
+                        <button class="atm-back-btn" data-i18n="banking.atm.back" onclick="atmShowView('balance')">← Înapoi</button>
+                        <h3 data-i18n="banking.atm.withdraw">Retragere</h3>
                     </div>
                     <div class="atm-form">
                         <div class="atm-form-group">
-                            <label>Selectează contul</label>
+                            <label data-i18n="banking.atm.select_account">Selectează contul</label>
                             <select id="atm-withdraw-account" class="atm-select"></select>
                         </div>
                         <div class="atm-form-group">
-                            <label>Suma ($)</label>
+                            <label data-i18n="banking.ui.amount">Suma ($)</label>
                             <input type="number" id="atm-withdraw-amount" class="atm-input" placeholder="0.00" min="0.01" step="0.01">
                         </div>
                         <div class="atm-quick-amounts">
@@ -126,22 +126,22 @@
                             <button class="atm-quick-btn" onclick="setAmount('atm-withdraw-amount', 1000)">$1000</button>
                             <button class="atm-quick-btn" onclick="setAmount('atm-withdraw-amount', 5000)">$5000</button>
                         </div>
-                        <button class="atm-btn atm-btn-primary atm-btn-full" onclick="atmWithdraw()">Retrage</button>
+                        <button class="atm-btn atm-btn-primary atm-btn-full" data-i18n="banking.atm.btn_withdraw" onclick="atmWithdraw()">Retrage</button>
                     </div>
                 </div>
 
                 <div id="atm-view-deposit" class="atm-view">
                     <div class="atm-view-header">
-                        <button class="atm-back-btn" onclick="atmShowView('balance')">← Înapoi</button>
-                        <h3>Depunere</h3>
+                        <button class="atm-back-btn" data-i18n="banking.atm.back" onclick="atmShowView('balance')">← Înapoi</button>
+                        <h3 data-i18n="banking.atm.deposit">Depunere</h3>
                     </div>
                     <div class="atm-form">
                         <div class="atm-form-group">
-                            <label>Selectează contul</label>
+                            <label data-i18n="banking.atm.select_account">Selectează contul</label>
                             <select id="atm-deposit-account" class="atm-select"></select>
                         </div>
                         <div class="atm-form-group">
-                            <label>Suma ($)</label>
+                            <label data-i18n="banking.ui.amount">Suma ($)</label>
                             <input type="number" id="atm-deposit-amount" class="atm-input" placeholder="0.00" min="0.01" step="0.01">
                         </div>
                         <div class="atm-quick-amounts">
@@ -151,29 +151,29 @@
                             <button class="atm-quick-btn" onclick="setAmount('atm-deposit-amount', 1000)">$1000</button>
                             <button class="atm-quick-btn" onclick="setAmount('atm-deposit-amount', 5000)">$5000</button>
                         </div>
-                        <button class="atm-btn atm-btn-success atm-btn-full" onclick="atmDeposit()">Depune</button>
+                        <button class="atm-btn atm-btn-success atm-btn-full" data-i18n="banking.atm.btn_deposit" onclick="atmDeposit()">Depune</button>
                     </div>
                 </div>
 
                 <div id="atm-view-transfer" class="atm-view">
                     <div class="atm-view-header">
-                        <button class="atm-back-btn" onclick="atmShowView('balance')">← Înapoi</button>
-                        <h3>Transfer</h3>
+                        <button class="atm-back-btn" data-i18n="banking.atm.back" onclick="atmShowView('balance')">← Înapoi</button>
+                        <h3 data-i18n="banking.atm.transfer">Transfer</h3>
                     </div>
                     <div class="atm-form">
                         <div class="atm-form-group">
-                            <label>Din contul</label>
+                            <label data-i18n="banking.ui.from_account">Din contul</label>
                             <select id="atm-transfer-from" class="atm-select"></select>
                         </div>
                         <div class="atm-form-group">
-                            <label>Către cont (nr. cont)</label>
+                            <label data-i18n="banking.ui.to_account">Către cont (nr. cont)</label>
                             <input type="text" id="atm-transfer-to" class="atm-input" placeholder="MAZE-0001-0000-0001">
                         </div>
                         <div class="atm-form-group">
-                            <label>Suma ($)</label>
+                            <label data-i18n="banking.ui.amount">Suma ($)</label>
                             <input type="number" id="atm-transfer-amount" class="atm-input" placeholder="0.00" min="0.01" step="0.01">
                         </div>
-                        <button class="atm-btn atm-btn-info atm-btn-full" onclick="atmTransfer()">Transferă</button>
+                        <button class="atm-btn atm-btn-info atm-btn-full" data-i18n="banking.atm.btn_transfer" onclick="atmTransfer()">Transferă</button>
                     </div>
                 </div>
             </div>
@@ -191,39 +191,39 @@
                     </div>
                     <div class="bank-logo-text">
                         <h2 id="bank-name">Maze Bank</h2>
-                        <p>Servicii Bancare</p>
+                        <p data-i18n="banking.bank.subtitle">Servicii Bancare</p>
                     </div>
                 </div>
                 <nav class="bank-nav">
                     <button class="bank-nav-item active" data-view="dashboard" onclick="bankShowView('dashboard')">
                         <span class="bank-nav-icon"><i data-lucide="layout-dashboard"></i></span>
-                        <span>Dashboard</span>
+                        <span data-i18n="banking.bank.nav_dashboard">Dashboard</span>
                     </button>
                     <button class="bank-nav-item" data-view="accounts" onclick="bankShowView('accounts')">
                         <span class="bank-nav-icon"><i data-lucide="credit-card"></i></span>
-                        <span>Conturi</span>
+                        <span data-i18n="banking.bank.nav_accounts">Conturi</span>
                     </button>
                     <button class="bank-nav-item" data-view="operations" onclick="bankShowView('operations')">
                         <span class="bank-nav-icon"><i data-lucide="arrow-left-right"></i></span>
-                        <span>Operațiuni</span>
+                        <span data-i18n="banking.bank.nav_operations">Operațiuni</span>
                     </button>
                     <button class="bank-nav-item" data-view="transactions" onclick="bankShowView('transactions')">
                         <span class="bank-nav-icon"><i data-lucide="history"></i></span>
-                        <span>Istoric</span>
+                        <span data-i18n="banking.bank.nav_transactions">Istoric</span>
                     </button>
                     <button class="bank-nav-item" data-view="loans" onclick="bankShowView('loans')">
                         <span class="bank-nav-icon"><i data-lucide="landmark"></i></span>
-                        <span>Credite</span>
+                        <span data-i18n="banking.bank.nav_loans">Credite</span>
                     </button>
                     <button class="bank-nav-item" data-view="exchange" onclick="bankShowView('exchange')">
                         <span class="bank-nav-icon"><i data-lucide="refresh-cw"></i></span>
-                        <span>Schimb Valutar</span>
+                        <span data-i18n="banking.bank.nav_exchange">Schimb Valutar</span>
                     </button>
                 </nav>
                 <div class="bank-sidebar-footer">
                     <button class="bank-close-btn" onclick="closeUI()">
                         <i data-lucide="x"></i>
-                        Închide
+                        <span data-i18n="banking.bank.close">Închide</span>
                     </button>
                 </div>
             </div>
@@ -231,112 +231,112 @@
             <div class="bank-content">
                 <div id="bank-view-dashboard" class="bank-view active">
                     <div class="bank-view-title">
-                        <h2>Dashboard</h2>
-                        <p>Prezentare generală</p>
+                        <h2 data-i18n="banking.bank.dashboard_title">Dashboard</h2>
+                        <p data-i18n="banking.bank.dashboard_subtitle">Prezentare generală</p>
                     </div>
                     <div class="bank-stats">
                         <div class="bank-stat-card">
                             <div class="bank-stat-icon"><i data-lucide="wallet"></i></div>
                             <div class="bank-stat-info">
-                                <span class="bank-stat-label">Cash</span>
+                                <span class="bank-stat-label" data-i18n="banking.bank.stat_cash">Cash</span>
                                 <span class="bank-stat-value" id="bank-cash">$0.00</span>
                             </div>
                         </div>
                         <div class="bank-stat-card">
                             <div class="bank-stat-icon"><i data-lucide="building-2"></i></div>
                             <div class="bank-stat-info">
-                                <span class="bank-stat-label">Total în conturi</span>
+                                <span class="bank-stat-label" data-i18n="banking.bank.stat_total_balance">Total în conturi</span>
                                 <span class="bank-stat-value" id="bank-total-balance">$0.00</span>
                             </div>
                         </div>
                         <div class="bank-stat-card">
                             <div class="bank-stat-icon"><i data-lucide="layers"></i></div>
                             <div class="bank-stat-info">
-                                <span class="bank-stat-label">Conturi active</span>
+                                <span class="bank-stat-label" data-i18n="banking.bank.stat_active_accounts">Conturi active</span>
                                 <span class="bank-stat-value" id="bank-account-count">0</span>
                             </div>
                         </div>
                         <div class="bank-stat-card">
                             <div class="bank-stat-icon"><i data-lucide="trending-down"></i></div>
                             <div class="bank-stat-info">
-                                <span class="bank-stat-label">Datorii</span>
+                                <span class="bank-stat-label" data-i18n="banking.bank.stat_debt">Datorii</span>
                                 <span class="bank-stat-value" id="bank-total-debt">$0.00</span>
                             </div>
                         </div>
                     </div>
                     <div class="bank-section">
-                        <h3>Conturi</h3>
+                        <h3 data-i18n="banking.bank.section_accounts">Conturi</h3>
                         <div class="bank-dashboard-accounts" id="bank-dashboard-accounts"></div>
                     </div>
                     <div class="bank-section">
-                        <h3>Ultimele Tranzacții</h3>
+                        <h3 data-i18n="banking.bank.section_recent_transactions">Ultimele Tranzacții</h3>
                         <div class="bank-dashboard-transactions" id="bank-dashboard-transactions"></div>
                     </div>
                 </div>
 
                 <div id="bank-view-accounts" class="bank-view">
                     <div class="bank-view-title">
-                        <h2>Conturi Bancare</h2>
-                        <button class="bank-btn bank-btn-primary" onclick="showCreateAccountModal()">+ Cont Nou</button>
+                        <h2 data-i18n="banking.bank.accounts_title">Conturi Bancare</h2>
+                        <button class="bank-btn bank-btn-primary" data-i18n="banking.bank.new_account" onclick="showCreateAccountModal()">+ Cont Nou</button>
                     </div>
                     <div class="bank-accounts-grid" id="bank-accounts-grid"></div>
                 </div>
 
                 <div id="bank-view-operations" class="bank-view">
                     <div class="bank-view-title">
-                        <h2>Operațiuni</h2>
-                        <p>Depunere, Retragere, Transfer</p>
+                        <h2 data-i18n="banking.bank.operations_title">Operațiuni</h2>
+                        <p data-i18n="banking.bank.operations_subtitle">Depunere, Retragere, Transfer</p>
                     </div>
                     <div class="bank-operations-tabs">
-                        <button class="bank-op-tab active" onclick="bankOpTab('bank-op-deposit', this)">Depunere</button>
-                        <button class="bank-op-tab" onclick="bankOpTab('bank-op-withdraw', this)">Retragere</button>
-                        <button class="bank-op-tab" onclick="bankOpTab('bank-op-transfer', this)">Transfer</button>
+                        <button class="bank-op-tab active" data-i18n="banking.bank.tab_deposit" onclick="bankOpTab('bank-op-deposit', this)">Depunere</button>
+                        <button class="bank-op-tab" data-i18n="banking.bank.tab_withdraw" onclick="bankOpTab('bank-op-withdraw', this)">Retragere</button>
+                        <button class="bank-op-tab" data-i18n="banking.bank.tab_transfer" onclick="bankOpTab('bank-op-transfer', this)">Transfer</button>
                     </div>
                     <div class="bank-operations-content">
                         <div id="bank-op-deposit" class="bank-op-panel active">
                             <div class="bank-form">
                                 <div class="bank-form-group">
-                                    <label>Cont destinație</label>
+                                    <label data-i18n="banking.bank.dest_account">Cont destinație</label>
                                     <select id="bank-dep-account" class="bank-select"></select>
                                 </div>
                                 <div class="bank-form-group">
-                                    <label>Suma ($)</label>
+                                    <label data-i18n="banking.ui.amount">Suma ($)</label>
                                     <input type="number" id="bank-dep-amount" class="bank-input" placeholder="0.00" min="0.01" step="0.01">
                                 </div>
                                 <div class="bank-form-info">
-                                    <span>Cash disponibil: <strong id="bank-dep-cash">$0.00</strong></span>
+                                    <span><span data-i18n="banking.bank.cash_available">Cash disponibil:</span> <strong id="bank-dep-cash">$0.00</strong></span>
                                 </div>
-                                <button class="bank-btn bank-btn-success bank-btn-full" onclick="bankDeposit()">Depune</button>
+                                <button class="bank-btn bank-btn-success bank-btn-full" data-i18n="banking.bank.btn_deposit" onclick="bankDeposit()">Depune</button>
                             </div>
                         </div>
                         <div id="bank-op-withdraw" class="bank-op-panel">
                             <div class="bank-form">
                                 <div class="bank-form-group">
-                                    <label>Din contul</label>
+                                    <label data-i18n="banking.ui.from_account">Din contul</label>
                                     <select id="bank-wit-account" class="bank-select"></select>
                                 </div>
                                 <div class="bank-form-group">
-                                    <label>Suma ($)</label>
+                                    <label data-i18n="banking.ui.amount">Suma ($)</label>
                                     <input type="number" id="bank-wit-amount" class="bank-input" placeholder="0.00" min="0.01" step="0.01">
                                 </div>
-                                <button class="bank-btn bank-btn-primary bank-btn-full" onclick="bankWithdraw()">Retrage</button>
+                                <button class="bank-btn bank-btn-primary bank-btn-full" data-i18n="banking.bank.btn_withdraw" onclick="bankWithdraw()">Retrage</button>
                             </div>
                         </div>
                         <div id="bank-op-transfer" class="bank-op-panel">
                             <div class="bank-form">
                                 <div class="bank-form-group">
-                                    <label>Din contul</label>
+                                    <label data-i18n="banking.ui.from_account">Din contul</label>
                                     <select id="bank-tr-from" class="bank-select"></select>
                                 </div>
                                 <div class="bank-form-group">
-                                    <label>Către cont (nr. cont)</label>
+                                    <label data-i18n="banking.ui.to_account">Către cont (nr. cont)</label>
                                     <input type="text" id="bank-tr-to" class="bank-input" placeholder="MAZE-0001-0000-0001">
                                 </div>
                                 <div class="bank-form-group">
-                                    <label>Suma ($)</label>
+                                    <label data-i18n="banking.ui.amount">Suma ($)</label>
                                     <input type="number" id="bank-tr-amount" class="bank-input" placeholder="0.00" min="0.01" step="0.01">
                                 </div>
-                                <button class="bank-btn bank-btn-info bank-btn-full" onclick="bankTransfer()">Transferă</button>
+                                <button class="bank-btn bank-btn-info bank-btn-full" data-i18n="banking.bank.btn_transfer" onclick="bankTransfer()">Transferă</button>
                             </div>
                         </div>
                     </div>
@@ -344,22 +344,22 @@
 
                 <div id="bank-view-transactions" class="bank-view">
                     <div class="bank-view-title">
-                        <h2>Istoric Tranzacții</h2>
-                        <button class="bank-btn bank-btn-secondary" onclick="refreshTransactions()"><i data-lucide="refresh-cw"></i>Refresh</button>
+                        <h2 data-i18n="banking.bank.transactions_title">Istoric Tranzacții</h2>
+                        <button class="bank-btn bank-btn-secondary" onclick="refreshTransactions()"><i data-lucide="refresh-cw"></i><span data-i18n="banking.bank.refresh">Refresh</span></button>
                     </div>
                     <div class="bank-transactions-list" id="bank-transactions-list"></div>
                 </div>
 
                 <div id="bank-view-loans" class="bank-view">
                     <div class="bank-view-title">
-                        <h2>Credite</h2>
-                        <button class="bank-btn bank-btn-primary" onclick="showCreateLoanModal()">+ Credit Nou</button>
+                        <h2 data-i18n="banking.bank.loans_title">Credite</h2>
+                        <button class="bank-btn bank-btn-primary" data-i18n="banking.bank.new_loan" onclick="showCreateLoanModal()">+ Credit Nou</button>
                     </div>
                     <div class="bank-loans-summary">
                         <div class="bank-stat-card">
                             <div class="bank-stat-icon"><i data-lucide="trending-down"></i></div>
                             <div class="bank-stat-info">
-                                <span class="bank-stat-label">Datorie totală</span>
+                                <span class="bank-stat-label" data-i18n="banking.bank.total_debt">Datorie totală</span>
                                 <span class="bank-stat-value" id="bank-loans-total-debt">$0.00</span>
                             </div>
                         </div>
@@ -369,29 +369,29 @@
 
                 <div id="bank-view-exchange" class="bank-view">
                     <div class="bank-view-title">
-                        <h2>Schimb Valutar</h2>
-                        <p>Schimbă între valute</p>
+                        <h2 data-i18n="banking.bank.exchange_title">Schimb Valutar</h2>
+                        <p data-i18n="banking.bank.exchange_subtitle">Schimbă între valute</p>
                     </div>
                     <div class="bank-form">
                         <div class="bank-form-group">
-                            <label>Cont</label>
+                            <label data-i18n="banking.bank.account">Cont</label>
                             <select id="bank-ex-account" class="bank-select"></select>
                         </div>
                         <div class="bank-form-row">
                             <div class="bank-form-group">
-                                <label>Din valuta</label>
+                                <label data-i18n="banking.bank.from_currency">Din valuta</label>
                                 <select id="bank-ex-from" class="bank-select"></select>
                             </div>
                             <div class="bank-form-group">
-                                <label>În valuta</label>
+                                <label data-i18n="banking.bank.to_currency">În valuta</label>
                                 <select id="bank-ex-to" class="bank-select"></select>
                             </div>
                         </div>
                         <div class="bank-form-group">
-                            <label>Suma</label>
+                            <label data-i18n="banking.ui.amount_plain">Suma</label>
                             <input type="number" id="bank-ex-amount" class="bank-input" placeholder="0.00" min="0.01" step="0.01">
                         </div>
-                        <button class="bank-btn bank-btn-primary bank-btn-full" onclick="bankExchange()">Schimbă</button>
+                        <button class="bank-btn bank-btn-primary bank-btn-full" data-i18n="banking.bank.btn_exchange" onclick="bankExchange()">Schimbă</button>
                     </div>
                 </div>
             </div>
@@ -400,23 +400,23 @@
         <div id="create-account-modal" class="bank-modal">
             <div class="bank-modal-content">
                 <div class="bank-modal-header">
-                    <h3>Cont Nou</h3>
+                    <h3 data-i18n="banking.bank.modal_new_account">Cont Nou</h3>
                     <button class="bank-modal-close" onclick="closeModal('create-account-modal')"><i data-lucide="x"></i></button>
                 </div>
                 <div class="bank-form">
                     <div class="bank-form-group">
-                        <label>Bancă</label>
+                        <label data-i18n="banking.bank.bank_label">Bancă</label>
                         <select id="modal-bank" class="bank-select"></select>
                     </div>
                     <div class="bank-form-group">
-                        <label>Tip cont</label>
+                        <label data-i18n="banking.bank.account_type">Tip cont</label>
                         <select id="modal-account-type" class="bank-select">
-                            <option value="current">Cont Curent</option>
-                            <option value="savings">Cont de Economii</option>
-                            <option value="deposit">Depozit</option>
+                            <option value="current" data-i18n="banking.bank.opt_current">Cont Curent</option>
+                            <option value="savings" data-i18n="banking.bank.opt_savings">Cont de Economii</option>
+                            <option value="deposit" data-i18n="banking.bank.opt_deposit">Depozit</option>
                         </select>
                     </div>
-                    <button class="bank-btn bank-btn-primary bank-btn-full" onclick="createAccount()">Creează Cont</button>
+                    <button class="bank-btn bank-btn-primary bank-btn-full" data-i18n="banking.bank.btn_create_account" onclick="createAccount()">Creează Cont</button>
                 </div>
             </div>
         </div>
@@ -424,31 +424,31 @@
         <div id="create-loan-modal" class="bank-modal">
             <div class="bank-modal-content">
                 <div class="bank-modal-header">
-                    <h3>Credit Nou</h3>
+                    <h3 data-i18n="banking.bank.modal_new_loan">Credit Nou</h3>
                     <button class="bank-modal-close" onclick="closeModal('create-loan-modal')"><i data-lucide="x"></i></button>
                 </div>
                 <div class="bank-form">
                     <div class="bank-form-group">
-                        <label>Bancă</label>
+                        <label data-i18n="banking.bank.bank_label">Bancă</label>
                         <select id="modal-loan-bank" class="bank-select"></select>
                     </div>
                     <div class="bank-form-group">
-                        <label>Tip credit</label>
+                        <label data-i18n="banking.bank.loan_type">Tip credit</label>
                         <select id="modal-loan-type" class="bank-select">
-                            <option value="personal">Personal (12%/an)</option>
-                            <option value="mortgage">Ipotecar (6%/an)</option>
-                            <option value="business">Business (8%/an)</option>
+                            <option value="personal" data-i18n="banking.bank.opt_personal">Personal (12%/an)</option>
+                            <option value="mortgage" data-i18n="banking.bank.opt_mortgage">Ipotecar (6%/an)</option>
+                            <option value="business" data-i18n="banking.bank.opt_business">Business (8%/an)</option>
                         </select>
                     </div>
                     <div class="bank-form-group">
-                        <label>Suma ($)</label>
+                        <label data-i18n="banking.ui.amount">Suma ($)</label>
                         <input type="number" id="modal-loan-amount" class="bank-input" placeholder="10000" min="100" step="100">
                     </div>
                     <div class="bank-form-group">
-                        <label>Termen (luni)</label>
+                        <label data-i18n="banking.bank.term_months">Termen (luni)</label>
                         <input type="number" id="modal-loan-term" class="bank-input" placeholder="12" min="6" max="60" value="12">
                     </div>
-                    <button class="bank-btn bank-btn-primary bank-btn-full" onclick="createLoan()">Solicită Credit</button>
+                    <button class="bank-btn bank-btn-primary bank-btn-full" data-i18n="banking.bank.btn_request_loan" onclick="createLoan()">Solicită Credit</button>
                 </div>
             </div>
         </div>
@@ -456,16 +456,16 @@
         <div id="pay-loan-modal" class="bank-modal">
             <div class="bank-modal-content">
                 <div class="bank-modal-header">
-                    <h3>Plătește Rată</h3>
+                    <h3 data-i18n="banking.bank.modal_pay_loan">Plătește Rată</h3>
                     <button class="bank-modal-close" onclick="closeModal('pay-loan-modal')"><i data-lucide="x"></i></button>
                 </div>
                 <div class="bank-form">
                     <input type="hidden" id="modal-pay-loan-id">
                     <div class="bank-form-group">
-                        <label>Suma ($)</label>
+                        <label data-i18n="banking.ui.amount">Suma ($)</label>
                         <input type="number" id="modal-pay-loan-amount" class="bank-input" placeholder="0.00" min="0.01" step="0.01">
                     </div>
-                    <button class="bank-btn bank-btn-success bank-btn-full" onclick="payLoan()">Plătește</button>
+                    <button class="bank-btn bank-btn-success bank-btn-full" data-i18n="banking.bank.btn_pay" onclick="payLoan()">Plătește</button>
                 </div>
             </div>
         </div>
@@ -473,6 +473,7 @@
 
     <div id="global-toast" class="global-toast"></div>
 
+    <script src="nui://core/ui/i18n.js"></script>
     <script src="atm/script.js"></script>
     <script src="bank/script.js"></script>
     <script>
@@ -499,13 +500,13 @@
                     handleCashData(data.data);
                     break;
                 case 'depositResult':
-                    handleOperationResult(data.data, 'Depunere');
+                    handleOperationResult(data.data, 'banking.ui.op_deposit', 'Depunere');
                     break;
                 case 'withdrawResult':
-                    handleOperationResult(data.data, 'Retragere');
+                    handleOperationResult(data.data, 'banking.ui.op_withdraw', 'Retragere');
                     break;
                 case 'transferResult':
-                    handleOperationResult(data.data, 'Transfer');
+                    handleOperationResult(data.data, 'banking.ui.op_transfer', 'Transfer');
                     break;
                 case 'transactionsData':
                     handleTransactionsData(data.data);
@@ -517,22 +518,22 @@
                     handleCurrenciesData(data.data);
                     break;
                 case 'createAccountResult':
-                    handleOperationResult(data.data, 'Creare cont');
+                    handleOperationResult(data.data, 'banking.ui.op_create_account', 'Creare cont');
                     closeModal('create-account-modal');
                     break;
                 case 'loansData':
                     handleLoansData(data.data);
                     break;
                 case 'createLoanResult':
-                    handleOperationResult(data.data, 'Solicitare credit');
+                    handleOperationResult(data.data, 'banking.ui.op_create_loan', 'Solicitare credit');
                     closeModal('create-loan-modal');
                     break;
                 case 'payLoanResult':
-                    handleOperationResult(data.data, 'Plată rată');
+                    handleOperationResult(data.data, 'banking.ui.op_pay_loan', 'Plată rată');
                     closeModal('pay-loan-modal');
                     break;
                 case 'exchangeResult':
-                    handleOperationResult(data.data, 'Schimb valutar');
+                    handleOperationResult(data.data, 'banking.ui.op_exchange', 'Schimb valutar');
                     break;
             }
         });
@@ -578,11 +579,12 @@
             setTimeout(() => { toast.classList.remove('show'); }, 3000);
         }
 
-        function handleOperationResult(data, operationName) {
+        function handleOperationResult(data, opKey, opFallback) {
+            const operationName = tt(opKey, opFallback);
             if (data.success) {
-                showToast(operationName + ' reușit(ă)!', 'success');
+                showToast(tt('banking.ui.op_success', '{1} reușit(ă)!', operationName), 'success');
             } else {
-                showToast(operationName + ' eșuat(ă): ' + (data.error || 'Eroare necunoscută'), 'error');
+                showToast(tt('banking.ui.op_failed', '{1} eșuat(ă): {2}', operationName, data.error || tt('banking.ui.error_unknown', 'Eroare necunoscută')), 'error');
             }
         }
 

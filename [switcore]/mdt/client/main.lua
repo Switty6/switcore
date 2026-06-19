@@ -4,6 +4,12 @@
 local isMDTOpen = false
 local currentJob = nil   -- updated by jobs:client:jobUpdated
 
+local function pushI18n()
+    SendNUIMessage({ action = 'sw:i18n', dict = exports.core:getLocaleDict() })
+end
+
+AddEventHandler('switcore:client:localeUpdated', pushI18n)
+
 RegisterNetEvent('jobs:client:jobUpdated')
 AddEventHandler('jobs:client:jobUpdated', function(job)
     currentJob = job
@@ -30,13 +36,14 @@ local function OpenMDT()
     elseif jobName == 'ems' then
         isMDTOpen = true
         SetNuiFocus(true, true)
+        pushI18n()
         SendNUIMessage({ action = 'openMDT', jobName = 'ems' })
         TriggerServerEvent('ems:server:getCalls')
         TriggerServerEvent('ems:server:getOnDutyEMS')
     end
 end
 
-RegisterKeyMapping('mdt:open', 'Deschide MDT', 'keyboard', 'F6')
+RegisterKeyMapping('mdt:open', Sw.T('mdt.keymap_open'), 'keyboard', 'F6')
 RegisterCommand('mdt:open', function()
     OpenMDT()
 end, false)
@@ -178,7 +185,7 @@ end)
 
 RegisterNUICallback('setWaypoint', function(data, cb)
     SetNewWaypoint(data.x, data.y)
-    exports.notifications:Notify('info', 'Waypoint setat la locatia apelului.', 3000)
+    exports.notifications:Notify('info', Sw.T('mdt.notify.waypoint_set'), 3000)
     cb('ok')
 end)
 
@@ -201,6 +208,7 @@ RegisterNetEvent('police:client:mdtData')
 AddEventHandler('police:client:mdtData', function(data)
     isMDTOpen = true
     SetNuiFocus(true, true)
+    pushI18n()
     SendNUIMessage({
         action     = 'openMDT',
         jobName    = 'police',

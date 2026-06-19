@@ -41,6 +41,7 @@ local currencySymbol    = '$'
 
 local holdingNozzle         = false
 local nozzleInVehicle       = false
+local takingNozzle          = false
 local isHolding             = false
 local vehicleInteractId     = nil
 local vehicleInteractEntity = nil
@@ -53,6 +54,12 @@ local function sendNUI(action, data)
     data = data or {}; data.action = action
     SendNUIMessage(data)
 end
+
+local function pushI18n()
+    SendNUIMessage({ action = 'sw:i18n', dict = exports.core:getLocaleDict() })
+end
+
+AddEventHandler('switcore:client:localeUpdated', pushI18n)
 
 local function FindClosestPump()
     local pos = GetEntityCoords(PlayerPedId())
@@ -182,6 +189,7 @@ end
 local function ResetState()
     holdingNozzle    = false
     nozzleInVehicle  = false
+    takingNozzle     = false
     isHolding        = false
     IsFueling        = false
     fillAdded        = 0.0
@@ -205,7 +213,7 @@ local function ReturnNozzleToPump()
 end
 
 local function SnapNozzleInHand()
-    TriggerEvent('switcore:notify:local', 'error', 'Furtunul s-a rupt!', 3500)
+    TriggerEvent('switcore:notify:local', 'error', Sw.T('vehicles.hose_snapped'), 3500)
     CleanupNozzle()
     CleanupRope()
     CleanupVehicleInteraction()
@@ -228,7 +236,7 @@ local function RegisterVehicleInteraction()
 
     CleanupVehicleInteraction()
     vehicleInteractId = exports.proximity:AddEntityInteraction(
-        veh, 'Atașează furtunul la rezervor', 'fuel_vehicle_attach', {},
+        veh, Sw.T('vehicles.attach_hose_to_tank'), 'fuel_vehicle_attach', {},
         nil, nil, nil, VEHICLE_PROX_DIST
     )
     vehicleInteractEntity = veh
@@ -249,6 +257,18 @@ CreateThread(function()
             else
                 RegisterVehicleInteraction()
             end
+        elseif nozzleInVehicle then
+            -- Furtun atasat la masina: daca jucatorul/masina se indeparteaza de pompa
+            -- fara sa alimenteze (nu tine E, fara plata in asteptare), rupem furtunul
+            -- si curatam capul (altfel ramanea atasat de masina la nesfarsit).
+            if not isHolding and not pendingPayment
+               and pumpEntityRef and DoesEntityExist(pumpEntityRef) then
+                local ref = (fillVehicle and DoesEntityExist(fillVehicle)) and fillVehicle or ped
+                if #(GetEntityCoords(ref) - GetEntityCoords(pumpEntityRef)) >= CABLE_MAX then
+                    SnapNozzleInHand()
+                    snapped = true
+                end
+            end
         elseif not holdingNozzle then
             CleanupVehicleInteraction()
         end
@@ -266,7 +286,7 @@ CreateThread(function()
                 if pump and pumpInteractEntity ~= pump then
                     CleanupPumpInteraction()
                     pumpInteractId = exports.proximity:AddEntityInteraction(
-                        pump, 'Alimentează', 'fuel_pump', {}, nil, nil, nil, PUMP_PROX_DIST)
+                        pump, Sw.T('vehicles.refuel_action'), 'fuel_pump', {}, nil, nil, nil, PUMP_PROX_DIST)
                     pumpInteractEntity = pump
                 elseif not pump then
                     CleanupPumpInteraction()
@@ -287,29 +307,37 @@ RegisterNetEvent('switcore:proximity:interact', function(interaction)
             ReturnNozzleToPump()
             return
         end
+        -- Guard impotriva re-intrarii: holdingNozzle se seteaza abia dupa animatia de
+        -- ~1s din SpawnNozzleInHand. Fara acest flag, doua apasari rapide pe pompa ar
+        -- crea doua nozzle-uri (al doilea suprascrie variabila, primul ramane orfan in mana).
+        if takingNozzle then return end
+        takingNozzle = true
 
         pumpEntityRef = interaction.entity
         if not pumpEntityRef or not DoesEntityExist(pumpEntityRef) then
-            TriggerEvent('switcore:notify:local', 'error', 'Pompa nu mai există.', 3000)
+            takingNozzle = false
+            TriggerEvent('switcore:notify:local', 'error', Sw.T('vehicles.pump_gone'), 3000)
             return
         end
 
         local ped = PlayerPedId()
         nozzleProp = SpawnNozzleInHand(ped)
         if not nozzleProp then
-            TriggerEvent('switcore:notify:local', 'error', 'Nu am putut prelua furtunul.', 3000)
+            takingNozzle = false
+            TriggerEvent('switcore:notify:local', 'error', Sw.T('vehicles.nozzle_pickup_failed'), 3000)
             return
         end
         AttachRopeToPump()
 
         holdingNozzle = true
+        takingNozzle  = false
 
         if RegisterVehicleInteraction() then
             TriggerEvent('switcore:notify:local', 'info',
-                'Apasă ALT pe rezervorul vehiculului pentru a alimenta.', 4500)
+                Sw.T('vehicles.press_alt_on_tank'), 4500)
         else
             TriggerEvent('switcore:notify:local', 'warning',
-                'Apropie-te de un vehicul și apasă ALT pe el.', 4500)
+                Sw.T('vehicles.approach_vehicle'), 4500)
         end
 
         TriggerServerEvent('vehicles:server:getBalanceForFuel')
@@ -323,7 +351,7 @@ RegisterNetEvent('switcore:proximity:interact', function(interaction)
 
         if not AttachNozzleToVehicle(vehicle) then
             TriggerEvent('switcore:notify:local', 'error',
-                'Nu pot ataşa furtunul la acest vehicul.', 3000)
+                Sw.T('vehicles.cannot_attach_hose'), 3000)
             return
         end
 
@@ -341,6 +369,7 @@ RegisterNetEvent('switcore:proximity:interact', function(interaction)
         CleanupVehicleInteraction()
 
         local currentGTA = GetVehicleFuelLevel(vehicle)
+        pushI18n()
         sendNUI('fuel:openFillHud', {
             pumpId         = (pumpEntityRef and (pumpEntityRef % 99 + 1)) or 1,
             pricePerLitre  = fillPricePerLitre,
@@ -398,7 +427,7 @@ local function ChargeAndFinish(reason)
 
     if reason == 'cable_snap' then
         sendNUI('fuel:cableSnap', {})
-        TriggerEvent('switcore:notify:local', 'error', 'Furtunul s-a rupt!', 3500)
+        TriggerEvent('switcore:notify:local', 'error', Sw.T('vehicles.hose_snapped'), 3500)
     end
 
     if litres <= 0.01 then
@@ -407,9 +436,9 @@ local function ChargeAndFinish(reason)
     end
 
     if reason == 'tank_full' then
-        TriggerEvent('switcore:notify:local', 'info', 'Rezervor plin! Alege metoda de plată.', 3500)
+        TriggerEvent('switcore:notify:local', 'info', Sw.T('vehicles.tank_full_choose_payment'), 3500)
     elseif reason == 'no_funds' then
-        TriggerEvent('switcore:notify:local', 'warning', 'Fonduri insuficiente, alege metoda de plată.', 4000)
+        TriggerEvent('switcore:notify:local', 'warning', Sw.T('vehicles.insufficient_funds_choose_payment'), 4000)
     end
 
     OpenPaymentModal(litres, cost, reason)
@@ -484,7 +513,7 @@ RegisterNetEvent('vehicles:client:refuelResult', function(success, err, result)
     else
         if pendingPayment then
             TriggerServerEvent('vehicles:server:getBalanceForFuel')
-            sendNUI('fuel:paymentError', { error = err or 'Plată eșuată' })
+            sendNUI('fuel:paymentError', { error = err or Sw.T('vehicles.payment_failed') })
         end
     end
 end)

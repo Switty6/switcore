@@ -4,14 +4,17 @@ lua54 'yes'
 
 description 'Sistem de notificări NUI pentru SwitCore.'
 author 'Switty'
-version '1.1.0'
+version '1.2.0'
 
 dependencies {
     'core',
     'settings'
 }
 
-shared_script 'config.lua'
+shared_scripts {
+    '@core/shared/lib.lua',
+    'config.lua'
+}
 
 server_scripts {
     'server/server.lua'

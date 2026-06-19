@@ -30,23 +30,23 @@
 <div id="warrant-modal" class="modal hidden">
     <div class="modal-box">
         <div class="modal-header">
-            <span>Emite Mandat</span>
+            <span data-i18n="mdt.modal.warrant_title">Emite Mandat</span>
             <button onclick="hideModal('warrant-modal')"><i data-lucide="x"></i></button>
         </div>
         <div class="modal-body">
-            <label>Cautare Suspect</label>
-            <input type="text" id="warrant-search" placeholder="Prenume sau Nume..." oninput="onModalSearch('warrant')" />
+            <label data-i18n="mdt.modal.search_suspect">Cautare Suspect</label>
+            <input type="text" id="warrant-search" placeholder="Prenume sau Nume..." data-i18n-placeholder="mdt.modal.ph_name_search" oninput="onModalSearch('warrant')" />
             <div id="warrant-search-results" class="compact-results"></div>
             <input type="hidden" id="warrant-char-id" />
             <div id="warrant-char-display" class="selected-char hidden"></div>
-            <label>Acuzatii</label>
-            <textarea id="warrant-charges" rows="3" placeholder="Acuzatii..."></textarea>
-            <label>Cautiune ($)</label>
+            <label data-i18n="mdt.modal.label_charges">Acuzatii</label>
+            <textarea id="warrant-charges" rows="3" placeholder="Acuzatii..." data-i18n-placeholder="mdt.modal.ph_charges"></textarea>
+            <label data-i18n="mdt.modal.label_bail">Cautiune ($)</label>
             <input type="number" id="warrant-bail" value="0" min="0" />
         </div>
         <div class="modal-footer">
-            <button class="btn-secondary" onclick="hideModal('warrant-modal')">Anuleaza</button>
-            <button class="btn-primary" onclick="submitWarrant()">Emite</button>
+            <button class="btn-secondary" onclick="hideModal('warrant-modal')" data-i18n="mdt.modal.cancel">Anuleaza</button>
+            <button class="btn-primary" onclick="submitWarrant()" data-i18n="mdt.modal.emit">Emite</button>
         </div>
     </div>
 </div>
@@ -55,23 +55,23 @@
 <div id="citation-modal" class="modal hidden">
     <div class="modal-box">
         <div class="modal-header">
-            <span>Emite Citatie</span>
+            <span data-i18n="mdt.modal.citation_title">Emite Citatie</span>
             <button onclick="hideModal('citation-modal')"><i data-lucide="x"></i></button>
         </div>
         <div class="modal-body">
-            <label>Cautare Suspect</label>
-            <input type="text" id="citation-search" placeholder="Prenume sau Nume..." oninput="onModalSearch('citation')" />
+            <label data-i18n="mdt.modal.search_suspect">Cautare Suspect</label>
+            <input type="text" id="citation-search" placeholder="Prenume sau Nume..." data-i18n-placeholder="mdt.modal.ph_name_search" oninput="onModalSearch('citation')" />
             <div id="citation-search-results" class="compact-results"></div>
             <input type="hidden" id="citation-char-id" />
             <div id="citation-char-display" class="selected-char hidden"></div>
-            <label>Infractiune</label>
-            <input type="text" id="citation-offense" placeholder="Ex: Depasire viteza..." />
-            <label>Amenda ($)</label>
+            <label data-i18n="mdt.modal.label_offense">Infractiune</label>
+            <input type="text" id="citation-offense" placeholder="Ex: Depasire viteza..." data-i18n-placeholder="mdt.modal.ph_offense" />
+            <label data-i18n="mdt.modal.label_fine">Amenda ($)</label>
             <input type="number" id="citation-fine" value="500" min="0" />
         </div>
         <div class="modal-footer">
-            <button class="btn-secondary" onclick="hideModal('citation-modal')">Anuleaza</button>
-            <button class="btn-primary" onclick="submitCitation()">Emite</button>
+            <button class="btn-secondary" onclick="hideModal('citation-modal')" data-i18n="mdt.modal.cancel">Anuleaza</button>
+            <button class="btn-primary" onclick="submitCitation()" data-i18n="mdt.modal.emit">Emite</button>
         </div>
     </div>
 </div>
@@ -80,20 +80,20 @@
 <div id="bolo-modal" class="modal hidden">
     <div class="modal-box">
         <div class="modal-header">
-            <span>Emite BOLO</span>
+            <span data-i18n="mdt.modal.bolo_title">Emite BOLO</span>
             <button onclick="hideModal('bolo-modal')"><i data-lucide="x"></i></button>
         </div>
         <div class="modal-body">
-            <label>Subiect / Nume Suspect</label>
-            <input type="text" id="bolo-subject" placeholder="Nume sau Neidentificat..." />
-            <label>Descriere</label>
-            <textarea id="bolo-description" rows="3" placeholder="Descriere suspect, comportament..."></textarea>
-            <label>Informatii Vehicul (optional)</label>
-            <input type="text" id="bolo-vehicle" placeholder="Marca, model, culoare, numar..." />
+            <label data-i18n="mdt.modal.label_subject">Subiect / Nume Suspect</label>
+            <input type="text" id="bolo-subject" placeholder="Nume sau Neidentificat..." data-i18n-placeholder="mdt.modal.ph_subject" />
+            <label data-i18n="mdt.modal.label_description">Descriere</label>
+            <textarea id="bolo-description" rows="3" placeholder="Descriere suspect, comportament..." data-i18n-placeholder="mdt.modal.ph_bolo_description"></textarea>
+            <label data-i18n="mdt.modal.label_vehicle_info">Informatii Vehicul (optional)</label>
+            <input type="text" id="bolo-vehicle" placeholder="Marca, model, culoare, numar..." data-i18n-placeholder="mdt.modal.ph_vehicle_info" />
         </div>
         <div class="modal-footer">
-            <button class="btn-secondary" onclick="hideModal('bolo-modal')">Anuleaza</button>
-            <button class="btn-primary" onclick="submitBOLO()">Emite</button>
+            <button class="btn-secondary" onclick="hideModal('bolo-modal')" data-i18n="mdt.modal.cancel">Anuleaza</button>
+            <button class="btn-primary" onclick="submitBOLO()" data-i18n="mdt.modal.emit">Emite</button>
         </div>
     </div>
 </div>
@@ -102,20 +102,20 @@
 <div id="incident-modal" class="modal hidden">
     <div class="modal-box modal-box-wide">
         <div class="modal-header">
-            <span>Raport Incident</span>
+            <span data-i18n="mdt.modal.incident_title">Raport Incident</span>
             <button onclick="hideModal('incident-modal')"><i data-lucide="x"></i></button>
         </div>
         <div class="modal-body">
-            <label>Titlu</label>
-            <input type="text" id="incident-title" placeholder="Titlu incident..." />
-            <label>Descriere</label>
-            <textarea id="incident-desc" rows="4" placeholder="Descriere detaliata..."></textarea>
-            <label>Persoane implicate (ID-uri separate prin virgula)</label>
-            <input type="text" id="incident-involved" placeholder="Ex: 12, 45, 78" />
+            <label data-i18n="mdt.modal.label_title">Titlu</label>
+            <input type="text" id="incident-title" placeholder="Titlu incident..." data-i18n-placeholder="mdt.modal.ph_title" />
+            <label data-i18n="mdt.modal.label_description">Descriere</label>
+            <textarea id="incident-desc" rows="4" placeholder="Descriere detaliata..." data-i18n-placeholder="mdt.modal.ph_incident_desc"></textarea>
+            <label data-i18n="mdt.modal.label_involved">Persoane implicate (ID-uri separate prin virgula)</label>
+            <input type="text" id="incident-involved" placeholder="Ex: 12, 45, 78" data-i18n-placeholder="mdt.modal.ph_involved" />
         </div>
         <div class="modal-footer">
-            <button class="btn-secondary" onclick="hideModal('incident-modal')">Anuleaza</button>
-            <button class="btn-primary" onclick="submitIncident()">Salveaza</button>
+            <button class="btn-secondary" onclick="hideModal('incident-modal')" data-i18n="mdt.modal.cancel">Anuleaza</button>
+            <button class="btn-primary" onclick="submitIncident()" data-i18n="mdt.modal.save">Salveaza</button>
         </div>
     </div>
 </div>
@@ -124,26 +124,27 @@
 <div id="impound-modal" class="modal hidden">
     <div class="modal-box">
         <div class="modal-header">
-            <span>Sechestru Vehicul</span>
+            <span data-i18n="mdt.modal.impound_title">Sechestru Vehicul</span>
             <button onclick="hideModal('impound-modal')"><i data-lucide="x"></i></button>
         </div>
         <div class="modal-body">
-            <label>Numar Inmatriculare</label>
-            <input type="text" id="impound-plate" placeholder="Ex: AB12 CDE" style="text-transform:uppercase" />
-            <label>Model Vehicul</label>
-            <input type="text" id="impound-model" placeholder="Ex: Adder, Sultan..." />
-            <label>Motiv Sechestru</label>
-            <textarea id="impound-reason" rows="2" placeholder="Motivul sechestrului..."></textarea>
-            <label>Taxa Recuperare ($)</label>
+            <label data-i18n="mdt.modal.label_plate">Numar Inmatriculare</label>
+            <input type="text" id="impound-plate" placeholder="Ex: AB12 CDE" data-i18n-placeholder="mdt.modal.ph_plate" style="text-transform:uppercase" />
+            <label data-i18n="mdt.modal.label_model">Model Vehicul</label>
+            <input type="text" id="impound-model" placeholder="Ex: Adder, Sultan..." data-i18n-placeholder="mdt.modal.ph_model" />
+            <label data-i18n="mdt.modal.label_reason">Motiv Sechestru</label>
+            <textarea id="impound-reason" rows="2" placeholder="Motivul sechestrului..." data-i18n-placeholder="mdt.modal.ph_reason"></textarea>
+            <label data-i18n="mdt.modal.label_fee">Taxa Recuperare ($)</label>
             <input type="number" id="impound-fee" value="2500" min="0" />
         </div>
         <div class="modal-footer">
-            <button class="btn-secondary" onclick="hideModal('impound-modal')">Anuleaza</button>
-            <button class="btn-primary" onclick="submitImpound()">Sechestru</button>
+            <button class="btn-secondary" onclick="hideModal('impound-modal')" data-i18n="mdt.modal.cancel">Anuleaza</button>
+            <button class="btn-primary" onclick="submitImpound()" data-i18n="mdt.modal.impound">Sechestru</button>
         </div>
     </div>
 </div>
 
+<script src="nui://core/ui/i18n.js"></script>
 <script src="script.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', () => {

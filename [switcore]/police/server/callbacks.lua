@@ -42,24 +42,24 @@ Sw.SecureEvent('police:server:handcuffPlayer', {
     local targetSrc = ctx.args[1]
 
     if not isPoliceOnDuty(char.id) or not hasArrestPerm(char.id) then
-        notify(src, 'error', 'Acces refuzat', 'Nu ai permisiunea sa incatusezi.')
+        notify(src, 'error', Sw.TP(src, 'police.title_access_denied'), Sw.TP(src, 'police.no_perm_handcuff'))
         return
     end
 
     targetSrc = tonumber(targetSrc)
     if not targetSrc or not GetPlayerName(targetSrc) then
-        notify(src, 'error', 'Eroare', 'Jucatorul nu exista.')
+        notify(src, 'error', Sw.TP(src, 'police.title_error'), Sw.TP(src, 'police.player_not_exist'))
         return
     end
 
     local targetChar = getActiveChar(targetSrc)
     if not targetChar then
-        notify(src, 'error', 'Eroare', 'Jucatorul nu are personaj activ.')
+        notify(src, 'error', Sw.TP(src, 'police.title_error'), Sw.TP(src, 'police.player_no_active_char'))
         return
     end
 
     if exports.police:IsCharacterHandcuffed(targetChar.id) then
-        notify(src, 'error', 'Eroare', 'Jucatorul este deja incatusat.')
+        notify(src, 'error', Sw.TP(src, 'police.title_error'), Sw.TP(src, 'police.player_already_cuffed'))
         return
     end
 
@@ -68,16 +68,16 @@ Sw.SecureEvent('police:server:handcuffPlayer', {
     local dist = #(srcCoords - targetCoords)
     local settings = exports.police:GetPoliceSettings()
     if dist > (settings.handcuffDist or 2.5) + 2.0 then
-        notify(src, 'error', 'Prea departe', 'Jucatorul este prea departe.')
+        notify(src, 'error', Sw.TP(src, 'police.title_too_far'), Sw.TP(src, 'police.player_too_far'))
         return
     end
 
     if not exports.police:AddHandcuff(targetChar.id, char.id) then
-        notify(src, 'error', 'Eroare', 'Nu am putut incatusa jucatorul.')
+        notify(src, 'error', Sw.TP(src, 'police.title_error'), Sw.TP(src, 'police.could_not_cuff'))
         return
     end
     TriggerClientEvent('police:client:handcuffed', targetSrc)
-    notify(src, 'success', 'Incatusat', 'Jucatorul a fost incatusat.')
+    notify(src, 'success', Sw.TP(src, 'police.title_handcuffed'), Sw.TP(src, 'police.player_cuffed'))
 end)
 
 Sw.SecureEvent('police:server:unhandcuffPlayer', {
@@ -89,20 +89,20 @@ Sw.SecureEvent('police:server:unhandcuffPlayer', {
     local targetSrc = ctx.args[1]
 
     if not isPoliceOnDuty(char.id) or not hasArrestPerm(char.id) then
-        notify(src, 'error', 'Acces refuzat', 'Nu ai permisiunea sa scoti catusele.')
+        notify(src, 'error', Sw.TP(src, 'police.title_access_denied'), Sw.TP(src, 'police.no_perm_uncuff'))
         return
     end
 
     targetSrc = tonumber(targetSrc)
     local targetChar = targetSrc and getActiveChar(targetSrc) or nil
     if not targetChar or not exports.police:IsHandcuffedBy(targetChar.id, char.id) then
-        notify(src, 'error', 'Eroare', 'Nu esti ofiterul care a incatusat acest jucator.')
+        notify(src, 'error', Sw.TP(src, 'police.title_error'), Sw.TP(src, 'police.not_cuffing_officer'))
         return
     end
 
     exports.police:RemoveHandcuff(targetChar.id)
     TriggerClientEvent('police:client:unhandcuffed', targetSrc)
-    notify(src, 'success', 'Catuse scoase', 'Catusele au fost scoase.')
+    notify(src, 'success', Sw.TP(src, 'police.title_uncuffed'), Sw.TP(src, 'police.cuffs_removed'))
 end)
 
 Sw.SecureEvent('police:server:arrestPlayer', {
@@ -114,14 +114,14 @@ Sw.SecureEvent('police:server:arrestPlayer', {
     local targetSrc, reason, sentenceMinutes, bailAmount = ctx.args[1], ctx.args[2], ctx.args[3], ctx.args[4]
 
     if not isPoliceOnDuty(char.id) or not hasArrestPerm(char.id) then
-        notify(src, 'error', 'Acces refuzat', 'Nu ai permisiunea sa arestezi.')
+        notify(src, 'error', Sw.TP(src, 'police.title_access_denied'), Sw.TP(src, 'police.no_perm_arrest'))
         return
     end
 
     targetSrc = tonumber(targetSrc)
     local targetChar = targetSrc and getActiveChar(targetSrc) or nil
     if not targetChar or not exports.police:IsHandcuffedBy(targetChar.id, char.id) then
-        notify(src, 'error', 'Eroare', 'Jucatorul nu este incatusat de tine.')
+        notify(src, 'error', Sw.TP(src, 'police.title_error'), Sw.TP(src, 'police.player_not_cuffed_by_you'))
         return
     end
 
@@ -129,19 +129,19 @@ Sw.SecureEvent('police:server:arrestPlayer', {
     bailAmount      = math.max(0, tonumber(bailAmount) or 0)
     reason          = tostring(reason or ''):sub(1, 512)
     if #reason < 3 then
-        notify(src, 'error', 'Date invalide', 'Motiv prea scurt.')
+        notify(src, 'error', Sw.TP(src, 'police.title_invalid_data'), Sw.TP(src, 'police.reason_too_short'))
         return
     end
 
     local ok, err = JailCharacter(targetChar.id, char.id, reason, sentenceMinutes, bailAmount)
     if not ok then
-        notify(src, 'error', 'Eroare arest', err)
+        notify(src, 'error', Sw.TP(src, 'police.title_arrest_error'), err)
         return
     end
 
     exports.police:RemoveHandcuff(targetChar.id)
     TriggerClientEvent('police:client:unhandcuffed', targetSrc)
-    notify(src, 'success', 'Arestat', targetChar.first_name .. ' ' .. targetChar.last_name .. ' a fost arestat.')
+    notify(src, 'success', Sw.TP(src, 'police.title_arrested'), Sw.TP(src, 'police.player_arrested', targetChar.first_name, targetChar.last_name))
 end)
 
 Sw.SecureEvent('police:server:unjailEarly', {
@@ -153,7 +153,7 @@ Sw.SecureEvent('police:server:unjailEarly', {
     local targetCharId = ctx.args[1]
 
     if not isAdmin(src) and not hasArrestPerm(char.id) then
-        notify(src, 'error', 'Acces refuzat', 'Nu ai permisiunea de eliberare timpurie.')
+        notify(src, 'error', Sw.TP(src, 'police.title_access_denied'), Sw.TP(src, 'police.no_perm_early_release'))
         return
     end
 
@@ -162,9 +162,9 @@ Sw.SecureEvent('police:server:unjailEarly', {
 
     local ok = ReleaseFromJail(targetCharId, 'officer')
     if ok then
-        notify(src, 'success', 'Eliberat', 'Detinutu a fost eliberat.')
+        notify(src, 'success', Sw.TP(src, 'police.title_released'), Sw.TP(src, 'police.prisoner_released'))
     else
-        notify(src, 'error', 'Eroare', 'Personajul nu este in inchisoare.')
+        notify(src, 'error', Sw.TP(src, 'police.title_error'), Sw.TP(src, 'police.char_not_jailed'))
     end
 end)
 
@@ -177,18 +177,18 @@ Sw.SecureEvent('police:server:payBail', {
 
     local sentence = PoliceDatabase.getActiveJailSentence(char.id)
     if not sentence then
-        notify(src, 'error', 'Eroare', 'Nu esti la inchisoare.')
+        notify(src, 'error', Sw.TP(src, 'police.title_error'), Sw.TP(src, 'police.not_in_jail'))
         return
     end
 
     if sentence.bail_amount <= 0 then
-        notify(src, 'error', 'Imposibil', 'Nu exista optiune de cautiune pentru aceasta sentinta.')
+        notify(src, 'error', Sw.TP(src, 'police.title_impossible'), Sw.TP(src, 'police.no_bail_option'))
         return
     end
 
     local balance = exports.banking:getCharacterCash(char.id, 1) or 0
     if balance < sentence.bail_amount then
-        notify(src, 'error', 'Fonduri insuficiente', 'Ai nevoie de $' .. sentence.bail_amount .. ' cautiune.')
+        notify(src, 'error', Sw.TP(src, 'police.title_insufficient_funds'), Sw.TP(src, 'police.bail_needed', sentence.bail_amount))
         return
     end
 
@@ -211,7 +211,7 @@ Sw.SecureEvent('police:server:openArmory', {
     local char = ctx.character
 
     if not isPoliceOnDuty(char.id) or not hasArmoryPerm(char.id) then
-        notify(src, 'error', 'Acces refuzat', 'Nu ai acces la armament.')
+        notify(src, 'error', Sw.TP(src, 'police.title_access_denied'), Sw.TP(src, 'police.no_perm_armory'))
         return
     end
 
@@ -237,7 +237,7 @@ Sw.SecureEvent('police:server:takeArmoryItem', {
         if not cfg then return end
         local ok = exports.inventory:AddItem(invId, cfg.itemName, 1, nil)
         if not ok then
-            notify(src, 'error', 'Armament', 'Nu am putut adauga ' .. cfg.label .. ' (inventar plin sau item neinregistrat).')
+            notify(src, 'error', Sw.TP(src, 'police.title_armory'), Sw.TP(src, 'police.armory_add_failed', cfg.label))
             return
         end
         if cfg.ammoItem and cfg.ammoAmount and cfg.ammoAmount > 0 then
@@ -249,7 +249,7 @@ Sw.SecureEvent('police:server:takeArmoryItem', {
         if not cfg then return end
         local ok = exports.inventory:AddItem(invId, cfg.itemName, cfg.amount, nil)
         if not ok then
-            notify(src, 'error', 'Armament', 'Nu am putut adauga ' .. cfg.label .. ' (inventar plin sau item neinregistrat).')
+            notify(src, 'error', Sw.TP(src, 'police.title_armory'), Sw.TP(src, 'police.armory_add_failed', cfg.label))
             return
         end
         amount = cfg.amount
@@ -257,7 +257,7 @@ Sw.SecureEvent('police:server:takeArmoryItem', {
 
     PoliceDatabase.logArmoryTake(char.id, cfg.itemName, amount)
     TriggerClientEvent('police:client:armoryItemGiven', src, { itemName = cfg.itemName, label = cfg.label })
-    notify(src, 'success', 'Echipament', cfg.label .. ' adaugat in inventar.')
+    notify(src, 'success', Sw.TP(src, 'police.title_equipment'), Sw.TP(src, 'police.equipment_added', cfg.label))
 end)
 
 Sw.SecureEvent('police:server:openCloakroom', {
@@ -268,7 +268,7 @@ Sw.SecureEvent('police:server:openCloakroom', {
     local char = ctx.character
 
     if not isPoliceOnDuty(char.id) then
-        notify(src, 'error', 'Acces refuzat', 'Trebuie sa fii in tura.')
+        notify(src, 'error', Sw.TP(src, 'police.title_access_denied'), Sw.TP(src, 'police.must_be_on_duty'))
         return
     end
 
@@ -319,7 +319,7 @@ Sw.SecureEvent('police:server:openMDT', {
     local char = ctx.character
 
     if not isPoliceOnDuty(char.id) then
-        notify(src, 'error', 'Acces refuzat', 'Trebuie sa fii in tura.')
+        notify(src, 'error', Sw.TP(src, 'police.title_access_denied'), Sw.TP(src, 'police.must_be_on_duty'))
         return
     end
 
@@ -366,7 +366,7 @@ Sw.SecureEvent('police:server:searchCharacter', {
 
     query = tostring(query or ''):sub(1, 64)
     if #query < 2 then
-        notify(src, 'warning', 'Cautare', 'Introdu cel putin 2 caractere.')
+        notify(src, 'warning', Sw.TP(src, 'police.title_search'), Sw.TP(src, 'police.search_min_chars'))
         return
     end
 
@@ -388,7 +388,7 @@ Sw.SecureEvent('police:server:createWarrant', {
     local characterId, charges, bailAmount = ctx.args[1], ctx.args[2], ctx.args[3]
 
     if not isPoliceOnDuty(char.id) or not hasArrestPerm(char.id) then
-        notify(src, 'error', 'Acces refuzat', 'Nu ai permisiunea sa emiti mandate.')
+        notify(src, 'error', Sw.TP(src, 'police.title_access_denied'), Sw.TP(src, 'police.no_perm_warrant'))
         return
     end
 
@@ -397,14 +397,14 @@ Sw.SecureEvent('police:server:createWarrant', {
     charges     = tostring(charges or ''):sub(1, 512)
 
     if not characterId or #charges < 3 then
-        notify(src, 'error', 'Date invalide', 'Completeaza toate campurile.')
+        notify(src, 'error', Sw.TP(src, 'police.title_invalid_data'), Sw.TP(src, 'police.fill_all_fields'))
         return
     end
 
     local warrant = PoliceDatabase.createWarrant(characterId, char.id, charges, bailAmount)
     if warrant then
         TriggerClientEvent('police:client:warrantCreated', src, warrant)
-        notify(src, 'success', 'Mandat', 'Mandatul a fost emis.')
+        notify(src, 'success', Sw.TP(src, 'police.title_warrant'), Sw.TP(src, 'police.warrant_issued'))
     end
 end)
 
@@ -423,7 +423,7 @@ Sw.SecureEvent('police:server:closeWarrant', {
 
     PoliceDatabase.closeWarrant(warrantId, char.id)
     TriggerClientEvent('police:client:warrantClosed', src, warrantId)
-    notify(src, 'success', 'Mandat', 'Mandatul a fost inchis.')
+    notify(src, 'success', Sw.TP(src, 'police.title_warrant'), Sw.TP(src, 'police.warrant_closed'))
 end)
 
 Sw.SecureEvent('police:server:getOnDutyOfficers', {
@@ -446,7 +446,7 @@ Sw.SecureEvent('police:server:openGarage', {
     local char = ctx.character
 
     if not isPoliceOnDuty(char.id) then
-        notify(src, 'error', 'Acces refuzat', 'Trebuie sa fii in tura.')
+        notify(src, 'error', Sw.TP(src, 'police.title_access_denied'), Sw.TP(src, 'police.must_be_on_duty'))
         return
     end
 
@@ -470,13 +470,13 @@ Sw.SecureEvent('police:server:checkoutVehicle', {
     local vehicleId = ctx.args[1]
 
     if not isPoliceOnDuty(char.id) then
-        notify(src, 'error', 'Acces refuzat', 'Trebuie sa fii in tura.')
+        notify(src, 'error', Sw.TP(src, 'police.title_access_denied'), Sw.TP(src, 'police.must_be_on_duty'))
         return
     end
 
     local existing = PoliceDatabase.getCharacterCheckout(char.id)
     if existing then
-        notify(src, 'error', 'Eroare', 'Ai deja un vehicul preluat. Returneaza-l mai intai.')
+        notify(src, 'error', Sw.TP(src, 'police.title_error'), Sw.TP(src, 'police.already_have_vehicle'))
         return
     end
 
@@ -486,9 +486,9 @@ Sw.SecureEvent('police:server:checkoutVehicle', {
     if not vehicle then
         local exists = PoliceDatabase.getFleetVehicle(vehicleId)
         if not exists then
-            notify(src, 'error', 'Eroare', 'Vehiculul nu exista.')
+            notify(src, 'error', Sw.TP(src, 'police.title_error'), Sw.TP(src, 'police.vehicle_not_exist'))
         else
-            notify(src, 'error', 'Indisponibil', 'Vehiculul este deja preluat de altcineva.')
+            notify(src, 'error', Sw.TP(src, 'police.title_unavailable'), Sw.TP(src, 'police.vehicle_taken_other'))
         end
         return
     end
@@ -512,7 +512,7 @@ Sw.SecureEvent('police:server:checkoutVehicle', {
         mileageUnit   = settings.mileageUnit or 'km'
     })
 
-    notify(src, 'success', 'Garaj', vehicle.label .. ' a fost preluat.')
+    notify(src, 'success', Sw.TP(src, 'police.title_garage'), Sw.TP(src, 'police.vehicle_checked_out', vehicle.label))
 end)
 
 Sw.SecureEvent('police:server:returnVehicle', {
@@ -526,7 +526,7 @@ Sw.SecureEvent('police:server:returnVehicle', {
     vehicleId = tonumber(vehicleId)
     local vehicle = PoliceDatabase.getFleetVehicle(vehicleId)
     if not vehicle or vehicle.checked_out_by ~= char.id then
-        notify(src, 'error', 'Eroare', 'Nu ai preluat acest vehicul.')
+        notify(src, 'error', Sw.TP(src, 'police.title_error'), Sw.TP(src, 'police.vehicle_not_yours'))
         return
     end
 
@@ -539,7 +539,7 @@ Sw.SecureEvent('police:server:returnVehicle', {
     PoliceDatabase.returnFleetVehicle(vehicleId, fuel, mileage, bodyHealth, engHealth)
     PoliceDatabase.logFleetAction(vehicleId, char.id, 'return', mileage, fuel)
 
-    notify(src, 'success', 'Garaj', vehicle.label .. ' a fost returnat.')
+    notify(src, 'success', Sw.TP(src, 'police.title_garage'), Sw.TP(src, 'police.vehicle_returned', vehicle.label))
 end)
 
 Sw.SecureEvent('police:server:fleetMileageTick', {
@@ -589,7 +589,7 @@ Sw.SecureEvent('police:server:purchaseFleetVehicle', {
     local modelName = ctx.args[1]
 
     if not isPoliceOnDuty(char.id) or not hasManagePerm(char.id) then
-        notify(src, 'error', 'Acces refuzat', 'Nu ai permisiunea de management.')
+        notify(src, 'error', Sw.TP(src, 'police.title_access_denied'), Sw.TP(src, 'police.no_perm_management'))
         return
     end
 
@@ -601,7 +601,7 @@ Sw.SecureEvent('police:server:purchaseFleetVehicle', {
         if m.model == modelName then modelCfg = m; break end
     end
     if not modelCfg then
-        notify(src, 'error', 'Eroare', 'Modelul nu exista in configuratie.')
+        notify(src, 'error', Sw.TP(src, 'police.title_error'), Sw.TP(src, 'police.model_not_in_config'))
         return
     end
 
@@ -609,14 +609,14 @@ Sw.SecureEvent('police:server:purchaseFleetVehicle', {
     if price > 0 then
         local orgBalance = exports.banking:getOrgAccountBalance('police', currencyId)
         if orgBalance < price then
-            notify(src, 'error', 'Fonduri insuficiente',
-                string.format('Buget insuficient. Necesar: $%d, Disponibil: $%d', price, math.floor(orgBalance)))
+            notify(src, 'error', Sw.TP(src, 'police.title_insufficient_funds'),
+                Sw.TP(src, 'police.budget_insufficient', price, math.floor(orgBalance)))
             return
         end
         local ok, err = exports.banking:orgSystemDebit('police', price, currencyId,
             'Achizitie vehicul: ' .. (modelCfg.label or modelName))
         if not ok then
-            notify(src, 'error', 'Eroare buget', err or 'Eroare la debitare cont.')
+            notify(src, 'error', Sw.TP(src, 'police.title_budget_error'), err or Sw.TP(src, 'police.debit_error'))
             return
         end
     end
@@ -635,12 +635,12 @@ Sw.SecureEvent('police:server:purchaseFleetVehicle', {
         if price > 0 then
             exports.banking:orgSystemCredit('police', price, currencyId, 'Rambursare achizitie esecuata')
         end
-        notify(src, 'error', 'Eroare', 'Nu s-a putut adauga vehiculul.')
+        notify(src, 'error', Sw.TP(src, 'police.title_management_error'), Sw.TP(src, 'police.could_not_add_vehicle'))
         return
     end
 
-    notify(src, 'success', 'Vehicul achizitionat',
-        string.format('%s (Nr. %s) a fost adaugat in flota.', modelCfg.label, plate))
+    notify(src, 'success', Sw.TP(src, 'police.title_vehicle_purchased'),
+        Sw.TP(src, 'police.vehicle_added_fleet', modelCfg.label, plate))
     TriggerClientEvent('police:client:fleetVehicleAdded', src, vehicle)
 end)
 
@@ -653,18 +653,18 @@ Sw.SecureEvent('police:server:sellFleetVehicle', {
     local vehicleId = ctx.args[1]
 
     if not isPoliceOnDuty(char.id) or not hasManagePerm(char.id) then
-        notify(src, 'error', 'Acces refuzat', 'Nu ai permisiunea de management.')
+        notify(src, 'error', Sw.TP(src, 'police.title_access_denied'), Sw.TP(src, 'police.no_perm_management'))
         return
     end
 
     vehicleId = tonumber(vehicleId)
     local vehicle = PoliceDatabase.getFleetVehicle(vehicleId)
     if not vehicle then
-        notify(src, 'error', 'Eroare', 'Vehiculul nu exista.')
+        notify(src, 'error', Sw.TP(src, 'police.title_error'), Sw.TP(src, 'police.vehicle_not_exist'))
         return
     end
     if not vehicle.is_available then
-        notify(src, 'error', 'Indisponibil', 'Vehiculul este in uz si nu poate fi vandut.')
+        notify(src, 'error', Sw.TP(src, 'police.title_unavailable'), Sw.TP(src, 'police.vehicle_in_use_no_sell'))
         return
     end
 
@@ -680,8 +680,8 @@ Sw.SecureEvent('police:server:sellFleetVehicle', {
             'Vanzare vehicul: ' .. (vehicle.plate or '') .. ' - ' .. (vehicle.label or ''))
     end
 
-    notify(src, 'success', 'Vehicul vandut',
-        string.format('%s vandut pentru $%d.', vehicle.label, sellPrice))
+    notify(src, 'success', Sw.TP(src, 'police.title_vehicle_sold'),
+        Sw.TP(src, 'police.vehicle_sold_for', vehicle.label, sellPrice))
     TriggerClientEvent('police:client:fleetVehicleRemoved', src, vehicleId)
 end)
 
@@ -694,7 +694,7 @@ Sw.SecureEvent('police:server:addArmoryWeapon', {
     local itemName, label, ammoItem, ammoAmount = ctx.args[1], ctx.args[2], ctx.args[3], ctx.args[4]
 
     if not isPoliceOnDuty(char.id) or not hasManagePerm(char.id) then
-        notify(src, 'error', 'Acces refuzat', 'Nu ai permisiunea de management.')
+        notify(src, 'error', Sw.TP(src, 'police.title_access_denied'), Sw.TP(src, 'police.no_perm_management'))
         return
     end
     itemName = tostring(itemName or ''):sub(1, 64)
@@ -705,7 +705,7 @@ Sw.SecureEvent('police:server:addArmoryWeapon', {
         local settings = exports.police:GetPoliceSettings()
         for _, w in ipairs(settings.armoryWeapons) do
             if w.itemName == itemName then
-                notify(src, 'error', 'Duplicat', 'Arma deja existenta in armament.')
+                notify(src, 'error', Sw.TP(src, 'police.title_duplicate'), Sw.TP(src, 'police.weapon_already_exists'))
                 return
             end
         end
@@ -716,7 +716,7 @@ Sw.SecureEvent('police:server:addArmoryWeapon', {
             ammoAmount = tonumber(ammoAmount) or 0
         })
         saveArmorySettings()
-        notify(src, 'success', 'Armament', label .. ' adaugat.')
+        notify(src, 'success', Sw.TP(src, 'police.title_armory'), Sw.TP(src, 'police.weapon_added', label))
         TriggerClientEvent('police:client:armoryUpdated', src, {
             weapons   = settings.armoryWeapons,
             equipment = settings.armoryEquipment
@@ -755,7 +755,7 @@ Sw.SecureEvent('police:server:addArmoryEquipment', {
     local itemName, label, amount = ctx.args[1], ctx.args[2], ctx.args[3]
 
     if not isPoliceOnDuty(char.id) or not hasManagePerm(char.id) then
-        notify(src, 'error', 'Acces refuzat', 'Nu ai permisiunea de management.')
+        notify(src, 'error', Sw.TP(src, 'police.title_access_denied'), Sw.TP(src, 'police.no_perm_management'))
         return
     end
     itemName = tostring(itemName or ''):sub(1, 64)
@@ -766,7 +766,7 @@ Sw.SecureEvent('police:server:addArmoryEquipment', {
         local settings = exports.police:GetPoliceSettings()
         for _, e in ipairs(settings.armoryEquipment) do
             if e.itemName == itemName then
-                notify(src, 'error', 'Duplicat', 'Echipamentul deja exista.')
+                notify(src, 'error', Sw.TP(src, 'police.title_duplicate'), Sw.TP(src, 'police.equipment_already_exists'))
                 return
             end
         end
@@ -776,7 +776,7 @@ Sw.SecureEvent('police:server:addArmoryEquipment', {
             amount   = math.max(1, tonumber(amount) or 1)
         })
         saveArmorySettings()
-        notify(src, 'success', 'Armament', label .. ' adaugat.')
+        notify(src, 'success', Sw.TP(src, 'police.title_armory'), Sw.TP(src, 'police.equipment_add_label', label))
         TriggerClientEvent('police:client:armoryUpdated', src, {
             weapons   = settings.armoryWeapons,
             equipment = settings.armoryEquipment

@@ -52,10 +52,7 @@ local lastSentMouseEnabled   = nil
 local lastSentSelectedIndex  = -1
 
 local function Translate(key, ...)
-    if exports.core and exports.core.translate then
-        return exports.core:translate(key, ...)
-    end
-    return key
+    return Sw.T(key, ...)
 end
 
 local function GetPlayerCoords()
@@ -617,13 +614,19 @@ RegisterCommand('proximity:toggleMouse', function()
     end
 end, false)
 
-RegisterKeyMapping('proximity:closeMouse', 'Close Mouse Navigation', 'keyboard', 'ESCAPE')
+RegisterKeyMapping('proximity:closeMouse', Translate('proximity.close_mouse_nav'), 'keyboard', 'ESCAPE')
 RegisterCommand('proximity:closeMouse', function()
     if mouseEnabled then
         DisableMouse()
         if proxSettings.debug then print("[PROXIMITY] Mouse navigation disabled (ESC)") end
     end
 end, false)
+
+local function pushI18n()
+    SendNUIMessage({ action = 'sw:i18n', dict = exports.core:getLocaleDict() })
+end
+
+AddEventHandler('switcore:client:localeUpdated', pushI18n)
 
 CreateThread(function()
     Wait(1000)
@@ -632,6 +635,7 @@ CreateThread(function()
         config = { showMarker = proxSettings.showMarker, showText = proxSettings.showText }
     })
     nuiEnabled = true
+    pushI18n()
 end)
 
 RegisterNUICallback('selectInteraction', function(data, cb)

@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MDT Politie</title>
     <link rel="stylesheet" href="style.css" />
+    <script src="nui://core/ui/i18n.js"></script>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 </head>
 <body>
@@ -12,40 +13,40 @@
 <div id="jail-hud" class="hidden">
     <div class="jail-icon"><i data-lucide="lock"></i></div>
     <div class="jail-info">
-        <span class="jail-label">Inchisoare</span>
+        <span class="jail-label" data-i18n="police.ui.jail_label">Inchisoare</span>
         <span id="jail-timer" class="jail-timer">00:00</span>
     </div>
-    <button class="jail-bail-btn hidden" id="bail-btn" onclick="payBail()">Plateste Cautiune</button>
+    <button class="jail-bail-btn hidden" id="bail-btn" data-i18n="police.ui.pay_bail" onclick="payBail()">Plateste Cautiune</button>
 </div>
 
 <div id="cuff-hud" class="hidden">
-    <span>Incatusat</span>
+    <span data-i18n="police.ui.cuffed">Incatusat</span>
 </div>
 
 <div id="mdt-panel" class="hidden">
     <div class="mdt-header">
-        <span class="mdt-title">MDT - Politie</span>
+        <span class="mdt-title" data-i18n="police.ui.mdt_title">MDT - Politie</span>
         <button class="mdt-close" onclick="postNUI('closeMDT')"><i data-lucide="x"></i></button>
     </div>
 
     <div class="mdt-tabs">
-        <button class="tab-btn active" data-tab="warrants"   onclick="switchTab('warrants')">Mandate</button>
-        <button class="tab-btn"        data-tab="search"     onclick="switchTab('search')">Cautare</button>
-        <button class="tab-btn"        data-tab="officers"   onclick="switchTab('officers')">Ofițeri Activi</button>
-        <button class="tab-btn hidden"  data-tab="management" id="tab-management-btn" onclick="switchTab('management')">Management</button>
+        <button class="tab-btn active" data-tab="warrants"   data-i18n="police.ui.tab_warrants" onclick="switchTab('warrants')">Mandate</button>
+        <button class="tab-btn"        data-tab="search"     data-i18n="police.ui.tab_search" onclick="switchTab('search')">Cautare</button>
+        <button class="tab-btn"        data-tab="officers"   data-i18n="police.ui.tab_officers" onclick="switchTab('officers')">Ofițeri Activi</button>
+        <button class="tab-btn hidden"  data-tab="management" id="tab-management-btn" data-i18n="police.ui.tab_management" onclick="switchTab('management')">Management</button>
     </div>
 
     <div id="tab-warrants" class="tab-content active">
         <div class="tab-toolbar">
-            <button class="btn-primary" onclick="showWarrantForm()">+ Emite Mandat</button>
+            <button class="btn-primary" data-i18n="police.ui.issue_warrant" onclick="showWarrantForm()">+ Emite Mandat</button>
         </div>
         <table class="data-table" id="warrants-table">
             <thead>
                 <tr>
-                    <th>Nume</th>
-                    <th>Acuzatii</th>
-                    <th>Cautiune</th>
-                    <th>Data</th>
+                    <th data-i18n="police.ui.col_name">Nume</th>
+                    <th data-i18n="police.ui.col_charges">Acuzatii</th>
+                    <th data-i18n="police.ui.col_bail">Cautiune</th>
+                    <th data-i18n="police.ui.col_date">Data</th>
                     <th></th>
                 </tr>
             </thead>
@@ -55,39 +56,39 @@
 
     <div id="tab-search" class="tab-content hidden">
         <div class="search-bar">
-            <input type="text" id="search-input" placeholder="Cauta dupa nume..." oninput="onSearchInput()" />
+            <input type="text" id="search-input" data-i18n-placeholder="police.ui.search_placeholder" placeholder="Cauta dupa nume..." oninput="onSearchInput()" />
         </div>
         <div id="search-results"></div>
     </div>
 
     <div id="tab-officers" class="tab-content hidden">
         <div class="tab-toolbar">
-            <button class="btn-secondary" onclick="postNUI('getOnDutyOfficers')">↻ Actualizeaza</button>
+            <button class="btn-secondary" data-i18n="police.ui.refresh" onclick="postNUI('getOnDutyOfficers')">↻ Actualizeaza</button>
         </div>
         <div id="officers-list"></div>
     </div>
 
     <div id="tab-management" class="tab-content hidden">
         <div class="sub-tabs">
-            <button class="sub-tab-btn active" data-stab="budget"   onclick="switchSubTab('budget')">Buget</button>
-            <button class="sub-tab-btn"        data-stab="mgmt-fleet"  onclick="switchSubTab('mgmt-fleet')">Flota</button>
-            <button class="sub-tab-btn"        data-stab="mgmt-armory" onclick="switchSubTab('mgmt-armory')">Armament</button>
+            <button class="sub-tab-btn active" data-stab="budget"   data-i18n="police.ui.stab_budget" onclick="switchSubTab('budget')">Buget</button>
+            <button class="sub-tab-btn"        data-stab="mgmt-fleet"  data-i18n="police.ui.stab_fleet" onclick="switchSubTab('mgmt-fleet')">Flota</button>
+            <button class="sub-tab-btn"        data-stab="mgmt-armory" data-i18n="police.ui.stab_armory" onclick="switchSubTab('mgmt-armory')">Armament</button>
         </div>
 
         <div id="stab-budget" class="sub-tab-content">
             <div class="budget-header">
                 <div class="budget-balance-chip">
-                    <span class="budget-label">Buget disponibil</span>
+                    <span class="budget-label" data-i18n="police.ui.budget_available">Buget disponibil</span>
                     <span id="budget-balance" class="budget-amount">$0</span>
                 </div>
             </div>
             <table class="data-table" id="budget-tx-table">
                 <thead>
                     <tr>
-                        <th>Tip</th>
-                        <th>Suma</th>
-                        <th>Descriere</th>
-                        <th>Data</th>
+                        <th data-i18n="police.ui.col_type">Tip</th>
+                        <th data-i18n="police.ui.col_amount">Suma</th>
+                        <th data-i18n="police.ui.col_description">Descriere</th>
+                        <th data-i18n="police.ui.col_date">Data</th>
                     </tr>
                 </thead>
                 <tbody id="budget-tx-body"></tbody>
@@ -96,37 +97,37 @@
 
         <div id="stab-mgmt-fleet" class="sub-tab-content hidden">
             <div class="mgmt-section">
-                <h3 class="mgmt-section-title">Flota Curenta</h3>
+                <h3 class="mgmt-section-title" data-i18n="police.ui.current_fleet">Flota Curenta</h3>
                 <div id="mgmt-fleet-list"></div>
             </div>
             <div class="mgmt-section">
-                <h3 class="mgmt-section-title">Achizitioneaza Vehicul</h3>
+                <h3 class="mgmt-section-title" data-i18n="police.ui.buy_vehicle">Achizitioneaza Vehicul</h3>
                 <div id="mgmt-models-list"></div>
             </div>
         </div>
 
         <div id="stab-mgmt-armory" class="sub-tab-content hidden">
             <div class="mgmt-section">
-                <h3 class="mgmt-section-title">Arme Configurate</h3>
+                <h3 class="mgmt-section-title" data-i18n="police.ui.configured_weapons">Arme Configurate</h3>
                 <div id="mgmt-armory-weapons"></div>
                 <div class="mgmt-add-form" id="mgmt-add-weapon-form">
-                    <h4>Adauga Arma</h4>
-                    <input type="text" id="new-weapon-item"   placeholder="itemName (ex: weapon_pistol)" />
-                    <input type="text" id="new-weapon-label"  placeholder="Nume afisat" />
-                    <input type="text" id="new-weapon-ammo"   placeholder="Ammo item (optional)" />
-                    <input type="number" id="new-weapon-ammo-amount" placeholder="Cantitate ammo" value="0" min="0" />
-                    <button class="btn-primary" onclick="submitAddWeapon()">Adauga</button>
+                    <h4 data-i18n="police.ui.add_weapon">Adauga Arma</h4>
+                    <input type="text" id="new-weapon-item"   data-i18n-placeholder="police.ui.ph_weapon_item" placeholder="itemName (ex: weapon_pistol)" />
+                    <input type="text" id="new-weapon-label"  data-i18n-placeholder="police.ui.ph_display_name" placeholder="Nume afisat" />
+                    <input type="text" id="new-weapon-ammo"   data-i18n-placeholder="police.ui.ph_ammo_item" placeholder="Ammo item (optional)" />
+                    <input type="number" id="new-weapon-ammo-amount" data-i18n-placeholder="police.ui.ph_ammo_amount" placeholder="Cantitate ammo" value="0" min="0" />
+                    <button class="btn-primary" data-i18n="police.ui.btn_add" onclick="submitAddWeapon()">Adauga</button>
                 </div>
             </div>
             <div class="mgmt-section">
-                <h3 class="mgmt-section-title">Echipamente Configurate</h3>
+                <h3 class="mgmt-section-title" data-i18n="police.ui.configured_equipment">Echipamente Configurate</h3>
                 <div id="mgmt-armory-equipment"></div>
                 <div class="mgmt-add-form" id="mgmt-add-equip-form">
-                    <h4>Adauga Echipament</h4>
-                    <input type="text"   id="new-equip-item"   placeholder="itemName (ex: handcuffs)" />
-                    <input type="text"   id="new-equip-label"  placeholder="Nume afisat" />
-                    <input type="number" id="new-equip-amount" placeholder="Cantitate" value="1" min="1" />
-                    <button class="btn-primary" onclick="submitAddEquipment()">Adauga</button>
+                    <h4 data-i18n="police.ui.add_equipment">Adauga Echipament</h4>
+                    <input type="text"   id="new-equip-item"   data-i18n-placeholder="police.ui.ph_equip_item" placeholder="itemName (ex: handcuffs)" />
+                    <input type="text"   id="new-equip-label"  data-i18n-placeholder="police.ui.ph_display_name" placeholder="Nume afisat" />
+                    <input type="number" id="new-equip-amount" data-i18n-placeholder="police.ui.ph_quantity" placeholder="Cantitate" value="1" min="1" />
+                    <button class="btn-primary" data-i18n="police.ui.btn_add" onclick="submitAddEquipment()">Adauga</button>
                 </div>
             </div>
         </div>
@@ -136,25 +137,25 @@
 <div id="warrant-modal" class="modal hidden">
     <div class="modal-box">
         <div class="modal-header">
-            <span>Emite Mandat</span>
+            <span data-i18n="police.ui.modal_issue_warrant">Emite Mandat</span>
             <button onclick="hideWarrantForm()"><i data-lucide="x"></i></button>
         </div>
         <div class="modal-body">
-            <label>Cautare Suspect</label>
+            <label data-i18n="police.ui.search_suspect">Cautare Suspect</label>
             <div class="search-bar">
-                <input type="text" id="warrant-search" placeholder="Prenume sau Nume..." oninput="onWarrantSearch()" />
+                <input type="text" id="warrant-search" data-i18n-placeholder="police.ui.ph_first_last_name" placeholder="Prenume sau Nume..." oninput="onWarrantSearch()" />
             </div>
             <div id="warrant-search-results" class="compact-results"></div>
             <input type="hidden" id="warrant-char-id" />
             <div id="warrant-char-display" class="selected-char hidden"></div>
-            <label>Acuzatii</label>
-            <textarea id="warrant-charges" rows="3" placeholder="Acuzatii..."></textarea>
-            <label>Cautiune ($)</label>
+            <label data-i18n="police.ui.charges_label">Acuzatii</label>
+            <textarea id="warrant-charges" rows="3" data-i18n-placeholder="police.ui.ph_charges" placeholder="Acuzatii..."></textarea>
+            <label data-i18n="police.ui.bail_label">Cautiune ($)</label>
             <input type="number" id="warrant-bail" value="0" min="0" />
         </div>
         <div class="modal-footer">
-            <button class="btn-secondary" onclick="hideWarrantForm()">Anuleaza</button>
-            <button class="btn-primary" onclick="submitWarrant()">Emite</button>
+            <button class="btn-secondary" data-i18n="police.ui.cancel" onclick="hideWarrantForm()">Anuleaza</button>
+            <button class="btn-primary" data-i18n="police.ui.issue" onclick="submitWarrant()">Emite</button>
         </div>
     </div>
 </div>
@@ -162,37 +163,37 @@
 <div id="arrest-modal" class="modal hidden">
     <div class="modal-box">
         <div class="modal-header">
-            <span>Trimite la Inchisoare</span>
+            <span data-i18n="police.ui.modal_send_jail">Trimite la Inchisoare</span>
             <button onclick="postNUI('cancelArrest')"><i data-lucide="x"></i></button>
         </div>
         <div class="modal-body">
             <input type="hidden" id="arrest-target-src" />
-            <label>Motiv</label>
-            <textarea id="arrest-reason" rows="3" placeholder="Motivul arestului..."></textarea>
-            <label>Durata (minute, max 720)</label>
+            <label data-i18n="police.ui.reason_label">Motiv</label>
+            <textarea id="arrest-reason" rows="3" data-i18n-placeholder="police.ui.ph_arrest_reason" placeholder="Motivul arestului..."></textarea>
+            <label data-i18n="police.ui.duration_label">Durata (minute, max 720)</label>
             <input type="number" id="arrest-minutes" value="10" min="1" max="720" />
-            <label>Cautiune ($, 0 = fara)</label>
+            <label data-i18n="police.ui.bail_zero_label">Cautiune ($, 0 = fara)</label>
             <input type="number" id="arrest-bail" value="0" min="0" />
         </div>
         <div class="modal-footer">
-            <button class="btn-secondary" onclick="postNUI('cancelArrest')">Anuleaza</button>
-            <button class="btn-primary" onclick="submitArrest()">Confirma</button>
+            <button class="btn-secondary" data-i18n="police.ui.cancel" onclick="postNUI('cancelArrest')">Anuleaza</button>
+            <button class="btn-primary" data-i18n="police.ui.confirm" onclick="submitArrest()">Confirma</button>
         </div>
     </div>
 </div>
 
 <div id="armory-panel" class="hidden">
     <div class="mdt-header">
-        <span class="mdt-title">Armament</span>
+        <span class="mdt-title" data-i18n="police.ui.armory_title">Armament</span>
         <button class="mdt-close" onclick="closeArmory()"><i data-lucide="x"></i></button>
     </div>
     <div class="armory-body">
         <div class="armory-section">
-            <h3>Arme</h3>
+            <h3 data-i18n="police.ui.weapons">Arme</h3>
             <div id="armory-weapons"></div>
         </div>
         <div class="armory-section">
-            <h3>Echipament</h3>
+            <h3 data-i18n="police.ui.equipment">Echipament</h3>
             <div id="armory-equipment"></div>
         </div>
     </div>
@@ -200,7 +201,7 @@
 
 <div id="garage-panel" class="hidden">
     <div class="mdt-header">
-        <span class="mdt-title">Garaj Politie</span>
+        <span class="mdt-title" data-i18n="police.ui.garage_title">Garaj Politie</span>
         <button class="mdt-close" onclick="closeGaragePanel()"><i data-lucide="x"></i></button>
     </div>
     <div id="active-vehicle-bar" class="hidden">
@@ -209,11 +210,11 @@
             <span class="active-veh-plate" id="active-veh-plate"></span>
             <span class="active-veh-mileage" id="active-veh-mileage"></span>
         </div>
-        <button class="btn-danger-sm" onclick="postNUI('returnVehicle')">Returneaza</button>
+        <button class="btn-danger-sm" data-i18n="police.ui.return_vehicle" onclick="postNUI('returnVehicle')">Returneaza</button>
     </div>
     <div class="garage-body">
         <div class="garage-fleet-header">
-            <span class="garage-section-title">Flota Disponibila</span>
+            <span class="garage-section-title" data-i18n="police.ui.available_fleet">Flota Disponibila</span>
         </div>
         <div id="fleet-list"></div>
     </div>
@@ -226,17 +227,17 @@
 
 <div id="cloakroom-panel" class="hidden">
     <div class="mdt-header">
-        <span class="mdt-title">Vestiar</span>
+        <span class="mdt-title" data-i18n="police.ui.cloakroom_title">Vestiar</span>
         <button class="mdt-close" onclick="closeCloakroom()"><i data-lucide="x"></i></button>
     </div>
     <div class="cloakroom-body">
         <button class="outfit-btn" onclick="wearUniform()">
             <span class="outfit-icon"><i data-lucide="shield"></i></span>
-            <span>Uniforma Politie</span>
+            <span data-i18n="police.ui.police_uniform">Uniforma Politie</span>
         </button>
         <button class="outfit-btn civilian" onclick="wearCivilian()">
             <span class="outfit-icon"><i data-lucide="shirt"></i></span>
-            <span>Tinuta Civila</span>
+            <span data-i18n="police.ui.civilian_clothes">Tinuta Civila</span>
         </button>
     </div>
 </div>

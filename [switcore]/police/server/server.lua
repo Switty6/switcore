@@ -1,3 +1,4 @@
+exports.core:registerModuleLocales(GetCurrentResourceName())
 
 local PoliceSettings = {}
 
@@ -77,12 +78,12 @@ end
 function JailCharacter(characterId, arrestedBy, reason, sentenceMinutes, bailAmount)
     local existing = PoliceDatabase.getActiveJailSentence(characterId)
     if existing then
-        return false, 'Personajul este deja inchis.'
+        return false, Sw.T('police.already_jailed')
     end
 
     local row = PoliceDatabase.createJailSentence(characterId, arrestedBy, reason, sentenceMinutes, bailAmount)
     if not row then
-        return false, 'Eroare baza de date.'
+        return false, Sw.T('police.db_error')
     end
 
     activeJailTimers[characterId] = {
@@ -118,7 +119,7 @@ function ReleaseFromJail(characterId, releaseReason)
     local onlineSrc = findOnlineSourceByCharId(characterId)
     if onlineSrc then
         TriggerClientEvent('police:client:released', onlineSrc, { coords = release })
-        notify(onlineSrc, 'success', 'Eliberat', 'Ai fost eliberat din inchisoare.')
+        notify(onlineSrc, 'success', Sw.TP(onlineSrc, 'police.title_released'), Sw.TP(onlineSrc, 'police.released_msg'))
     end
 
     return true

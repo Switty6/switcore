@@ -82,7 +82,10 @@ RegisterNetEvent('switcore:languageChanged', function(language)
 end)
 
 RegisterNetEvent('switcore:localeData', function(language, localeData)
-    LocalizationClient.syncLocale(language, localeData)
+    if LocalizationClient.syncLocale(language, localeData) then
+        -- hook local pentru UI-uri: retrimit dictionarul catre NUI cand se schimba
+        TriggerEvent('switcore:client:localeUpdated', language)
+    end
 end)
 
 RegisterNetEvent('switcore:localizedMessage', function(message)
@@ -98,6 +101,16 @@ end)
 
 exports('translate', function(key, ...)
     return LocalizationClient.translate(key, ...)
+end)
+
+-- alias scurt, pereche cu exportul de server (folosit de Sw.T)
+exports('t', function(key, ...)
+    return LocalizationClient.translate(key, ...)
+end)
+
+-- dictionarul complet pentru limba curenta; UI-urile il trimit catre NUI (sw:i18n)
+exports('getLocaleDict', function()
+    return localeCache[currentLanguage] or localeCache['ro'] or {}
 end)
 
 exports('getLanguage', function()

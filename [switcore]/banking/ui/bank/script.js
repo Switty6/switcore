@@ -1,4 +1,9 @@
 
+function loanTypeLabel(type) {
+    const fallbacks = { personal: 'Personal', mortgage: 'Ipotecar', business: 'Business' };
+    return tt('banking.loan_type_' + type, fallbacks[type] || type);
+}
+
 let bankAccounts = [];
 let bankCash = 0;
 let bankTransactions = [];
@@ -52,7 +57,7 @@ function renderBankAccountsGrid(accounts) {
     if (!grid) return;
     
     if (accounts.length === 0) {
-        grid.innerHTML = '<p style="color:rgba(232,244,255,0.4); padding:20px; font-size:13px;">Nu există conturi deschise.</p>';
+        grid.innerHTML = '<p style="color:rgba(232,244,255,0.4); padding:20px; font-size:13px;">' + tt('banking.bank.no_accounts', 'Nu există conturi deschise.') + '</p>';
         return;
     }
     
@@ -60,7 +65,7 @@ function renderBankAccountsGrid(accounts) {
         <div class="bank-account-card">
             <div class="bank-account-header">
                 <span class="bank-account-bank">${acc.bankName}</span>
-                <span class="bank-account-type">${acc.accountType}</span>
+                <span class="bank-account-type">${accountTypeLabel(acc.accountType)}</span>
             </div>
             <div class="bank-account-balance">${formatMoney(acc.balance)}</div>
             <div class="bank-account-number">${acc.accountNumber}</div>
@@ -79,7 +84,7 @@ function renderBankAccountsDashboard(accounts) {
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
                 </div>
                 <div class="bank-transaction-details">
-                    <h4>${acc.bankName} - ${acc.accountType}</h4>
+                    <h4>${acc.bankName} - ${accountTypeLabel(acc.accountType)}</h4>
                     <p>${acc.accountNumber}</p>
                 </div>
             </div>
@@ -87,7 +92,7 @@ function renderBankAccountsDashboard(accounts) {
         </div>
     `).join('');
 
-    if (accounts.length === 0) list.innerHTML = '<p style="color:rgba(232,244,255,0.4); padding:10px 0;">Nu există conturi. Creează unul din meniul Conturi.</p>';
+    if (accounts.length === 0) list.innerHTML = '<p style="color:rgba(232,244,255,0.4); padding:10px 0;">' + tt('banking.bank.no_accounts_dashboard', 'Nu există conturi. Creează unul din meniul Conturi.') + '</p>';
 }
 
 function populateBankSelects(accounts) {
@@ -117,7 +122,7 @@ function renderTransactions(transactions, containerId) {
     if (!list) return;
     
     if (transactions.length === 0) {
-        list.innerHTML = '<p style="padding:20px; color:rgba(232,244,255,0.4); text-align:center; font-size:13px; letter-spacing:0.5px;">Nu există tranzacții recente.</p>';
+        list.innerHTML = '<p style="padding:20px; color:rgba(232,244,255,0.4); text-align:center; font-size:13px; letter-spacing:0.5px;">' + tt('banking.bank.no_transactions', 'Nu există tranzacții recente.') + '</p>';
         return;
     }
     
@@ -193,26 +198,26 @@ function handleLoansData(data) {
     if(!list) return;
     
     if(loansList.length === 0) {
-        list.innerHTML = '<div style="background:rgba(255,255,255,0.03); padding:20px; border-radius:14px; border:1px solid rgba(0,180,255,0.1); text-align:center; color:rgba(232,244,255,0.4);">Nu ai niciun credit activ.</div>';
+        list.innerHTML = '<div style="background:rgba(255,255,255,0.03); padding:20px; border-radius:14px; border:1px solid rgba(0,180,255,0.1); text-align:center; color:rgba(232,244,255,0.4);">' + tt('banking.bank.no_loans', 'Nu ai niciun credit activ.') + '</div>';
         return;
     }
 
     list.innerHTML = loansList.map(loan => `
         <div class="bank-account-card" style="margin-bottom:12px;">
             <div class="bank-account-header">
-                <span class="bank-account-bank">Credit ${loan.loan_type}</span>
-                <span class="bank-account-type">Rata: ${loan.interest_rate}%</span>
+                <span class="bank-account-bank">${tt('banking.bank.loan_card_title', 'Credit {1}', loanTypeLabel(loan.loan_type))}</span>
+                <span class="bank-account-type">${tt('banking.bank.loan_rate', 'Rata: {1}%', loan.interest_rate)}</span>
             </div>
             <div style="display:flex; justify-content:space-between; align-items:flex-end;">
                 <div>
-                    <div style="font-size:11px; color:rgba(232,244,255,0.4); margin-bottom:4px; text-transform:uppercase; letter-spacing:1px;">De plată (Total)</div>
+                    <div style="font-size:11px; color:rgba(232,244,255,0.4); margin-bottom:4px; text-transform:uppercase; letter-spacing:1px;">${tt('banking.bank.loan_to_pay', 'De plată (Total)')}</div>
                     <div class="bank-account-balance" style="color:#ff4d6a; text-shadow:0 0 15px rgba(255,77,106,0.3);">${formatMoney(loan.remaining_amount)}</div>
                 </div>
-                <button class="bank-btn bank-btn-secondary" style="padding:8px 14px;" onclick="showPayLoanModal(${loan.id}, ${loan.remaining_amount})">Plătește Rate</button>
+                <button class="bank-btn bank-btn-secondary" style="padding:8px 14px;" onclick="showPayLoanModal(${loan.id}, ${loan.remaining_amount})">${tt('banking.bank.loan_pay_btn', 'Plătește Rate')}</button>
             </div>
             <div style="margin-top:12px; background:rgba(0,0,0,0.2); padding:10px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.05); display:flex; justify-content:space-between; font-size:11px; color:rgba(232,244,255,0.5); letter-spacing:0.5px;">
-                <span>Principal: ${formatMoney(loan.principal_amount)}</span>
-                <span>Termen: ${loan.term_months} luni</span>
+                <span>${tt('banking.bank.loan_principal', 'Principal: {1}', formatMoney(loan.principal_amount))}</span>
+                <span>${tt('banking.bank.loan_term', 'Termen: {1} luni', loan.term_months)}</span>
             </div>
         </div>
     `).join('');
@@ -221,7 +226,7 @@ function handleLoansData(data) {
 function bankDeposit() {
     const accountId = document.getElementById('bank-dep-account').value;
     const amount = parseFloat(document.getElementById('bank-dep-amount').value);
-    if (!accountId || !amount) return showToast('Validează câmpurile', 'error');
+    if (!accountId || !amount) return showToast(tt('banking.ui.validate_fields', 'Validează câmpurile'), 'error');
     fetch('https://banking/deposit', { method: 'POST', body: JSON.stringify({ accountId: parseInt(accountId), amount }) });
     document.getElementById('bank-dep-amount').value = '';
 }
@@ -229,7 +234,7 @@ function bankDeposit() {
 function bankWithdraw() {
     const accountId = document.getElementById('bank-wit-account').value;
     const amount = parseFloat(document.getElementById('bank-wit-amount').value);
-    if (!accountId || !amount) return showToast('Validează câmpurile', 'error');
+    if (!accountId || !amount) return showToast(tt('banking.ui.validate_fields', 'Validează câmpurile'), 'error');
     fetch('https://banking/withdraw', { method: 'POST', body: JSON.stringify({ accountId: parseInt(accountId), amount }) });
     document.getElementById('bank-wit-amount').value = '';
 }
@@ -238,7 +243,7 @@ function bankTransfer() {
     const fromId = document.getElementById('bank-tr-from').value;
     const toAcc = document.getElementById('bank-tr-to').value;
     const amount = parseFloat(document.getElementById('bank-tr-amount').value);
-    if (!fromId || !toAcc || !amount) return showToast('Validează câmpurile', 'error');
+    if (!fromId || !toAcc || !amount) return showToast(tt('banking.ui.validate_fields', 'Validează câmpurile'), 'error');
     fetch('https://banking/transfer', { method: 'POST', body: JSON.stringify({ fromAccountId: parseInt(fromId), toAccountNumber: toAcc, amount }) });
     document.getElementById('bank-tr-to').value = '';
     document.getElementById('bank-tr-amount').value = '';
@@ -249,7 +254,7 @@ function bankExchange() {
     const fromId = document.getElementById('bank-ex-from').value;
     const toId = document.getElementById('bank-ex-to').value;
     const amount = parseFloat(document.getElementById('bank-ex-amount').value);
-    if (!accountId || !fromId || !toId || !amount) return showToast('Validează câmpurile', 'error');
+    if (!accountId || !fromId || !toId || !amount) return showToast(tt('banking.ui.validate_fields', 'Validează câmpurile'), 'error');
     fetch('https://banking/exchangeCurrency', { method: 'POST', body: JSON.stringify({ accountId: parseInt(accountId), amount, currencyFromId: parseInt(fromId), currencyToId: parseInt(toId) }) });
     document.getElementById('bank-ex-amount').value = '';
 }
@@ -273,7 +278,7 @@ function createLoan() {
     const type = document.getElementById('modal-loan-type').value;
     const amount = parseFloat(document.getElementById('modal-loan-amount').value);
     const term = parseInt(document.getElementById('modal-loan-term').value);
-    if (!amount || !term) return showToast('Validează câmpurile', 'error');
+    if (!amount || !term) return showToast(tt('banking.ui.validate_fields', 'Validează câmpurile'), 'error');
     fetch('https://banking/createLoan', { method: 'POST', body: JSON.stringify({ bankCode, loanType: type, amount, termMonths: term }) });
 }
 

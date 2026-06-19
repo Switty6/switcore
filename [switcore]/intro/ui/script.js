@@ -1,5 +1,5 @@
 
-const TAGLINE_TEXT = 'Roleplay. Libertate. Comunitate.';
+const TAGLINE_FALLBACK = 'Roleplay. Libertate. Comunitate.';
 const HOLD_AFTER   = 2200;  // ms stat pe ecran după ce tagline-ul s-a scris complet
 const TOTAL_AUTO   = 11000; // ms total înainte de ieșire automată
 
@@ -95,7 +95,10 @@ function playIntro() {
 
     setTimeout(() => {
         tagline.classList.add('show');
-        typeWrite(tagline, TAGLINE_TEXT, 38, () => {
+        const taglineText = (window.SwI18n && SwI18n.get('intro.tagline'))
+            ? SwI18n.t('intro.tagline')
+            : TAGLINE_FALLBACK;
+        typeWrite(tagline, taglineText, 38, () => {
             autoTimer = setTimeout(done, HOLD_AFTER);
         });
     }, 1700);

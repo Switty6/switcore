@@ -29,7 +29,7 @@ Sw.SecureEvent('taxi:server:hire', {
 
     local job = getCharJob(char.id)
     if job and job.name == Config.JobName then
-        notify(src, 'warning', 'Taxi', 'Esti deja angajat la Compania de Taxi.')
+        notify(src, 'warning', Sw.TP(src, 'taxi.notify_title'), Sw.TP(src, 'taxi.already_hired'))
         return
     end
 
@@ -38,7 +38,7 @@ Sw.SecureEvent('taxi:server:hire', {
 
     local updated = exports.jobs:GetCharacterJob(char.id)
     TriggerClientEvent('jobs:client:jobUpdated', src, updated)
-    notify(src, 'success', 'Angajat!', 'Bine ai venit la Compania de Taxi! Intra in tura pentru a primi curse.')
+    notify(src, 'success', Sw.TP(src, 'taxi.hired_title'), Sw.TP(src, 'taxi.hired_message'))
 end)
 
 Sw.SecureEvent('taxi:server:quit', {
@@ -55,7 +55,7 @@ Sw.SecureEvent('taxi:server:quit', {
     exports.jobs:SetCharacterJob(char.id, 'unemployed', 0)
     local updated = exports.jobs:GetCharacterJob(char.id)
     TriggerClientEvent('jobs:client:jobUpdated', src, updated)
-    notify(src, 'info', 'Taxi', 'Ai parasit Compania de Taxi.')
+    notify(src, 'info', Sw.TP(src, 'taxi.notify_title'), Sw.TP(src, 'taxi.quit_message'))
 end)
 
 Sw.SecureEvent('taxi:server:requestRide', {
@@ -71,13 +71,13 @@ Sw.SecureEvent('taxi:server:requestRide', {
     local pickupCoords = ctx.args.pickupCoords
 
     if not pickupCoords.x then
-        notify(src, 'error', 'Taxi', 'Coordonate invalide.')
+        notify(src, 'error', Sw.TP(src, 'taxi.notify_title'), Sw.TP(src, 'taxi.invalid_coords'))
         return
     end
 
     local order = TaxiDB.createOrder(char.id, src, pickupCoords)
     if not order then
-        notify(src, 'error', 'Taxi', 'Eroare la trimiterea cererii.')
+        notify(src, 'error', Sw.TP(src, 'taxi.notify_title'), Sw.TP(src, 'taxi.request_failed'))
         return
     end
 
@@ -89,7 +89,7 @@ Sw.SecureEvent('taxi:server:requestRide', {
     }
 
     BroadcastOrderToDrivers(orderData)
-    notify(src, 'info', 'Taxi', 'Cererea a fost trimisa. Asteapta un sofer.')
+    notify(src, 'info', Sw.TP(src, 'taxi.notify_title'), Sw.TP(src, 'taxi.request_sent'))
 end)
 
 Sw.SecureEvent('taxi:server:acceptOrder', {
@@ -106,13 +106,13 @@ Sw.SecureEvent('taxi:server:acceptOrder', {
 
     local job = getCharJob(char.id)
     if not job or job.name ~= Config.JobName or not job.isOnDuty then
-        notify(src, 'error', 'Taxi', 'Trebuie sa fii in tura pentru a accepta o cursa.')
+        notify(src, 'error', Sw.TP(src, 'taxi.notify_title'), Sw.TP(src, 'taxi.must_be_on_duty'))
         return
     end
 
     local accepted = TaxiDB.acceptOrder(orderId, char.id)
     if not accepted then
-        notify(src, 'warning', 'Taxi', 'Cursa nu mai este disponibila.')
+        notify(src, 'warning', Sw.TP(src, 'taxi.notify_title'), Sw.TP(src, 'taxi.order_unavailable'))
         return
     end
 
@@ -133,7 +133,7 @@ Sw.SecureEvent('taxi:server:acceptOrder', {
 
     local passengerSrc = tonumber(order.passenger_src)
     if passengerSrc and GetPlayerName(passengerSrc) then
-        notify(passengerSrc, 'success', 'Taxi', 'Un sofer vine catre tine!')
+        notify(passengerSrc, 'success', Sw.TP(passengerSrc, 'taxi.notify_title'), Sw.TP(passengerSrc, 'taxi.driver_coming'))
     end
 
     for _, pid in ipairs(GetPlayers()) do
@@ -170,7 +170,7 @@ Sw.SecureEvent('taxi:server:confirmPickup', {
 
     local passengerSrc = tonumber(order.passenger_src)
     if passengerSrc and GetPlayerName(passengerSrc) then
-        notify(passengerSrc, 'info', 'Taxi', 'Soferul te-a preluat! Indica destinatia cu /taxidest.')
+        notify(passengerSrc, 'info', Sw.TP(passengerSrc, 'taxi.notify_title'), Sw.TP(passengerSrc, 'taxi.passenger_picked_up'))
         TriggerClientEvent('taxi:client:setDestination', passengerSrc, { orderId = orderId })
     end
 end)
@@ -190,7 +190,7 @@ Sw.SecureEvent('taxi:server:setDestination', {
     local dropoffCoords = ctx.args.dropoffCoords
 
     if not dropoffCoords.x then
-        notify(src, 'error', 'Taxi', 'Coordonate invalide.')
+        notify(src, 'error', Sw.TP(src, 'taxi.notify_title'), Sw.TP(src, 'taxi.invalid_coords'))
         return
     end
 
@@ -202,9 +202,9 @@ Sw.SecureEvent('taxi:server:setDestination', {
     local driverSrc = FindSourceForChar(order.driver_char_id)
     if driverSrc then
         TriggerClientEvent('taxi:client:gpsDropoff', driverSrc, dropoffCoords)
-        notify(driverSrc, 'info', 'Taxi', 'Destinatia a fost setata. Urmeaza GPS-ul.')
+        notify(driverSrc, 'info', Sw.TP(driverSrc, 'taxi.notify_title'), Sw.TP(driverSrc, 'taxi.destination_set_driver'))
     end
-    notify(src, 'success', 'Taxi', 'Destinatia a fost trimisa soferului.')
+    notify(src, 'success', Sw.TP(src, 'taxi.notify_title'), Sw.TP(src, 'taxi.destination_sent'))
 end)
 
 Sw.SecureEvent('taxi:server:completeRide', {
@@ -221,11 +221,11 @@ Sw.SecureEvent('taxi:server:completeRide', {
 
     local order = TaxiDB.getOrder(orderId)
     if not order or order.driver_char_id ~= char.id then
-        notify(src, 'error', 'Taxi', 'Cursa invalida.')
+        notify(src, 'error', Sw.TP(src, 'taxi.notify_title'), Sw.TP(src, 'taxi.invalid_ride'))
         return
     end
     if order.status ~= 'in_progress' then
-        notify(src, 'warning', 'Taxi', 'Cursa nu este activa.')
+        notify(src, 'warning', Sw.TP(src, 'taxi.notify_title'), Sw.TP(src, 'taxi.ride_not_active'))
         return
     end
 
@@ -233,7 +233,7 @@ Sw.SecureEvent('taxi:server:completeRide', {
     local dropoff = type(order.dropoff_coords) == 'string' and json.decode(order.dropoff_coords) or order.dropoff_coords
 
     if not dropoff then
-        notify(src, 'error', 'Taxi', 'Destinatia nu a fost setata inca.')
+        notify(src, 'error', Sw.TP(src, 'taxi.notify_title'), Sw.TP(src, 'taxi.destination_not_set'))
         return
     end
 
@@ -262,7 +262,8 @@ Sw.SecureEvent('taxi:server:completeRide', {
 
     local passengerSrc = tonumber(order.passenger_src)
     if passengerSrc and GetPlayerName(passengerSrc) then
-        notify(passengerSrc, 'success', 'Taxi', string.format('Cursa finalizata! (%.1f km)', distKm))
+        notify(passengerSrc, 'success', Sw.TP(passengerSrc, 'taxi.notify_title'),
+            Sw.TP(passengerSrc, 'taxi.ride_finished_km', string.format('%.1f', distKm)))
         TriggerClientEvent('taxi:client:passengerDone', passengerSrc)
     end
 
@@ -289,18 +290,18 @@ Sw.SecureEvent('taxi:server:cancelOrder', {
     if not isPassenger and not isDriver then return end
 
     TaxiDB.cancelOrder(orderId)
-    notify(src, 'warning', 'Taxi', 'Cursa a fost anulata.')
+    notify(src, 'warning', Sw.TP(src, 'taxi.notify_title'), Sw.TP(src, 'taxi.ride_cancelled'))
 
     if isPassenger and order.driver_char_id then
         local driverSrc = FindSourceForChar(order.driver_char_id)
         if driverSrc then
-            notify(driverSrc, 'warning', 'Taxi', 'Pasagerul a anulat cursa.')
+            notify(driverSrc, 'warning', Sw.TP(driverSrc, 'taxi.notify_title'), Sw.TP(driverSrc, 'taxi.passenger_cancelled'))
             TriggerClientEvent('taxi:client:orderCancelled', driverSrc, orderId)
         end
     elseif isDriver then
         local passengerSrc = tonumber(order.passenger_src)
         if passengerSrc and GetPlayerName(passengerSrc) then
-            notify(passengerSrc, 'warning', 'Taxi', 'Soferul a anulat cursa.')
+            notify(passengerSrc, 'warning', Sw.TP(passengerSrc, 'taxi.notify_title'), Sw.TP(passengerSrc, 'taxi.driver_cancelled'))
         end
     end
 end)
@@ -356,9 +357,9 @@ Sw.SecureEvent('taxi:server:npcRideComplete', {
 
     TaxiDB.upsertStats(char.id, 1, pay)
 
-    local bonusText = multiplier > 1.01 and string.format(' (×%.2f)', multiplier) or ''
-    notify(src, 'success', 'Cursa NPC finalizata!',
-        string.format('Ai castigat %d lei (%.1f km)%s.', pay, distKm, bonusText))
+    local bonusText = multiplier > 1.01 and Sw.TP(src, 'taxi.npc_ride_bonus', string.format('%.2f', multiplier)) or ''
+    notify(src, 'success', Sw.TP(src, 'taxi.npc_ride_finished_title'),
+        Sw.TP(src, 'taxi.npc_ride_earned', pay, string.format('%.1f', distKm), bonusText))
 
     CheckPromotion(char.id, src)
 end)

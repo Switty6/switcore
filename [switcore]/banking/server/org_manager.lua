@@ -48,10 +48,10 @@ end
 
 function OrgManager.createOrgAccount(orgCode, bankCode)
     local org = BankingDatabase.getOrgByCode(orgCode)
-    if not org then return false, 'Organizatie negasita: ' .. orgCode, nil end
+    if not org then return false, Sw.T('banking.org.not_found_code', orgCode), nil end
 
     local bank = BankingDatabase.getBankByCode(bankCode)
-    if not bank then return false, 'Banca negasita: ' .. bankCode, nil end
+    if not bank then return false, Sw.T('banking.org.bank_not_found_code', bankCode), nil end
 
     -- Double-check dupa fetch org/bank, pentru race conditions
     local existing = BankingDatabase.getOrgAccountByOrg(org.id)
@@ -61,7 +61,7 @@ function OrgManager.createOrgAccount(orgCode, bankCode)
     local accNum = generateOrgAccountNumber(bankCode, org.id, seq)
     local account = BankingDatabase.createOrgAccount(org.id, bank.id, 'current', accNum)
 
-    if not account then return false, 'Eroare la creare cont organizatie', nil end
+    if not account then return false, Sw.T('banking.org.account_creation_failed'), nil end
     return true, nil, account
 end
 
@@ -86,80 +86,80 @@ end
 
 -- orgSystemCredit/Debit: tranzactii server-to-server fara caracter (ex: cautiune, achizitie vehicul)
 function OrgManager.orgSystemCredit(orgCode, amount, currencyId, description)
-    if not amount or amount <= 0 then return false, 'Suma invalida' end
+    if not amount or amount <= 0 then return false, Sw.T('banking.org.invalid_amount') end
     local org = BankingDatabase.getOrgByCode(orgCode)
-    if not org then return false, 'Organizatie negasita: ' .. orgCode end
+    if not org then return false, Sw.T('banking.org.not_found_code', orgCode) end
     local account = BankingDatabase.getOrgAccountByOrg(org.id)
-    if not account then return false, 'Cont org negasit pentru: ' .. orgCode end
+    if not account then return false, Sw.T('banking.org.account_not_found_code', orgCode) end
 
     local current = getOrgBalance(account, currencyId)
     local newBal  = current + amount
 
     local ok = setOrgBalance(account, currencyId, newBal)
-    if not ok then return false, 'Eroare actualizare sold' end
+    if not ok then return false, Sw.T('banking.org.balance_update_failed') end
 
-    BankingDatabase.createOrgTransaction(org.id, account.id, nil, 'system', amount, currencyId, newBal, description or 'Credit sistem')
+    BankingDatabase.createOrgTransaction(org.id, account.id, nil, 'system', amount, currencyId, newBal, description or Sw.T('banking.org.system_credit_desc'))
     return true, nil
 end
 
 function OrgManager.orgSystemDebit(orgCode, amount, currencyId, description)
-    if not amount or amount <= 0 then return false, 'Suma invalida' end
+    if not amount or amount <= 0 then return false, Sw.T('banking.org.invalid_amount') end
     local org = BankingDatabase.getOrgByCode(orgCode)
-    if not org then return false, 'Organizatie negasita: ' .. orgCode end
+    if not org then return false, Sw.T('banking.org.not_found_code', orgCode) end
     local account = BankingDatabase.getOrgAccountByOrg(org.id)
-    if not account then return false, 'Cont org negasit pentru: ' .. orgCode end
+    if not account then return false, Sw.T('banking.org.account_not_found_code', orgCode) end
 
     local current = getOrgBalance(account, currencyId)
-    if current < amount then return false, 'Fonduri insuficiente' end
+    if current < amount then return false, Sw.T('banking.org.insufficient_funds') end
 
     local newBal = current - amount
     local ok = setOrgBalance(account, currencyId, newBal)
-    if not ok then return false, 'Eroare actualizare sold' end
+    if not ok then return false, Sw.T('banking.org.balance_update_failed') end
 
-    BankingDatabase.createOrgTransaction(org.id, account.id, nil, 'system', -amount, currencyId, newBal, description or 'Debit sistem')
+    BankingDatabase.createOrgTransaction(org.id, account.id, nil, 'system', -amount, currencyId, newBal, description or Sw.T('banking.org.system_debit_desc'))
     return true, nil
 end
 
 function OrgManager.orgDeposit(characterId, orgCode, amount, currencyId, description)
-    if not amount or amount <= 0 then return false, 'Suma invalida' end
+    if not amount or amount <= 0 then return false, Sw.T('banking.org.invalid_amount') end
 
     local org = BankingDatabase.getOrgByCode(orgCode)
-    if not org then return false, 'Organizatie negasita' end
+    if not org then return false, Sw.T('banking.org.not_found') end
     local account = BankingDatabase.getOrgAccountByOrg(org.id)
-    if not account then return false, 'Cont org negasit' end
+    if not account then return false, Sw.T('banking.org.account_not_found') end
 
     local cash = BankingDatabase.getCharacterCash(characterId, currencyId)
-    if cash < amount then return false, 'Cash insuficient' end
+    if cash < amount then return false, Sw.T('banking.org.insufficient_cash') end
 
     BankingDatabase.addCharacterCash(characterId, currencyId, -amount)
 
     local current = getOrgBalance(account, currencyId)
     local newBal  = current + amount
     setOrgBalance(account, currencyId, newBal)
-    BankingDatabase.createOrgTransaction(org.id, account.id, characterId, 'deposit', amount, currencyId, newBal, description or 'Depunere')
+    BankingDatabase.createOrgTransaction(org.id, account.id, characterId, 'deposit', amount, currencyId, newBal, description or Sw.T('banking.org.deposit_desc'))
     return true, nil
 end
 
 function OrgManager.orgWithdraw(characterId, orgCode, amount, currencyId, description)
-    if not amount or amount <= 0 then return false, 'Suma invalida' end
+    if not amount or amount <= 0 then return false, Sw.T('banking.org.invalid_amount') end
 
     local org = BankingDatabase.getOrgByCode(orgCode)
-    if not org then return false, 'Organizatie negasita' end
+    if not org then return false, Sw.T('banking.org.not_found') end
     local account = BankingDatabase.getOrgAccountByOrg(org.id)
-    if not account then return false, 'Cont org negasit' end
+    if not account then return false, Sw.T('banking.org.account_not_found') end
 
     local member = BankingDatabase.getOrgMember(org.id, characterId)
     if not member or not member.can_withdraw then
-        return false, 'Acces refuzat'
+        return false, Sw.T('banking.org.access_denied')
     end
 
     local current = getOrgBalance(account, currencyId)
-    if current < amount then return false, 'Fonduri insuficiente' end
+    if current < amount then return false, Sw.T('banking.org.insufficient_funds') end
 
     local newBal = current - amount
     setOrgBalance(account, currencyId, newBal)
     BankingDatabase.addCharacterCash(characterId, currencyId, amount)
-    BankingDatabase.createOrgTransaction(org.id, account.id, characterId, 'withdrawal', -amount, currencyId, newBal, description or 'Retragere')
+    BankingDatabase.createOrgTransaction(org.id, account.id, characterId, 'withdrawal', -amount, currencyId, newBal, description or Sw.T('banking.org.withdrawal_desc'))
     return true, nil
 end
 

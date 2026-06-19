@@ -11,7 +11,7 @@ Sw.SecureEvent('vehicles:server:getMyVehicles', {
     local source = ctx.source
     local characterId = GetCharacterId(source)
     if not characterId then
-        TriggerClientEvent('vehicles:client:myVehicles', source, { success = false, error = 'No character' })
+        TriggerClientEvent('vehicles:client:myVehicles', source, { success = false, error = Sw.TP(source, 'vehicles.no_character') })
         return
     end
 
@@ -37,11 +37,11 @@ Sw.SecureEvent('vehicles:server:spawnVehicle', {
 
     local vehicle = VehiclesDatabase.getOwnedVehicleIfKeyed(vehicleId, characterId)
     if not vehicle then
-        return ctx.error('Nu ai cheie pentru acest vehicul sau este inexistent')
+        return ctx.error(Sw.TP(ctx.source, 'vehicles.no_key_or_missing'))
     end
 
     if vehicle.impounded then
-        return ctx.error('Vehiculul este sechestrat')
+        return ctx.error(Sw.TP(ctx.source, 'vehicles.vehicle_impounded'))
     end
 
     VehiclesDatabase.updateVehicleState(vehicleId, { stored = false })

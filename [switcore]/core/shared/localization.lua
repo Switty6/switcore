@@ -10,7 +10,8 @@ function Localization.interpolate(str, ...)
     
     for i, arg in ipairs(args) do
         local placeholder = '{' .. i .. '}'
-        result = result:gsub(placeholder, tostring(arg))
+        -- forma cu functie, altfel un '%' din argument e interpretat ca referinta de captura
+        result = result:gsub(placeholder, function() return tostring(arg) end)
     end
     
     return result

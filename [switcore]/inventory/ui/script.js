@@ -430,8 +430,8 @@ function showItemTooltipFor(slotEl, x, y) {
         <span>${Number(cfg.weight || 0).toFixed(2)} kg/buc</span>
         <span>total ${totalW} kg</span>
     </div>`);
-    if (cfg.usable)    parts.push(`<div class="tt-tag tt-usable">Usable</div>`);
-    if (!cfg.stackable) parts.push(`<div class="tt-tag tt-unique">Unique</div>`);
+    if (cfg.usable)    parts.push(`<div class="tt-tag tt-usable">${escapeHtml(SwI18n.t('inventory.ui.tag_usable'))}</div>`);
+    if (!cfg.stackable) parts.push(`<div class="tt-tag tt-unique">${escapeHtml(SwI18n.t('inventory.ui.tag_unique'))}</div>`);
 
     tt.innerHTML = parts.join('');
     tt.classList.remove('hidden');

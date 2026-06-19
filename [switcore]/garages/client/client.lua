@@ -2,6 +2,12 @@
 local currentGarageCode = nil
 local isUIOpen = false
 
+local function pushI18n()
+    SendNUIMessage({ action = 'sw:i18n', dict = exports.core:getLocaleDict() })
+end
+
+AddEventHandler('switcore:client:localeUpdated', pushI18n)
+
 CreateThread(function()
     Wait(1500)
     TriggerServerEvent('garages:server:getLocationConfig')
@@ -31,6 +37,7 @@ end)
 
 RegisterNetEvent('garages:client:openUI', function(data)
     isUIOpen = true
+    pushI18n()
     SetNuiFocus(true, true)
     SendNUIMessage({
         action    = 'open',

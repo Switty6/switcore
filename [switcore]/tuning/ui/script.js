@@ -13,6 +13,29 @@ function nuiPost(action, data = {}) {
     }
 }
 
+// Helper i18n cu fallback pe textul romanesc; SwI18n e injectat de core/ui/i18n.js
+function T(key, fallback) {
+    if (window.SwI18n) {
+        const v = SwI18n.get(key);
+        if (typeof v === 'string') return v;
+    }
+    return fallback !== undefined ? fallback : key;
+}
+
+function Tf(key, fallback) {
+    const args = Array.prototype.slice.call(arguments, 2);
+    let value = T(key, fallback);
+    args.forEach(function(arg, i) {
+        value = value.split('{' + (i + 1) + '}').join(String(arg));
+    });
+    return value;
+}
+
+// Eticheta tip jante din dict (fallback pe WHEEL_TYPE_LABELS), cu fallback generic "Tip {n}"
+function wheelTypeLabel(typeIdx) {
+    return T('tuning.wheel_type.' + typeIdx, WHEEL_TYPE_LABELS[typeIdx] || Tf('tuning.ui.type_generic', 'Tip ' + typeIdx, typeIdx));
+}
+
 const state = {
     vehicle:       null,
     config:        null,
@@ -117,10 +140,10 @@ function isVipOnly(catId, tier) {
 function calcCost(catId, tier) {
     const pt   = state.config && state.config.priceTable;
     const code = (state.config && state.config.currencyCode) || 'USD';
-    if (!pt || !pt[catId]) return { raw: 0, display: 'Gratuit' };
+    if (!pt || !pt[catId]) return { raw: 0, display: T('tuning.ui.free', 'Gratuit') };
 
     const targetEntry  = pt[catId][tier];
-    if (!targetEntry)  return { raw: 0, display: 'Gratuit' };
+    if (!targetEntry)  return { raw: 0, display: T('tuning.ui.free', 'Gratuit') };
 
     const currentTier  = getInstalledTier(catId);
     const currentEntry = pt[catId][currentTier];
@@ -131,7 +154,7 @@ function calcCost(catId, tier) {
         cost = Math.floor(cost * (1.0 - (state.config.vipDiscount || 0)));
     }
 
-    return { raw: cost, display: cost === 0 ? 'Gratuit' : fmt(cost, code) };
+    return { raw: cost, display: cost === 0 ? T('tuning.ui.free', 'Gratuit') : fmt(cost, code) };
 }
 
 function openUI(vehicle, config) {
@@ -190,7 +213,8 @@ function buildCatList() {
         div.dataset.catId = cat.id;
 
         const iconSvg = CAT_ICONS[cat.id] || '';
-        div.innerHTML = `<span class="cat-icon">${iconSvg}</span><span class="cat-label">${cat.label}</span>`;
+        const catLabel = T('tuning.category.' + cat.id, cat.label);
+        div.innerHTML = `<span class="cat-icon">${iconSvg}</span><span class="cat-label">${catLabel}</span>`;
         div.addEventListener('click', function() { selectCat(cat.id); });
         nav.appendChild(div);
     });
@@ -233,7 +257,7 @@ function selectCat(catId) {
     const cat = state.config && state.config.categories && state.config.categories.find(function(c) { return c.id === catId; });
     if (!cat) return;
 
-    document.getElementById('modPanelTitle').textContent = cat.label;
+    document.getElementById('modPanelTitle').textContent = T('tuning.category.' + cat.id, cat.label);
     document.getElementById('modPanelDesc').textContent  = '';
 
     highlightZone(catId);
@@ -256,7 +280,7 @@ function highlightZone(catId) {
 
     const cat = state.config && state.config.categories && state.config.categories.find(function(c) { return c.id === catId; });
     if (cat) {
-        label.textContent = cat.label;
+        label.textContent = T('tuning.category.' + cat.id, cat.label);
         label.classList.add('visible');
     } else {
         label.classList.remove('visible');
@@ -291,9 +315,9 @@ function buildTierList(container, cat) {
     const installed = getInstalledTier(cat.id);
 
     appendTierRow(container, cat, 0, {
-        name:  (labels[0] && labels[0].label) || 'Stock',
-        desc:  (labels[0] && labels[0].desc)  || 'Configurație originală',
-        cost:  { raw: 0, display: 'Gratuit' },
+        name:  T('tuning.tier.' + cat.id + '.0.label', (labels[0] && labels[0].label) || T('tuning.ui.stock', 'Stock')),
+        desc:  T('tuning.tier.' + cat.id + '.0.desc',  (labels[0] && labels[0].desc)  || T('tuning.ui.stock_desc', 'Configurație originală')),
+        cost:  { raw: 0, display: T('tuning.ui.free', 'Gratuit') },
         installed: installed,
         cartItem:  cartItem,
     });
@@ -301,8 +325,8 @@ function buildTierList(container, cat) {
     for (var tier = 1; tier <= maxTier; tier++) {
         var costObj = calcCost(cat.id, tier);
         appendTierRow(container, cat, tier, {
-            name:  (labels[tier] && labels[tier].label) || ('Tier ' + tier),
-            desc:  (labels[tier] && labels[tier].desc)  || '',
+            name:  T('tuning.tier.' + cat.id + '.' + tier + '.label', (labels[tier] && labels[tier].label) || Tf('tuning.ui.tier_generic', 'Tier ' + tier, tier)),
+            desc:  T('tuning.tier.' + cat.id + '.' + tier + '.desc',  (labels[tier] && labels[tier].desc)  || ''),
             cost:  costObj,
             installed: installed,
             cartItem:  cartItem,
@@ -324,9 +348,9 @@ function appendTierRow(container, cat, tier, opts) {
     row.dataset.tier = tier;
 
     var badges = [];
-    if (isCurr)  badges.push('<span class="mod-badge badge-current">Instalat</span>');
-    if (inCart)  badges.push('<span class="mod-badge badge-incart">În coș</span>');
-    if (vipOnly) badges.push('<span class="mod-badge badge-vip">VIP</span>');
+    if (isCurr)  badges.push('<span class="mod-badge badge-current">' + T('tuning.ui.badge_installed', 'Instalat') + '</span>');
+    if (inCart)  badges.push('<span class="mod-badge badge-incart">' + T('tuning.ui.badge_in_cart', 'În coș') + '</span>');
+    if (vipOnly) badges.push('<span class="mod-badge badge-vip">' + T('tuning.ui.badge_vip', 'VIP') + '</span>');
 
     var priceClass = '';
     if (tier === 0)         priceClass = 'owned';
@@ -388,35 +412,35 @@ function buildColorPicker(container, cat) {
     var pearlGrid = PEARL_PALETTE.map(function(p) {
         var sel = (state.colorPearl === p.idx) ? ' selected' : '';
         return '<button class="pearl-swatch' + sel + '" data-idx="' + p.idx +
-               '" title="' + p.name + '" style="background:' + p.hex + '"></button>';
+               '" title="' + T('tuning.pearl.' + p.idx, p.name) + '" style="background:' + p.hex + '"></button>';
     }).join('');
 
     container.innerHTML =
-        '<div class="mod-section-label">Culoare Primară</div>' +
+        '<div class="mod-section-label">' + T('tuning.ui.color_primary_section', 'Culoare Primară') + '</div>' +
         '<div class="color-row">' +
-            '<span class="color-row-label">Primară</span>' +
+            '<span class="color-row-label">' + T('tuning.ui.color_primary_label', 'Primară') + '</span>' +
             '<div class="color-swatch-wrap">' +
                 '<div class="color-swatch" id="colorSwatchPrimary" style="background:' + state.colorPrimary + '"></div>' +
                 '<input type="color" class="color-picker-input" id="pickerPrimary" value="' + state.colorPrimary + '">' +
             '</div>' +
             '<span class="color-hex-val" id="hexPrimary">' + state.colorPrimary.toUpperCase() + '</span>' +
         '</div>' +
-        '<div class="mod-section-label">Culoare Secundară</div>' +
+        '<div class="mod-section-label">' + T('tuning.ui.color_secondary_section', 'Culoare Secundară') + '</div>' +
         '<div class="color-row">' +
-            '<span class="color-row-label">Secundară</span>' +
+            '<span class="color-row-label">' + T('tuning.ui.color_secondary_label', 'Secundară') + '</span>' +
             '<div class="color-swatch-wrap">' +
                 '<div class="color-swatch" id="colorSwatchSecondary" style="background:' + state.colorSecondary + '"></div>' +
                 '<input type="color" class="color-picker-input" id="pickerSecondary" value="' + state.colorSecondary + '">' +
             '</div>' +
             '<span class="color-hex-val" id="hexSecondary">' + state.colorSecondary.toUpperCase() + '</span>' +
         '</div>' +
-        '<div class="mod-section-label">Pearlescent <span style="font-weight:500;opacity:0.7;font-size:11px;">(luciu suprapus peste vopsea)</span></div>' +
+        '<div class="mod-section-label">' + T('tuning.ui.pearl_section', 'Pearlescent') + ' <span style="font-weight:500;opacity:0.7;font-size:11px;">' + T('tuning.ui.pearl_hint', '(luciu suprapus peste vopsea)') + '</span></div>' +
         '<div class="pearl-grid" id="pearlGrid">' + pearlGrid + '</div>' +
         '<div class="color-row" style="border-top:1px solid var(--border);margin-top:8px;padding-top:12px;">' +
-            '<span class="color-row-label" style="color:var(--text-1);font-weight:700;">Cost vopsire</span>' +
+            '<span class="color-row-label" style="color:var(--text-1);font-weight:700;">' + T('tuning.ui.paint_cost', 'Cost vopsire') + '</span>' +
             '<span style="flex:1;font-size:13px;font-weight:900;color:var(--accent);">' + fmt(cost, code) + '</span>' +
             '<button class="btn-cart-color' + (inCart ? ' in-cart' : '') + '" id="btnCartColor">' +
-                (inCart ? 'Scoate din coș' : 'Adaugă în coș') +
+                (inCart ? T('tuning.ui.remove_from_cart', 'Scoate din coș') : T('tuning.ui.add_to_cart', 'Adaugă în coș')) +
             '</button>' +
         '</div>';
 
@@ -468,7 +492,7 @@ function buildColorPicker(container, cat) {
         if (state.cart['color']) {
             removeFromCart('color');
         } else {
-            addToCart('color', 0, 'Vopsire', costVal, {
+            addToCart('color', 0, T('tuning.ui.paint_label', 'Vopsire'), costVal, {
                 colorPrimary:   state.colorPrimary,
                 colorSecondary: state.colorSecondary,
                 colorPearl:     state.colorPearl,
@@ -494,8 +518,8 @@ function buildWheelPicker(container, cat) {
 
     document.getElementById('modPanelDesc').textContent =
         selectedType !== null && selectedType !== undefined
-            ? 'Tip: ' + (WHEEL_TYPE_LABELS[selectedType] || ('Tip ' + selectedType)) + ' - alege un design.'
-            : 'Alege întâi un tip de jantă.';
+            ? Tf('tuning.ui.wheel_type_hint', 'Tip: {1} - alege un design.', wheelTypeLabel(selectedType))
+            : T('tuning.ui.wheel_pick_type', 'Alege întâi un tip de jantă.');
 
     /* Step 1: type grid */
     var typeGrid = document.createElement('div');
@@ -505,7 +529,7 @@ function buildWheelPicker(container, cat) {
         (function(typeIdx) {
             var vipOnly = isVipOnly('wheels', typeIdx);
             var locked  = vipOnly && !(state.config && state.config.isVip);
-            var lbl     = (labels[typeIdx] && labels[typeIdx].label) || WHEEL_TYPE_LABELS[typeIdx] || ('Tip ' + typeIdx);
+            var lbl     = T('tuning.tier.wheels.' + typeIdx + '.label', (labels[typeIdx] && labels[typeIdx].label) || wheelTypeLabel(typeIdx));
             var cost    = calcCost('wheels', typeIdx);
             var isSel   = selectedType === typeIdx;
             var isInst  = installed === typeIdx;
@@ -526,8 +550,8 @@ function buildWheelPicker(container, cat) {
                 '</div>' +
                 '<div class="wheel-type-name">' + lbl + '</div>' +
                 '<div class="wheel-type-price">' + cost.display + '</div>' +
-                (vipOnly ? '<div class="wheel-type-vip">VIP</div>' : '') +
-                (isInst ? '<div class="wheel-type-installed-badge">Instalat</div>' : '');
+                (vipOnly ? '<div class="wheel-type-vip">' + T('tuning.ui.badge_vip', 'VIP') + '</div>' : '') +
+                (isInst ? '<div class="wheel-type-installed-badge">' + T('tuning.ui.badge_installed', 'Instalat') + '</div>' : '');
 
             card.addEventListener('click', function() {
                 if (locked) return;
@@ -547,7 +571,7 @@ function buildWheelPicker(container, cat) {
     var designHeader = document.createElement('div');
     designHeader.className = 'mod-section-label';
     designHeader.style.marginTop = '12px';
-    designHeader.textContent = 'Design ' + (WHEEL_TYPE_LABELS[selectedType] || ('Tip ' + selectedType));
+    designHeader.textContent = Tf('tuning.ui.wheel_design_header', 'Design ' + wheelTypeLabel(selectedType), wheelTypeLabel(selectedType));
     container.appendChild(designHeader);
 
     var designWrap = document.createElement('div');
@@ -581,12 +605,12 @@ function buildWheelPicker(container, cat) {
     cartRow.style.cssText = 'border-top:1px solid var(--border);margin-top:12px;padding-top:12px;';
     cartRow.innerHTML =
         '<span class="color-row-label" style="color:var(--text-1);font-weight:700;">' +
-            (WHEEL_TYPE_LABELS[selectedType] || ('Tip ' + selectedType)) +
-            ' · Design #' + (state.wheelIndex >= 0 ? state.wheelIndex : '-') +
+            Tf('tuning.ui.wheel_design_line', wheelTypeLabel(selectedType) + ' · Design #' + (state.wheelIndex >= 0 ? state.wheelIndex : '-'),
+               wheelTypeLabel(selectedType), (state.wheelIndex >= 0 ? state.wheelIndex : '-')) +
         '</span>' +
         '<span style="flex:1;font-size:13px;font-weight:900;color:var(--accent);">' + costObj.display + '</span>' +
         '<button class="btn-cart-color' + (inCart ? ' in-cart' : '') + '" id="btnCartWheels">' +
-            (inCart ? 'Scoate din coș' : 'Adaugă în coș') +
+            (inCart ? T('tuning.ui.remove_from_cart', 'Scoate din coș') : T('tuning.ui.add_to_cart', 'Adaugă în coș')) +
         '</button>';
     container.appendChild(cartRow);
 
@@ -595,7 +619,8 @@ function buildWheelPicker(container, cat) {
             removeFromCart('wheels');
         } else {
             addToCart('wheels', selectedType,
-                (WHEEL_TYPE_LABELS[selectedType] || 'Roți') + ' #' + state.wheelIndex,
+                Tf('tuning.ui.wheel_cart_label', (WHEEL_TYPE_LABELS[selectedType] || T('tuning.ui.wheels_fallback', 'Roți')) + ' #' + state.wheelIndex,
+                   wheelTypeLabel(selectedType), state.wheelIndex),
                 costObj.raw,
                 { subIndex: state.wheelIndex });
         }
@@ -608,7 +633,7 @@ function renderWheelDesigns(wrap, cat, wheelType, installedType, installedIdx, c
     var count = state.wheelCount || 0;
 
     if (count === 0) {
-        wrap.innerHTML = '<div style="grid-column:1/-1;opacity:0.6;font-size:12px;padding:8px;">Niciun design disponibil pentru acest tip.</div>';
+        wrap.innerHTML = '<div style="grid-column:1/-1;opacity:0.6;font-size:12px;padding:8px;">' + T('tuning.ui.wheel_no_design', 'Niciun design disponibil pentru acest tip.') + '</div>';
         return;
     }
 
@@ -629,13 +654,12 @@ function renderWheelDesigns(wrap, cat, wheelType, installedType, installedIdx, c
                 nuiPost('previewMod', { category: 'wheels', tier: wheelType, subIndex: designIdx });
                 if (state.cart['wheels']) {
                     state.cart['wheels'].subIndex = designIdx;
-                    state.cart['wheels'].label   = (WHEEL_TYPE_LABELS[wheelType] || 'Roți') + ' #' + designIdx;
+                    state.cart['wheels'].label   = Tf('tuning.ui.wheel_cart_label', (WHEEL_TYPE_LABELS[wheelType] || T('tuning.ui.wheels_fallback', 'Roți')) + ' #' + designIdx, wheelTypeLabel(wheelType), designIdx);
                     renderCartBar();
                 }
                 var headerLabel = document.querySelector('.color-row .color-row-label');
                 if (headerLabel) {
-                    headerLabel.textContent = (WHEEL_TYPE_LABELS[wheelType] || ('Tip ' + wheelType)) +
-                                              ' · Design #' + designIdx;
+                    headerLabel.textContent = Tf('tuning.ui.wheel_design_line', wheelTypeLabel(wheelType) + ' · Design #' + designIdx, wheelTypeLabel(wheelType), designIdx);
                 }
             });
             wrap.appendChild(cell);
@@ -651,13 +675,15 @@ function buildLiveryList(container, cat) {
     var installed = getInstalledTier('livery');
     var cartItem  = state.cart['livery'];
 
-    document.getElementById('modPanelDesc').textContent = 'Cost per liverie: ' + fmt(cost, code);
+    document.getElementById('modPanelDesc').textContent = Tf('tuning.ui.livery_cost_hint', 'Cost per liverie: ' + fmt(cost, code), fmt(cost, code));
 
     for (var i = 0; i <= maxTier; i++) {
         (function(idx) {
             var inCart = !!(cartItem && cartItem.tier === idx);
             var isCurr = installed === idx;
-            var name   = (labels[idx] && labels[idx].label) || (idx === 0 ? 'Fără liverie' : 'Liverie ' + idx);
+            var name   = T('tuning.tier.livery.' + idx + '.label',
+                           (labels[idx] && labels[idx].label) ||
+                           (idx === 0 ? T('tuning.ui.livery_none', 'Fără liverie') : Tf('tuning.ui.livery_generic', 'Liverie ' + idx, idx)));
 
             var cartIconAdd = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
             var cartIconRem = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>';
@@ -667,8 +693,8 @@ function buildLiveryList(container, cat) {
             row.dataset.tier = idx;
 
             var badges = [];
-            if (isCurr) badges.push('<span class="mod-badge badge-current">Instalat</span>');
-            if (inCart) badges.push('<span class="mod-badge badge-incart">În coș</span>');
+            if (isCurr) badges.push('<span class="mod-badge badge-current">' + T('tuning.ui.badge_installed', 'Instalat') + '</span>');
+            if (inCart) badges.push('<span class="mod-badge badge-incart">' + T('tuning.ui.badge_in_cart', 'În coș') + '</span>');
 
             row.innerHTML =
                 '<div class="mod-tier-badge">' + (idx === 0 ? '○' : idx) + '</div>' +
@@ -677,7 +703,7 @@ function buildLiveryList(container, cat) {
                     (badges.length ? '<div class="mod-badges">' + badges.join('') + '</div>' : '') +
                 '</div>' +
                 '<div class="mod-right">' +
-                    '<span class="mod-price' + (idx === 0 ? ' owned' : '') + '">' + (idx === 0 ? 'Gratuit' : fmt(cost, code)) + '</span>' +
+                    '<span class="mod-price' + (idx === 0 ? ' owned' : '') + '">' + (idx === 0 ? T('tuning.ui.free', 'Gratuit') : fmt(cost, code)) + '</span>' +
                     '<button class="btn-cart ' + (inCart ? 'in-cart' : '') + '" data-tier="' + idx + '">' +
                         (inCart ? cartIconRem : cartIconAdd) +
                     '</button>' +
@@ -759,8 +785,8 @@ function renderCartBar() {
         var shortLabel = item.label.length > 18 ? item.label.slice(0, 16) + '…' : item.label;
         chip.innerHTML =
             '<span class="cart-chip-label">' + shortLabel + '</span>' +
-            '<span class="cart-chip-price">' + (item.cost > 0 ? fmt(item.cost, code) : 'Gratuit') + '</span>' +
-            '<button class="cart-chip-remove" title="Scoate">' +
+            '<span class="cart-chip-price">' + (item.cost > 0 ? fmt(item.cost, code) : T('tuning.ui.free', 'Gratuit')) + '</span>' +
+            '<button class="cart-chip-remove" title="' + T('tuning.ui.chip_remove', 'Scoate') + '">' +
                 '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">' +
                     '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>' +
                 '</svg>' +
@@ -790,11 +816,16 @@ function buyCart() {
 
     var code  = (state.config && state.config.currencyCode) || 'USD';
     var total = items.reduce(function(s, i) { return s + (i.cost || 0); }, 0);
-    var names = items.map(function(i) { return '• ' + i.label + ' - ' + (i.cost > 0 ? fmt(i.cost, code) : 'Gratuit'); }).join('\n');
+    var names = items.map(function(i) {
+        return Tf('tuning.ui.buy_modal_line', '• ' + i.label + ' - ' + (i.cost > 0 ? fmt(i.cost, code) : T('tuning.ui.free', 'Gratuit')),
+                  i.label, (i.cost > 0 ? fmt(i.cost, code) : T('tuning.ui.free', 'Gratuit')));
+    }).join('\n');
+
+    var payLabel = state.payMethod === 'cash' ? T('tuning.ui.pay_cash', 'Cash') : T('tuning.ui.pay_bank', 'Bancă');
 
     showModal(
-        'Confirmă achiziția',
-        '<strong>Total: ' + fmt(total, code) + '</strong> (' + (state.payMethod === 'cash' ? 'Cash' : 'Bancă') + ')\n\n' + names,
+        T('tuning.ui.buy_modal_title', 'Confirmă achiziția'),
+        '<strong>' + Tf('tuning.ui.buy_modal_total', 'Total: ' + fmt(total, code), fmt(total, code)) + '</strong> (' + payLabel + ')\n\n' + names,
         function() {
             nuiPost('applyCart', { items: items, paymentMethod: state.payMethod });
             document.getElementById('btnBuy').disabled = true;
@@ -806,9 +837,12 @@ function resetStock() {
     var code = (state.config && state.config.currencyCode) || 'USD';
     var cost = (state.config && state.config.resetCost) || 1500;
 
+    var payLabel = state.payMethod === 'cash' ? T('tuning.ui.pay_cash', 'Cash') : T('tuning.ui.pay_bank', 'Bancă');
+
     showModal(
-        'Reset la Stock',
-        'Toate modificările vor fi eliminate.\n\nCost: ' + fmt(cost, code) + ' (' + (state.payMethod === 'cash' ? 'Cash' : 'Bancă') + ')',
+        T('tuning.ui.reset_modal_title', 'Reset la Stock'),
+        T('tuning.ui.reset_modal_body', 'Toate modificările vor fi eliminate.') + '\n\n' +
+            Tf('tuning.ui.reset_modal_cost', 'Cost: ' + fmt(cost, code), fmt(cost, code)) + ' (' + payLabel + ')',
         function() {
             nuiPost('resetMods', { paymentMethod: state.payMethod });
         }
@@ -847,6 +881,12 @@ function onCartApplied(results, finalMods) {
         var cat = state.config && state.config.categories && state.config.categories.find(function(c) { return c.id === state.activeCatId; });
         if (cat) buildModList(cat);
     }
+
+    // Inchide automat panoul dupa o achizitie reusita (toate articolele aplicate).
+    var allOk = results && results.length && results.every(function(r) { return r.success; });
+    if (allOk) {
+        setTimeout(closeUI, 700);
+    }
 }
 
 function onModsReset(finalMods) {
@@ -882,6 +922,20 @@ window.addEventListener('message', function(e) {
     }
 });
 
+// Re-randare a stringurilor generate din JS la schimbarea dictionarului
+document.addEventListener('sw:i18n', function() {
+    if (!state.config) return;
+    buildCatList();
+    if (state.activeCatId) {
+        var cat = state.config.categories && state.config.categories.find(function(c) { return c.id === state.activeCatId; });
+        if (cat) {
+            document.getElementById('modPanelTitle').textContent = T('tuning.category.' + cat.id, cat.label);
+            buildModList(cat);
+        }
+    }
+    renderCartBar();
+});
+
 document.getElementById('btnClose').addEventListener('click', closeUI);
 document.getElementById('payCash').addEventListener('click', function() { setPayMethod('cash'); });
 document.getElementById('payBank').addEventListener('click', function() { setPayMethod('bank'); });
@@ -900,6 +954,49 @@ document.addEventListener('keydown', function(e) {
         else closeUI();
     }
 });
+
+// Orbit camera: trage cu mouse-ul peste zona centrala pentru a roti masina,
+// scroll pentru zoom. Delta-urile se trimit catre client.lua care misca camera.
+(function setupCameraOrbit() {
+    var carArea = document.getElementById('carArea');
+    if (!carArea) return;
+
+    var dragging = false, lastX = 0, lastY = 0, accDx = 0, accDy = 0, rafPending = false;
+
+    function flush() {
+        rafPending = false;
+        if (accDx !== 0 || accDy !== 0) {
+            nuiPost('orbitCamera', { dx: accDx, dy: accDy });
+            accDx = 0; accDy = 0;
+        }
+    }
+
+    carArea.addEventListener('mousedown', function(e) {
+        if (e.button !== 0) return;
+        if (e.target.closest('.close-btn')) return;
+        dragging = true;
+        lastX = e.clientX; lastY = e.clientY;
+        carArea.classList.add('grabbing');
+    });
+
+    window.addEventListener('mousemove', function(e) {
+        if (!dragging) return;
+        accDx += e.clientX - lastX;
+        accDy += e.clientY - lastY;
+        lastX = e.clientX; lastY = e.clientY;
+        if (!rafPending) { rafPending = true; requestAnimationFrame(flush); }
+    });
+
+    window.addEventListener('mouseup', function() {
+        dragging = false;
+        carArea.classList.remove('grabbing');
+    });
+
+    carArea.addEventListener('wheel', function(e) {
+        e.preventDefault();
+        nuiPost('zoomCamera', { delta: e.deltaY > 0 ? 0.5 : -0.5 });
+    }, { passive: false });
+})();
 
 function injectCarSvg() {
     var carArea = document.getElementById('carArea');

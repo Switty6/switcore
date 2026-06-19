@@ -45,14 +45,14 @@ document.getElementById('btnDuty').addEventListener('click', () => {
 });
 
 document.getElementById('btnQuit').addEventListener('click', () => {
-    askConfirm('Esti sigur ca vrei sa renunti la job?', () => {
+    askConfirm(SwI18n.t('garbage.ui.confirm_quit'), () => {
         postNUI('quitJob');
         hidePanel();
     });
 });
 
 document.getElementById('btnAbandon').addEventListener('click', () => {
-    askConfirm('Abandonezi ruta curenta? Primesti plata partiala.', () => {
+    askConfirm(SwI18n.t('garbage.ui.confirm_abandon'), () => {
         postNUI('abandonRoute', {});
         hidePanel();
     });
@@ -88,11 +88,11 @@ function renderStats() {
     document.getElementById('gradeLabel').textContent    = job.gradeLabel ?? '-';
     document.getElementById('statSessions').textContent  = fmt(stats.total_sessions);
     document.getElementById('statCollected').textContent = fmt(stats.total_collected);
-    document.getElementById('statEarned').textContent    = fmt(stats.total_earned) + ' lei';
+    document.getElementById('statEarned').textContent    = SwI18n.t('garbage.ui.unit_lei', fmt(stats.total_earned));
 
     const btn = document.getElementById('btnDuty');
     const isOnDuty = job.isOnDuty ?? false;
-    btn.textContent = isOnDuty ? 'Ieși din tură' : 'Intră în tură';
+    btn.textContent = isOnDuty ? SwI18n.t('garbage.ui.duty_out') : SwI18n.t('garbage.ui.duty_in');
     btn.classList.toggle('on-duty', isOnDuty);
 
     const activeSection = document.getElementById('activeRouteSection');
@@ -111,7 +111,7 @@ function updateProgress(collected, total) {
     const pct = total > 0 ? Math.round((collected / total) * 100) : 0;
     document.getElementById('progressBar').style.width = pct + '%';
     document.getElementById('progressText').textContent =
-        `${collected} / ${total} containere (${pct}%)`;
+        SwI18n.t('garbage.ui.progress_text', collected, total, pct);
 }
 
 function renderRoutes() {
@@ -120,7 +120,7 @@ function renderRoutes() {
     const canStart = !state.hasSession && (state.job?.isOnDuty ?? false);
 
     if (!routes.length) {
-        list.innerHTML = '<div class="empty-msg">Nu există rute disponibile.</div>';
+        list.innerHTML = `<div class="empty-msg">${esc(SwI18n.t('garbage.ui.no_routes'))}</div>`;
         return;
     }
 
@@ -128,10 +128,10 @@ function renderRoutes() {
         <div class="route-item">
             <div class="route-info">
                 <div class="route-name">${esc(r.name)}</div>
-                <div class="route-count">${r.count} containere</div>
+                <div class="route-count">${esc(SwI18n.t('garbage.ui.route_count', r.count))}</div>
             </div>
             <button class="start-btn" data-routeid="${r.id}" ${canStart ? '' : 'disabled'}>
-                ${state.hasSession ? 'Ruta Activa' : 'Porneste'}
+                ${esc(state.hasSession ? SwI18n.t('garbage.ui.route_active') : SwI18n.t('garbage.ui.route_start'))}
             </button>
         </div>
     `).join('');
@@ -150,22 +150,24 @@ function renderHistory() {
     const sessions = state.recent ?? [];
 
     if (!sessions.length) {
-        list.innerHTML = '<div class="empty-msg">Nu ai sesiuni efectuate.</div>';
+        list.innerHTML = `<div class="empty-msg">${esc(SwI18n.t('garbage.ui.no_sessions'))}</div>`;
         return;
     }
 
     list.innerHTML = sessions.map(s => {
         const statusClass = s.status === 'completed' ? 'status-completed' : 'status-abandoned';
-        const statusLabel = s.status === 'completed' ? 'Completa' : 'Abandonata';
+        const statusLabel = s.status === 'completed'
+            ? SwI18n.t('garbage.ui.status_completed')
+            : SwI18n.t('garbage.ui.status_abandoned');
         return `
             <div class="history-item">
                 <div class="history-info">
-                    <div class="history-route">Ruta #${s.route_id}</div>
-                    <div class="history-detail">${s.collected_count}/${s.total_waypoints} containere · ${fmtDate(s.completed_at)}</div>
+                    <div class="history-route">${esc(SwI18n.t('garbage.ui.history_route', s.route_id))}</div>
+                    <div class="history-detail">${esc(SwI18n.t('garbage.ui.history_detail', s.collected_count, s.total_waypoints, fmtDate(s.completed_at)))}</div>
                 </div>
                 <div style="text-align:right">
-                    <div class="history-pay">+${fmt(s.pay_amount)} lei</div>
-                    <span class="status-badge ${statusClass}">${statusLabel}</span>
+                    <div class="history-pay">${esc(SwI18n.t('garbage.ui.history_pay', fmt(s.pay_amount)))}</div>
+                    <span class="status-badge ${statusClass}">${esc(statusLabel)}</span>
                 </div>
             </div>
         `;
@@ -205,6 +207,13 @@ function hideCollectingRing() {
     ring.classList.remove('animating');
     ring.style.strokeDashoffset = CIRCUMFERENCE;
 }
+
+// re-randare la schimbarea dictionarului (stringuri generate din JS)
+document.addEventListener('sw:i18n', () => {
+    renderStats();
+    renderRoutes();
+    renderHistory();
+});
 
 window.addEventListener('message', e => {
     const d = e.data;

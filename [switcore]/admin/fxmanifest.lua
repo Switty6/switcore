@@ -5,7 +5,7 @@ lua54 'yes'
 name        'admin'
 description 'SwitCore Admin Menu - Player Management, Dev Tools, Vehicle Tools, World'
 author      'SwitCore'
-version     '1.1.0'
+version     '1.2.0'
 
 ui_page 'ui/index.html'
 

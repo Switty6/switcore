@@ -30,15 +30,15 @@ Sw.SecureEvent('tuning:server:openShop', {
 
     local vehicle = exports.vehicles:getOwnedVehicleByPlate(plate)
     if not vehicle then
-        return TriggerClientEvent('tuning:client:openFailed', source, 'Vehiculul nu este înregistrat în sistem.')
+        return TriggerClientEvent('tuning:client:openFailed', source, Sw.TP(source, 'tuning.open_not_registered'))
     end
 
     if not exports.vehicles:hasVehicleKey(vehicle.id, character.id) then
-        return TriggerClientEvent('tuning:client:openFailed', source, 'Nu ai cheie pentru acest vehicul.')
+        return TriggerClientEvent('tuning:client:openFailed', source, Sw.TP(source, 'tuning.open_no_key'))
     end
 
     if vehicle.impounded then
-        return TriggerClientEvent('tuning:client:openFailed', source, 'Vehiculul este sechestrat.')
+        return TriggerClientEvent('tuning:client:openFailed', source, Sw.TP(source, 'tuning.open_impounded'))
     end
 
     local config = buildTuningConfig(source, ctx.args.shopCode)
@@ -65,10 +65,10 @@ Sw.SecureEvent('tuning:server:applyMod', {
     )
 
     if success then
-        ctx.success('Mod aplicat cu succes!', 4000)
+        ctx.success(Sw.TP(ctx.source, 'tuning.mod_applied'), 4000)
         TriggerClientEvent('tuning:client:modApplied', source, a.category, a.tier, newMods)
     else
-        ctx.error(err or 'Eroare la aplicare mod.', 5000)
+        ctx.error(err or Sw.TP(ctx.source, 'tuning.error_apply_mod'), 5000)
         TriggerClientEvent('tuning:client:modFailed', source, a.category, a.tier)
     end
 end)
@@ -93,10 +93,10 @@ Sw.SecureEvent('tuning:server:applyColor', {
     )
 
     if success then
-        ctx.success('Culoare aplicată!', 4000)
+        ctx.success(Sw.TP(ctx.source, 'tuning.color_applied'), 4000)
         TriggerClientEvent('tuning:client:colorApplied', source, a.colorPrimary, a.colorSecondary, newMods)
     else
-        ctx.error(err or 'Eroare la vopsire.', 5000)
+        ctx.error(err or Sw.TP(ctx.source, 'tuning.error_apply_color'), 5000)
         TriggerClientEvent('tuning:client:modFailed', source, 'color', 0)
     end
 end)
@@ -119,10 +119,10 @@ Sw.SecureEvent('tuning:server:applyLivery', {
     )
 
     if success then
-        ctx.success('Liverie aplicată!', 4000)
+        ctx.success(Sw.TP(ctx.source, 'tuning.livery_applied'), 4000)
         TriggerClientEvent('tuning:client:liveryApplied', source, a.liveryIndex, newMods)
     else
-        ctx.error(err or 'Eroare la liverie.', 5000)
+        ctx.error(err or Sw.TP(ctx.source, 'tuning.error_apply_livery'), 5000)
         TriggerClientEvent('tuning:client:modFailed', source, 'livery', a.liveryIndex)
     end
 end)
@@ -145,7 +145,7 @@ Sw.SecureEvent('tuning:server:applyCart', {
     local shopCode  = ctx.args.shopCode
 
     if not cartItems or #cartItems == 0 then
-        return ctx.error('Coșul este gol.', 4000)
+        return ctx.error(Sw.TP(ctx.source, 'tuning.error_cart_empty'), 4000)
     end
 
     local applied   = {}
@@ -172,13 +172,13 @@ Sw.SecureEvent('tuning:server:applyCart', {
         else
             table.insert(applied, { category = item.category, tier = item.tier, success = false, err = err })
             TriggerClientEvent('tuning:client:cartApplied', source, applied, finalMods)
-            ctx.error('Coș: eroare la ' .. tostring(item.category) .. ' - ' .. (err or 'eroare necunoscută'), 5000)
+            ctx.error(Sw.TP(ctx.source, 'tuning.error_cart_item', tostring(item.category), err or Sw.TP(ctx.source, 'tuning.error_cart_unknown')), 5000)
             return
         end
     end
 
     TriggerClientEvent('tuning:client:cartApplied', source, applied, finalMods)
-    ctx.success(string.format('Coș: %d upgrade(uri) aplicate!', #applied), 4000)
+    ctx.success(Sw.TP(ctx.source, 'tuning.cart_applied', #applied), 4000)
 end)
 
 Sw.SecureEvent('tuning:server:resetMods', {
@@ -196,9 +196,9 @@ Sw.SecureEvent('tuning:server:resetMods', {
     local success, err = TuningManager.resetMods(source, a.vehicleId, a.paymentMethod, a.shopCode)
 
     if success then
-        ctx.success('Mods resetate la stock!', 4000)
+        ctx.success(Sw.TP(ctx.source, 'tuning.mods_reset'), 4000)
         TriggerClientEvent('tuning:client:modsReset', source)
     else
-        ctx.error(err or 'Eroare la resetare.', 5000)
+        ctx.error(err or Sw.TP(ctx.source, 'tuning.error_reset'), 5000)
     end
 end)

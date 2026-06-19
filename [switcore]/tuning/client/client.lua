@@ -1,9 +1,23 @@
 
+local function pushI18n()
+    SendNUIMessage({ action = 'sw:i18n', dict = exports.core:getLocaleDict() })
+end
+
+AddEventHandler('switcore:client:localeUpdated', pushI18n)
+
 local isUIOpen          = false
 local currentVehicle    = nil
 local currentVehicleId  = nil
 local currentShopCode   = nil
 local originalMods      = {}
+
+-- Camera de preview (orbit cu mouse-ul)
+local tuningCam   = nil
+local camAzimuth  = 0.0    -- unghi orizontal absolut (grade)
+local camPitch    = 18.0   -- unghi vertical (grade)
+local camDist     = 5.0    -- distanta fata de masina
+local CAM_PITCH_MIN, CAM_PITCH_MAX = -10.0, 60.0
+local CAM_DIST_MIN,  CAM_DIST_MAX  = 2.8, 9.0
 
 local MOD_NATIVE = {
     engine       = 11,
@@ -25,6 +39,19 @@ end
 
 local function RGBToHex(r, g, b)
     return string.format('#%02X%02X%02X', r or 0, g or 0, b or 0)
+end
+
+-- Aplica liveria robust: vehiculele DLC/add-on folosesc frecvent liverii prin modkit
+-- (mod type 48) in loc de sistemul clasic SetVehicleLivery. Daca foloseam doar
+-- SetVehicleLivery, pe acele vehicule nu se schimba nimic vizual.
+local function SetLiveryRobust(vehicle, idx)
+    idx = tonumber(idx) or 0
+    SetVehicleModKit(vehicle, 0)
+    if GetNumVehicleMods(vehicle, 48) > 0 then
+        SetVehicleMod(vehicle, 48, idx, false)
+    else
+        SetVehicleLivery(vehicle, idx)
+    end
 end
 
 local function ApplyModNative(vehicle, category, tier)
@@ -65,7 +92,7 @@ local function ApplyModNative(vehicle, category, tier)
         end
 
     elseif category == 'livery' then
-        SetVehicleLivery(vehicle, tonumber(tier))
+        SetLiveryRobust(vehicle, tier)
 
     elseif nativeType then
         -- tier 0 înseamnă stock: nativul așteaptă -1, nu 0
@@ -87,7 +114,7 @@ local function ApplyAllMods(vehicle, mods)
         if cat == 'color_primary' or cat == 'color_secondary' then
             -- aplicate la final, după kit
         elseif cat == 'livery' then
-            SetVehicleLivery(vehicle, tonumber(val))
+            SetLiveryRobust(vehicle, val)
         elseif cat == 'turbo' or cat == 'xenon' then
             local nativeType = MOD_NATIVE[cat]
             if nativeType then ToggleVehicleMod(vehicle, nativeType, tonumber(val) == 1) end
@@ -187,9 +214,47 @@ local function RestoreSnapshot(vehicle, snap)
     })
 end
 
+local function UpdateTuningCam()
+    if not tuningCam or not currentVehicle or not DoesEntityExist(currentVehicle) then return end
+    local c     = GetEntityCoords(currentVehicle)
+    local rad   = math.rad(camAzimuth)
+    local prad  = math.rad(camPitch)
+    local horiz = camDist * math.cos(prad)
+    local x = c.x + horiz * math.sin(rad)
+    local y = c.y + horiz * math.cos(rad)
+    local z = c.z + camDist * math.sin(prad) + 0.4
+    SetCamCoord(tuningCam, x, y, z)
+    PointCamAtEntity(tuningCam, currentVehicle, 0.0, 0.0, 0.2, true)
+end
+
+local function StartTuningCam()
+    if tuningCam then return end
+    camAzimuth = GetEntityHeading(currentVehicle) + 135.0
+    camPitch   = 18.0
+    camDist    = 5.0
+    tuningCam  = CreateCam('DEFAULT_SCRIPTED_CAMERA', true)
+    UpdateTuningCam()
+    RenderScriptCams(true, true, 600, true, false)
+
+    CreateThread(function()
+        while tuningCam do
+            UpdateTuningCam()
+            Wait(0)
+        end
+    end)
+end
+
+local function StopTuningCam()
+    if not tuningCam then return end
+    RenderScriptCams(false, true, 400, true, false)
+    DestroyCam(tuningCam, false)
+    tuningCam = nil
+end
+
 local function CloseUI()
     if not isUIOpen then return end
 
+    StopTuningCam()
     RestoreSnapshot(currentVehicle, originalMods)
 
     SetNuiFocus(false, false)
@@ -218,7 +283,7 @@ RegisterNetEvent('tuning:client:initShops', function(shops)
     for _, shop in ipairs(shops) do
         local id = exports.proximity:AddInteraction(
             vector3(shop.coords.x, shop.coords.y, shop.coords.z),
-            shop.name .. '\nDeschide LS Customs',
+            Sw.T('tuning.proximity_label', shop.name),
             'tuning_open',
             { shopCode = shop.code, shopName = shop.name }
         )
@@ -260,7 +325,7 @@ AddEventHandler('switcore:proximity:interact', function(interaction)
     local vehicle = GetVehiclePedIsIn(ped, false)
 
     if not DoesEntityExist(vehicle) or vehicle == 0 then
-        TriggerEvent('switcore:notify', 'error', 'Trebuie să fii în vehicul pentru a folosi LS Customs.', 4000)
+        TriggerEvent('switcore:notify', 'error', Sw.T('tuning.open_need_vehicle'), 4000)
         return
     end
 
@@ -279,8 +344,7 @@ RegisterNetEvent('tuning:client:openUI', function(vehicleData, tuningConfig)
     currentShopCode  = tuningConfig.shopCode
     originalMods     = SnapshotMods(vehicle)
 
-    local liveryCount = GetVehicleLiveryCount(vehicle)
-
+    pushI18n()
     SendNUIMessage({
         action  = 'openUI',
         vehicle = vehicleData,
@@ -289,10 +353,32 @@ RegisterNetEvent('tuning:client:openUI', function(vehicleData, tuningConfig)
 
     SetNuiFocus(true, true)
     isUIOpen = true
+    StartTuningCam()
+end)
+
+RegisterNUICallback('orbitCamera', function(data, cb)
+    if tuningCam then
+        camAzimuth = camAzimuth + (tonumber(data.dx) or 0.0) * 0.5
+        camPitch   = camPitch  - (tonumber(data.dy) or 0.0) * 0.3
+        if camPitch < CAM_PITCH_MIN then camPitch = CAM_PITCH_MIN end
+        if camPitch > CAM_PITCH_MAX then camPitch = CAM_PITCH_MAX end
+        UpdateTuningCam()
+    end
+    cb({ ok = true })
+end)
+
+RegisterNUICallback('zoomCamera', function(data, cb)
+    if tuningCam then
+        camDist = camDist + (tonumber(data.delta) or 0.0)
+        if camDist < CAM_DIST_MIN then camDist = CAM_DIST_MIN end
+        if camDist > CAM_DIST_MAX then camDist = CAM_DIST_MAX end
+        UpdateTuningCam()
+    end
+    cb({ ok = true })
 end)
 
 RegisterNetEvent('tuning:client:openFailed', function(reason)
-    TriggerEvent('switcore:notify', 'error', reason or 'Nu s-a putut deschide LS Customs.', 5000)
+    TriggerEvent('switcore:notify', 'error', reason or Sw.T('tuning.open_failed_generic'), 5000)
 end)
 
 RegisterNUICallback('previewMod', function(data, cb)
@@ -420,6 +506,7 @@ RegisterNUICallback('previewColor', function(data, cb)
         ApplyModNative(currentVehicle, 'color', {
             primary   = data.colorPrimary,
             secondary = data.colorSecondary,
+            pearl     = data.colorPearl,
         })
     end
     cb({ ok = true })

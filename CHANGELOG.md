@@ -8,6 +8,33 @@ Format [Keep a Changelog](https://keepachangelog.com/ro/1.1.0/), versionare [Sem
 
 ---
 
+## [1.2.0] - 2026-06-19
+
+### Adăugat
+
+- **Sistem de localizare (i18n)** cu limbă unică pe server (ro + en):
+  - Exporturile `t` / `tp` și helperele `Sw.T` / `Sw.TP` disponibile în toate modulele.
+  - `registerModuleLocales`: un modul își înregistrează `locales/ro.lua` + `en.lua` cu o singură linie; broadcast cu debounce către clienții conectați.
+  - Limba serverului din convar-ul `sw_locale` (`setr`), cu fallback pe setarea `core.default_language` și `Config.DEFAULT_LANGUAGE`.
+  - `Config.ALLOW_PLAYER_LANGUAGE` (false pe public): pe premium activează selecția de limbă per jucător, fără modificări la call site-uri.
+  - Helper NUI `core/ui/i18n.js` (`data-i18n` + `SwI18n.t`) și exportul `getLocaleDict`.
+- Fișiere `locales/ro.lua` și `locales/en.lua` pentru toate modulele.
+- Spec `locale_completeness` rulat în CI: `ro` și `en` au aceleași chei și aceleași placeholdere.
+- Documentație: [docs/localization.md](docs/localization.md).
+
+### Schimbat
+
+- Mesajele de validare din `lib.lua` și cele din `Sw.SecureEvent` mutate în locale.
+- Evenimentele `switcore:setLanguage`, `getLocalizedMessage` și `requestLocale` migrate pe `Sw.SecureEvent` cu rate limit.
+
+### Reparat
+
+- Cascadă de erori `IsReady` la pornirea serverului (#14): `settings` apela sincron `exports.core:registerModuleLocales` înainte ca `core` să fie pornit, ceea ce oprea înregistrarea exportului `IsReady` și dărâma în lanț core, banking, vehicles, medical, police, inventory, jobs și restul modulelor. Apelul se face acum într-un thread care așteaptă pornirea resursei `core`.
+- Buguri raportate pe module (#13): taxi (crash meniu, triplicare, focus blocat), benzinărie (furtun dublu, curățare distanță, ESC), tuning (cameră orbit, culori presetate, livery, auto-close), dealership (ieșire test-drive, buton finanțare), salubritate (Sesiune Invalidă), vehicule (căutare plăcuță), admin (godmode respawn), efecte (blur needs/ems), poliție (blocaj uniformă).
+- Interpolarea string-urilor: caracterul `%` din argumente nu mai e tratat ca referință de captură.
+
+---
+
 ## [1.1.0] - 2026-06-12
 
 ### Adăugat

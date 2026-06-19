@@ -3,6 +3,7 @@ local lastThirst = 100.0
 local lastSyncTime = 0
 local WARNING_THRESHOLD = 25.0
 local SYNC_TIMEOUT_MS = 180000
+local needsTintActive = false
 
 RegisterNetEvent('needs:client:applyDamage', function(amount)
     local ped = PlayerPedId()
@@ -18,18 +19,25 @@ end)
 
 RegisterNetEvent('switcore:needsUpdate', function(hunger, thirst)
     if hunger <= WARNING_THRESHOLD and lastHunger > WARNING_THRESHOLD then
-        TriggerEvent('switcore:notify:local', 'warning', 'Ți-e foame! Mănâncă ceva.', 4000)
+        TriggerEvent('switcore:notify:local', 'warning', Sw.T('needs.warn_hunger'), 4000)
     end
 
     if thirst <= WARNING_THRESHOLD and lastThirst > WARNING_THRESHOLD then
-        TriggerEvent('switcore:notify:local', 'warning', 'Ți-e sete! Bea ceva.', 4000)
+        TriggerEvent('switcore:notify:local', 'warning', Sw.T('needs.warn_thirst'), 4000)
     end
 
+    -- Aplicam/curatam tint-ul doar la tranzitie. Altfel ClearTimecycleModifier()
+    -- pe fiecare update ar sterge si modificatorii setati de medical (febra etc.),
+    -- iar tint-ul 'damage' albastrui ar parea ca apare/dispare aleator.
     if hunger <= 10.0 and thirst <= 10.0 then
-        SetTimecycleModifier('damage')
-        SetTimecycleModifierStrength(0.3)
-    else
+        if not needsTintActive then
+            SetTimecycleModifier('damage')
+            SetTimecycleModifierStrength(0.3)
+            needsTintActive = true
+        end
+    elseif needsTintActive then
         ClearTimecycleModifier()
+        needsTintActive = false
     end
 
     lastHunger = hunger
@@ -46,5 +54,13 @@ CreateThread(function()
                   math.floor((GetGameTimer() - lastSyncTime) / 1000) .. 's')
             lastSyncTime = GetGameTimer()
         end
+    end
+end)
+
+AddEventHandler('onResourceStop', function(name)
+    if GetCurrentResourceName() ~= name then return end
+    if needsTintActive then
+        ClearTimecycleModifier()
+        needsTintActive = false
     end
 end)

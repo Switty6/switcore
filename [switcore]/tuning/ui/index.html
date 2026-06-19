@@ -18,11 +18,11 @@
                             <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
                         </svg>
                         <div>
-                            <div class="header-shop-name" id="shopName">LS Customs</div>
-                            <div class="header-plate" id="vehiclePlate">- - -</div>
+                            <div class="header-shop-name" id="shopName" data-i18n="tuning.ui.shop_default">LS Customs</div>
+                            <div class="header-plate" id="vehiclePlate" data-i18n="tuning.ui.plate_placeholder">- - -</div>
                         </div>
                     </div>
-                    <div id="vipBadge" class="vip-badge hidden">VIP</div>
+                    <div id="vipBadge" class="vip-badge hidden" data-i18n="tuning.ui.vip">VIP</div>
                 </div>
                 <nav class="cat-list" id="catList"></nav>
             </aside>
@@ -44,7 +44,7 @@
 
             <aside class="panel panel-right">
                 <div class="panel-right-header">
-                    <span class="panel-right-title" id="modPanelTitle">Motor</span>
+                    <span class="panel-right-title" id="modPanelTitle" data-i18n="tuning.ui.panel_default_title">Motor</span>
                     <span class="panel-right-desc" id="modPanelDesc"></span>
                 </div>
                 <div class="mod-list" id="modList"></div>
@@ -55,19 +55,19 @@
         <footer class="cart-bar" id="cartBar">
 
             <div class="cart-scroll-area" id="cartScrollArea">
-                <span class="cart-empty-msg" id="cartEmptyMsg">
+                <span class="cart-empty-msg" id="cartEmptyMsg" data-i18n="tuning.ui.cart_empty">
                     Niciun upgrade selectat · Adaugă din panoul din dreapta
                 </span>
             </div>
 
             <div class="cart-actions">
                 <div class="cart-total-wrap">
-                    <span class="cart-total-label">Total</span>
+                    <span class="cart-total-label" data-i18n="tuning.ui.total">Total</span>
                     <span class="cart-total-value" id="cartTotal">$0</span>
                 </div>
                 <div class="pay-toggle">
-                    <button class="pay-btn active" id="payCash" data-method="cash">Cash</button>
-                    <button class="pay-btn"        id="payBank" data-method="bank">Bancă</button>
+                    <button class="pay-btn active" id="payCash" data-method="cash" data-i18n="tuning.ui.pay_cash">Cash</button>
+                    <button class="pay-btn"        id="payBank" data-method="bank" data-i18n="tuning.ui.pay_bank">Bancă</button>
                 </div>
                 <button class="btn-buy" id="btnBuy" disabled>
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -75,14 +75,14 @@
                         <rect x="2" y="7" width="20" height="5"/>
                         <line x1="12" y1="22" x2="12" y2="7"/>
                     </svg>
-                    Cumpără Tot
+                    <span data-i18n="tuning.ui.buy_all">Cumpără Tot</span>
                 </button>
-                <button class="btn-reset-stock" id="btnReset" title="Reset Stock">
+                <button class="btn-reset-stock" id="btnReset" title="Reset Stock" data-i18n-title="tuning.ui.reset_stock_title">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <polyline points="1 4 1 10 7 10"/>
                         <path d="M3.51 15a9 9 0 1 0 .49-3.67"/>
                     </svg>
-                    Reset Stock
+                    <span data-i18n="tuning.ui.reset_stock">Reset Stock</span>
                 </button>
             </div>
 
@@ -90,17 +90,18 @@
 
         <div class="modal-overlay hidden" id="modalOverlay">
             <div class="modal">
-                <div class="modal-title"   id="modalTitle">Confirmă</div>
+                <div class="modal-title"   id="modalTitle" data-i18n="tuning.ui.modal_confirm_title">Confirmă</div>
                 <div class="modal-body"    id="modalBody"></div>
                 <div class="modal-actions">
-                    <button class="btn-modal-cancel"  id="modalCancel">Anulează</button>
-                    <button class="btn-modal-confirm" id="modalConfirm">Confirmă</button>
+                    <button class="btn-modal-cancel"  id="modalCancel" data-i18n="tuning.ui.modal_cancel">Anulează</button>
+                    <button class="btn-modal-confirm" id="modalConfirm" data-i18n="tuning.ui.modal_confirm">Confirmă</button>
                 </div>
             </div>
         </div>
 
     </div>
 
+    <script src="nui://core/ui/i18n.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

@@ -54,24 +54,24 @@ end
 
 function FuelManager.refuel(source, characterId, vehicleId, liters, method)
     if not characterId or not vehicleId or not liters or liters <= 0 then
-        return false, 'Parametri invalizi'
+        return false, Sw.TP(source, 'vehicles.invalid_parameters')
     end
 
     method = method == 'card' and 'card' or 'cash'
 
     local vehicle = VehiclesDatabase.getOwnedVehicleById(vehicleId)
     if not vehicle then
-        return false, 'Vehicul inexistent'
+        return false, Sw.TP(source, 'vehicles.vehicle_not_found')
     end
 
     if not VehiclesDatabase.hasVehicleKey(vehicleId, characterId) then
-        return false, 'Nu ai cheie pentru acest vehicul'
+        return false, Sw.TP(source, 'vehicles.no_key_for_vehicle')
     end
 
     local currentFuel = tonumber(vehicle.fuel) or 0.0
     local maxFill = 100.0 - currentFuel
     if maxFill <= 0 then
-        return false, 'Rezervorul este plin'
+        return false, Sw.TP(source, 'vehicles.fuel_tank_full')
     end
 
     liters = math.min(liters, maxFill)
@@ -81,7 +81,7 @@ function FuelManager.refuel(source, characterId, vehicleId, liters, method)
 
     local currencies = exports.banking:getActiveCurrencies()
     if not currencies or #currencies == 0 then
-        return false, 'Sistem banking indisponibil'
+        return false, Sw.TP(source, 'vehicles.banking_unavailable')
     end
     local currencyId = currencies[1].id
 
@@ -94,15 +94,17 @@ function FuelManager.refuel(source, characterId, vehicleId, liters, method)
 
     if method == 'cash' then
         if cash < cost then
-            return false, string.format('Cash insuficient. Necesar: $%.2f, ai: $%.2f', cost, cash)
+            return false, Sw.TP(source, 'vehicles.insufficient_cash_fuel',
+                string.format('%.2f', cost), string.format('%.2f', cash))
         end
         exports.banking:addCharacterCash(characterId, currencyId, -cost)
     else
         if #accounts == 0 then
-            return false, 'Nu ai cont bancar'
+            return false, Sw.TP(source, 'vehicles.no_bank_account')
         end
         if bankBalance < cost then
-            return false, string.format('Sold bancar insuficient. Necesar: $%.2f, ai: $%.2f', cost, bankBalance)
+            return false, Sw.TP(source, 'vehicles.insufficient_bank_fuel',
+                string.format('%.2f', cost), string.format('%.2f', bankBalance))
         end
         exports.banking:removeAccountBalance(accounts[1].id, currencyId, cost)
     end

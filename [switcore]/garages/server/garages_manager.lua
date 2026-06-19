@@ -3,22 +3,22 @@ GaragesManager = {}
 
 function GaragesManager.parkVehicle(source, characterId, vehicleId, garageCode, state)
     if not characterId or not vehicleId or not garageCode then
-        return false, 'Parametri invalizi'
+        return false, Sw.TP(source, 'garages.error_invalid_parameters')
     end
 
     if not exports.vehicles:hasVehicleKey(vehicleId, characterId) then
-        return false, 'Nu ai cheie pentru acest vehicul'
+        return false, Sw.TP(source, 'garages.error_no_vehicle_key')
     end
 
     local vehicle = exports.vehicles:getOwnedVehicle(vehicleId)
-    if not vehicle then return false, 'Vehicul inexistent' end
+    if not vehicle then return false, Sw.TP(source, 'garages.error_vehicle_not_found') end
 
     if vehicle.impounded then
-        return false, 'Vehiculul este sechestrat - mergi la impound'
+        return false, Sw.TP(source, 'garages.error_vehicle_impounded_go_impound')
     end
 
     local garage = GaragesDatabase.getGarageByCode(garageCode)
-    if not garage then return false, 'Garaj inexistent' end
+    if not garage then return false, Sw.TP(source, 'garages.error_garage_not_found') end
 
     if state then
         local stateCopy = {}
@@ -29,7 +29,7 @@ function GaragesManager.parkVehicle(source, characterId, vehicleId, garageCode, 
 
     local ok = GaragesDatabase.parkVehicleAtomic(vehicleId, characterId, garage.id)
     if not ok then
-        return false, 'Eroare la parcarea vehiculului'
+        return false, Sw.TP(source, 'garages.error_park_failed')
     end
 
     TriggerClientEvent('vehicles:client:despawnVehicle', source, vehicle.plate)
@@ -39,29 +39,29 @@ end
 
 function GaragesManager.retrieveVehicle(source, characterId, vehicleId, garageCode)
     if not characterId or not vehicleId or not garageCode then
-        return false, 'Parametri invalizi'
+        return false, Sw.TP(source, 'garages.error_invalid_parameters')
     end
 
     if not exports.vehicles:hasVehicleKey(vehicleId, characterId) then
-        return false, 'Nu ai cheie pentru acest vehicul'
+        return false, Sw.TP(source, 'garages.error_no_vehicle_key')
     end
 
     local vehicle = exports.vehicles:getOwnedVehicle(vehicleId)
-    if not vehicle then return false, 'Vehicul inexistent' end
+    if not vehicle then return false, Sw.TP(source, 'garages.error_vehicle_not_found') end
 
     if vehicle.impounded then
-        return false, 'Vehiculul este sechestrat - mergi la impound pentru eliberare'
+        return false, Sw.TP(source, 'garages.error_vehicle_impounded_go_impound_release')
     end
 
     if not vehicle.stored then
-        return false, 'Vehiculul nu este parcat'
+        return false, Sw.TP(source, 'garages.error_vehicle_not_parked')
     end
 
     local garage = GaragesDatabase.getGarageByCode(garageCode)
-    if not garage then return false, 'Garaj inexistent' end
+    if not garage then return false, Sw.TP(source, 'garages.error_garage_not_found') end
 
     if garage.type == 'impound' then
-        return false, 'Folosește interfața de sechestru pentru a elibera vehiculul'
+        return false, Sw.TP(source, 'garages.error_use_impound_interface')
     end
 
     local ok, err = exports.vehicles:spawnVehicleForPlayer(source, vehicleId, garage.spawn_point)

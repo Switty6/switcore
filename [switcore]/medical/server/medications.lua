@@ -29,7 +29,7 @@ local function RegisterDiseaseReducer(itemName, condType)
     RegisterMedication(itemName, function(src, charId)
         local cfg = Config.Medications[itemName]
         local ok, remaining = CheckCooldown(charId, itemName, cfg.cooldown)
-        if not ok then Notify(src, 'warning', 'Trebuie sa astepti ' .. remaining .. 's.'); return end
+        if not ok then Notify(src, 'warning', Sw.TP(src, 'medical.medication_cooldown', remaining)); return end
 
         local conditions = GetCharacterConditions(src)
         local affected   = false
@@ -64,7 +64,7 @@ CreateThread(function()
         RegisterMedication(name, function(src, charId)
             local cfg = Config.Medications[name]
             local ok, remaining = CheckCooldown(charId, name, cfg.cooldown)
-            if not ok then Notify(src, 'warning', 'Trebuie sa astepti ' .. remaining .. 's.'); return end
+            if not ok then Notify(src, 'warning', Sw.TP(src, 'medical.medication_cooldown', remaining)); return end
             SuppressSymptom(src, cfg.treatsSymptom, cfg.suppressDuration)
             MedicalDB.logMedication(charId, name, nil, nil, nil)
             Notify(src, 'success', cfg.message)
@@ -77,7 +77,7 @@ CreateThread(function()
     RegisterMedication('vitamins', function(src, charId)
         local cfg = Config.Medications.vitamins
         local ok, remaining = CheckCooldown(charId, 'vitamins', cfg.cooldown)
-        if not ok then Notify(src, 'warning', 'Trebuie sa astepti ' .. remaining .. 's.'); return end
+        if not ok then Notify(src, 'warning', Sw.TP(src, 'medical.medication_cooldown', remaining)); return end
         SetImmunity(src, cfg.immunityDuration)
         MedicalDB.logMedication(charId, 'vitamins', nil, nil, nil)
         Notify(src, 'success', cfg.message)
@@ -86,7 +86,7 @@ CreateThread(function()
     RegisterMedication('bandage', function(src, charId)
         local cfg = Config.Medications.bandage
         local ok, remaining = CheckCooldown(charId, 'bandage', cfg.cooldown)
-        if not ok then Notify(src, 'warning', 'Trebuie sa astepti ' .. remaining .. 's.'); return end
+        if not ok then Notify(src, 'warning', Sw.TP(src, 'medical.medication_cooldown', remaining)); return end
         SuppressSymptom(src, 'bleeding', cfg.suppressDuration)
         SuppressInjuryBleeding(src, cfg.injuryBleedSupress)
         MedicalDB.logMedication(charId, 'bandage', nil, nil, nil)
@@ -101,7 +101,7 @@ CreateThread(function()
     RegisterMedication('splint', function(src, charId)
         local cfg = Config.Medications.splint
         local ok, remaining = CheckCooldown(charId, 'splint', cfg.cooldown)
-        if not ok then Notify(src, 'warning', 'Trebuie sa astepti ' .. remaining .. 's.'); return end
+        if not ok then Notify(src, 'warning', Sw.TP(src, 'medical.medication_cooldown', remaining)); return end
         local reduced = ReduceInjurySeverity(src, 'broken_bone')
         if reduced then
             MedicalDB.logMedication(charId, 'splint', nil, nil, 'broken_bone')
@@ -114,7 +114,7 @@ CreateThread(function()
     RegisterMedication('morphine', function(src, charId)
         local cfg = Config.Medications.morphine
         local ok, remaining = CheckCooldown(charId, 'morphine', cfg.cooldown)
-        if not ok then Notify(src, 'warning', 'Trebuie sa astepti ' .. remaining .. 's.'); return end
+        if not ok then Notify(src, 'warning', Sw.TP(src, 'medical.medication_cooldown', remaining)); return end
         SuppressInjuryBleeding(src, cfg.injuryBleedSupress)
         SuppressSymptom(src, 'bleeding', cfg.suppressDuration)
         TriggerClientEvent('medical:client:suppressPain', src, cfg.suppressDuration)

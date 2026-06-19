@@ -8,6 +8,22 @@ let state = {
     clientSrc: null,
 };
 
+// Traducere prin helperul standard SwI18n (core/ui/i18n.js); fallback pe cheie.
+function t(key, ...args) {
+    return SwI18n.t(`mecanic.${key}`, ...args);
+}
+
+// Re-randare a stringurilor generate din JS la schimbarea dictionarului.
+document.addEventListener('sw:i18n', () => {
+    const emptyText = document.getElementById('workshopEmptyText');
+    if (emptyText) emptyText.innerHTML = t('ui.workshop_empty');
+    renderDashboard();
+    renderCalls();
+    renderLog();
+    if (state.workshop) renderWorkshop(state.workshop);
+    updateCallsBadge((state.calls || []).length);
+});
+
 window.addEventListener('message', function(event) {
     const data = event.data;
     if (!data || !data.action) return;
@@ -108,15 +124,15 @@ function compColor(val) {
 function timeSince(dateStr) {
     if (!dateStr) return '';
     const diff = Math.floor((Date.now() - new Date(dateStr)) / 1000);
-    if (diff < 60)   return 'acum';
-    if (diff < 3600) return Math.floor(diff/60) + 'm ago';
-    if (diff < 86400) return Math.floor(diff/3600) + 'h ago';
-    return Math.floor(diff/86400) + 'z ago';
+    if (diff < 60)   return t('ui.time_now');
+    if (diff < 3600) return t('ui.time_min_ago', Math.floor(diff/60));
+    if (diff < 86400) return t('ui.time_hour_ago', Math.floor(diff/3600));
+    return t('ui.time_day_ago', Math.floor(diff/86400));
 }
 
 function problemLabel(type) {
-    const map = { engine:'Motor avariat', tire:'Roata sparta', battery:'Baterie descarcata', tow:'Tractare' };
-    return map[type] || type;
+    const valid = { engine:true, tire:true, battery:true, tow:true };
+    return valid[type] ? t(type === 'tow' ? 'problem.tow_short' : `problem.${type}`) : type;
 }
 
 function renderDashboard() {
@@ -137,14 +153,14 @@ function renderPrices() {
     const p = state.prices;
     const list = document.getElementById('priceList');
     const rows = [
-        { name: 'Diagnoza',           req: '-',              key: 'inspect' },
-        { name: 'Schimb Ulei',        req: '1x Ulei Motor',  key: 'oil_change' },
-        { name: 'Placute Frana',      req: '1x Placute',     key: 'brakes' },
-        { name: 'Anvelopa',           req: '1x/buc',         key: 'tire' },
-        { name: 'Suspensie',          req: '1x Piesa/ax',    key: 'suspension' },
-        { name: 'Baterie',            req: '1x Baterie',     key: 'battery' },
-        { name: 'Reparatie Motor',    req: '1x Piesa Motor', key: 'engine' },
-        { name: 'Reparatie Caroserie',req: '1x Piesa Car.',  key: 'bodywork' },
+        { name: t('ui.price.inspect_name'),    req: t('ui.price.inspect_req'),    key: 'inspect' },
+        { name: t('ui.price.oil_change_name'), req: t('ui.price.oil_change_req'), key: 'oil_change' },
+        { name: t('ui.price.brakes_name'),     req: t('ui.price.brakes_req'),     key: 'brakes' },
+        { name: t('ui.price.tire_name'),       req: t('ui.price.tire_req'),       key: 'tire' },
+        { name: t('ui.price.suspension_name'), req: t('ui.price.suspension_req'), key: 'suspension' },
+        { name: t('ui.price.battery_name'),    req: t('ui.price.battery_req'),    key: 'battery' },
+        { name: t('ui.price.engine_name'),     req: t('ui.price.engine_req'),     key: 'engine' },
+        { name: t('ui.price.bodywork_name'),   req: t('ui.price.bodywork_req'),   key: 'bodywork' },
     ];
     list.innerHTML = rows.map(r => `
         <div class="price-row">
@@ -190,10 +206,10 @@ function renderComponents(comps) {
     const grid = document.getElementById('componentsGrid');
 
     const simpleComps = [
-        { key: 'oil',     label: 'Ulei Motor' },
-        { key: 'battery', label: 'Baterie' },
-        { key: 'brakes',  label: 'Placute Frana' },
-        { key: 'exhaust', label: 'Esapament' },
+        { key: 'oil',     label: t('ui.comp.oil') },
+        { key: 'battery', label: t('ui.comp.battery') },
+        { key: 'brakes',  label: t('ui.comp.brakes') },
+        { key: 'exhaust', label: t('ui.comp.exhaust') },
     ];
 
     let html = simpleComps.map(c => {
@@ -209,10 +225,10 @@ function renderComponents(comps) {
     }).join('');
 
     const tires = comps.tires || { fl:100, fr:100, rl:100, rr:100 };
-    html += wheelCard('Anvelope', tires);
+    html += wheelCard(t('ui.comp.tires'), tires);
 
     const susp = comps.suspension || { fl:100, fr:100, rl:100, rr:100 };
-    html += wheelCard('Suspensie', susp);
+    html += wheelCard(t('ui.comp.suspension'), susp);
 
     grid.innerHTML = html;
 }
@@ -252,56 +268,56 @@ function renderServices(data) {
     const services = [
         {
             type: 'inspect', perm: 'inspect',
-            name: 'Diagnoza completa',
-            req:  '- fara piese',
+            name: t('ui.svc.inspect_name'),
+            req:  t('ui.svc.inspect_req'),
             price: p.inspect || 200,
         },
         {
             type: 'oil_change', perm: 'oil_change',
-            name: 'Schimb Ulei',
-            req:  '1x Ulei Motor',
+            name: t('ui.svc.oil_change_name'),
+            req:  t('ui.svc.oil_change_req'),
             price: p.oil_change || 400,
             disabled: (comps.oil || 0) >= 100,
         },
         {
             type: 'brakes', perm: 'brakes',
-            name: 'Schimb Placute Frana',
-            req:  '1x Placute Frana',
+            name: t('ui.svc.brakes_name'),
+            req:  t('ui.svc.brakes_req'),
             price: p.brakes || 500,
             disabled: (comps.brakes || 0) >= 100,
         },
         {
             type: 'tire', perm: 'tires',
-            name: 'Schimb Anvelope (toate)',
-            req:  '4x Anvelopa',
+            name: t('ui.svc.tire_name'),
+            req:  t('ui.svc.tire_req'),
             price: (p.tire || 300) * 4,
             tirePositions: ['fl','fr','rl','rr'],
         },
         {
             type: 'suspension', perm: 'suspension',
-            name: 'Reparatie Suspensie',
-            req:  '2x Piesa Suspensie',
+            name: t('ui.svc.suspension_name'),
+            req:  t('ui.svc.suspension_req'),
             price: (p.suspension || 800) * 2,
             suspensionPositions: ['fl','fr','rl','rr'],
         },
         {
             type: 'battery', perm: 'battery',
-            name: 'Inlocuire Baterie',
-            req:  '1x Baterie Auto',
+            name: t('ui.svc.battery_name'),
+            req:  t('ui.svc.battery_req'),
             price: p.battery || 600,
             disabled: (comps.battery || 0) >= 100,
         },
         {
             type: 'engine', perm: 'engine',
-            name: 'Reparatie Motor',
-            req:  '1x Piesa Motor',
+            name: t('ui.svc.engine_name'),
+            req:  t('ui.svc.engine_req'),
             price: p.engine || 1500,
             disabled: (data.engineHealth || 1000) >= 1000,
         },
         {
             type: 'bodywork', perm: 'bodywork',
-            name: 'Reparatie Caroserie',
-            req:  '1x Piesa Caroserie',
+            name: t('ui.svc.bodywork_name'),
+            req:  t('ui.svc.bodywork_req'),
             price: p.bodywork || 800,
             disabled: (data.bodyHealth || 1000) >= 1000,
         },
@@ -314,12 +330,12 @@ function renderServices(data) {
             <div class="service-item">
                 <div class="service-info">
                     <div class="service-name">${svc.name}</div>
-                    <div class="service-req">${svc.req}${!allowed ? ' · <span style="color:var(--red)">fara permisiune</span>' : ''}</div>
+                    <div class="service-req">${svc.req}${!allowed ? ` · <span style="color:var(--red)">${t('ui.no_permission')}</span>` : ''}</div>
                 </div>
                 <span class="service-price">${fmt(svc.price)} RON</span>
                 <button class="btn-service" ${isDisabled ? 'disabled style="opacity:.4;cursor:not-allowed"' : ''}
                     onclick='performService(${JSON.stringify(svc)})'>
-                    Executa
+                    ${t('ui.execute')}
                 </button>
             </div>
         `;
@@ -356,7 +372,7 @@ function renderCalls() {
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                     <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12"/>
                 </svg>
-                <p>Nicio cerere activa momentan.</p>
+                <p>${t('ui.no_calls')}</p>
             </div>`;
         return;
     }
@@ -366,11 +382,11 @@ function renderCalls() {
         return `
             <div class="call-card">
                 <div class="call-top">
-                    <div class="call-client">${call.client_name || call.clientName || 'Client'}</div>
+                    <div class="call-client">${call.client_name || call.clientName || t('ui.client')}</div>
                     <span class="call-type ${call.problem_type || call.problemType}">${problemLabel(call.problem_type || call.problemType)}</span>
                 </div>
                 <div class="call-meta">
-                    ${call.plate ? 'Placa: <strong>' + call.plate + '</strong> · ' : ''}
+                    ${call.plate ? t('ui.plate_label') + ' <strong>' + call.plate + '</strong> · ' : ''}
                     ${call.model || ''}
                     ${timeSince(call.created_at) ? ' · ' + timeSince(call.created_at) : ''}
                 </div>
@@ -379,7 +395,7 @@ function renderCalls() {
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <polyline points="20 6 9 17 4 12"/>
                         </svg>
-                        Accept
+                        ${t('ui.accept')}
                     </button>
                 </div>
             </div>
@@ -406,7 +422,7 @@ function renderLog() {
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                 </svg>
-                <p>Niciun serviciu in istoric.</p>
+                <p>${t('ui.no_log')}</p>
             </div>`;
         return;
     }
@@ -415,11 +431,11 @@ function renderLog() {
         <div class="log-item">
             <div>
                 <div class="log-service">${r.service_type}</div>
-                <div class="log-client">${r.client_name || 'Client'} · ${r.plate || '-'}</div>
+                <div class="log-client">${r.client_name || t('ui.client')} · ${r.plate || '-'}</div>
             </div>
             <div class="log-right">
                 <div class="log-price">${fmt(r.price)} RON</div>
-                <div class="log-bonus">+${fmt(r.bonus_paid)} bonus</div>
+                <div class="log-bonus">${t('ui.bonus_suffix', fmt(r.bonus_paid))}</div>
                 <div class="log-time">${timeSince(r.completed_at)}</div>
             </div>
         </div>
@@ -435,7 +451,7 @@ const MG = {
         if (this.active) return;
         this.active = true;
 
-        document.getElementById('mg-label').textContent = label || 'Serviciu activ...';
+        document.getElementById('mg-label').textContent = label || t('ui.mg_active');
         document.getElementById('mg-result').classList.add('hidden');
         document.querySelectorAll('.mg-game').forEach(g => g.classList.add('hidden'));
 
@@ -459,7 +475,7 @@ const MG = {
         const text = document.getElementById('mg-result-text');
         icon.innerHTML = success ? '<i data-lucide="check"></i>' : '<i data-lucide="x"></i>';
         if (window.lucide) lucide.createIcons({ nodes: icon.querySelectorAll('[data-lucide]') });
-        text.textContent = success ? 'Serviciu finalizat cu succes!' : 'Minijoc esuat!';
+        text.textContent = success ? t('ui.mg_success') : t('ui.mg_fail');
         text.className   = 'mg-result-text ' + (success ? 'success' : 'fail');
         res.classList.remove('hidden');
 

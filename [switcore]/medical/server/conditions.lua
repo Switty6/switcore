@@ -87,7 +87,7 @@ function InfectCharacter(source, conditionName)
     }
 
     SyncToClient(source)
-    Notify(source, 'error', 'Ai contractat: ' .. cfg.label, 5000)
+    Notify(source, 'error', Sw.TP(source, 'medical.condition_contracted', cfg.label), 5000)
     return true
 end
 
@@ -194,7 +194,7 @@ CreateThread(function()
 
                     local cfg   = Config.Conditions[condName]
                     local label = cfg and cfg.label or condName
-                    Notify(src, 'error', label .. ' - stadiu: ' .. (Config.StageLabels[newStage] or newStage), 6000)
+                    Notify(src, 'error', Sw.TP(src, 'medical.condition_stage', label, Config.StageLabels[newStage] or newStage), 6000)
                 end
 
                 ::nextCond::

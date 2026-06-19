@@ -8,7 +8,7 @@ function BankingHelpers.validateIds(characterId, accountId, currencyId)
     if not characterId or characterId <= 0 or 
        not accountId or accountId <= 0 or 
        not currencyId or currencyId <= 0 then
-        return false, 'ID-uri invalide'
+        return false, Sw.T('banking.error_invalid_ids')
     end
     
     return true, nil, characterId, accountId, currencyId
@@ -19,7 +19,7 @@ function BankingHelpers.validateCharacterAndCurrency(characterId, currencyId)
     currencyId = tonumber(currencyId)
     
     if not characterId or characterId <= 0 or not currencyId or currencyId <= 0 then
-        return false, 'ID-uri invalide'
+        return false, Sw.T('banking.error_invalid_ids')
     end
     
     return true, nil, characterId, currencyId
@@ -27,13 +27,13 @@ end
 
 function BankingHelpers.validateTransactionAmount(amount)
     if not amount or amount <= 0 then
-        return false, 'Sumă invalidă'
+        return false, Sw.T('banking.error_invalid_amount')
     end
     
     local minAmount = exports.settings:GetSettingNumber('banking.min_transaction_amount', 0.01)
     local maxAmount = exports.settings:GetSettingNumber('banking.max_transaction_amount', 999999999.99)
     if amount < minAmount or amount > maxAmount then
-        return false, string.format('Sumă invalidă (trebuie să fie între %.2f și %.2f)', minAmount, maxAmount)
+        return false, Sw.T('banking.error_amount_range', string.format('%.2f', minAmount), string.format('%.2f', maxAmount))
     end
     
     return true
@@ -41,11 +41,11 @@ end
 
 function BankingHelpers.validateAccountOwnership(account, characterId)
     if not account then
-        return false, 'Cont nu există'
+        return false, Sw.T('banking.error_account_not_found')
     end
     
     if account.character_id ~= characterId then
-        return false, 'Contul nu aparține caracterului'
+        return false, Sw.T('banking.error_account_not_yours')
     end
     
     return true
@@ -105,4 +105,4 @@ function BankingHelpers.advanceOneMonth(dateStr)
 end
 
 return BankingHelpers
-
+

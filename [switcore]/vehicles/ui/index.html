@@ -16,7 +16,7 @@
                 <img src="logo.svg" alt="SwitCore" class="brand-logo">
                 <span>SwitCore Fuel</span>
             </div>
-            <div class="terminal-pump-id">POMPA <span id="hudPumpId">01</span></div>
+            <div class="terminal-pump-id"><span data-i18n="vehicles.ui_pump">POMPA</span> <span id="hudPumpId">01</span></div>
         </div>
 
         <div class="terminal-gauge-wrap">
@@ -34,20 +34,20 @@
 
         <div class="terminal-info-row">
             <div class="info-cell">
-                <div class="info-label">PREȚ / LITRU</div>
+                <div class="info-label" data-i18n="vehicles.ui_price_per_litre">PREȚ / LITRU</div>
                 <div class="info-value" id="pricePerLitre">-</div>
             </div>
             <div class="info-cell">
-                <div class="info-label">CASH</div>
+                <div class="info-label" data-i18n="vehicles.ui_cash">CASH</div>
                 <div class="info-value" id="playerCash">-</div>
             </div>
             <div class="info-cell">
-                <div class="info-label">BANCĂ</div>
+                <div class="info-label" data-i18n="vehicles.ui_bank">BANCĂ</div>
                 <div class="info-value" id="playerBank">-</div>
             </div>
         </div>
         <div class="terminal-total-row">
-            <span class="total-label">TOTAL DISPONIBIL</span>
+            <span class="total-label" data-i18n="vehicles.ui_total_available">TOTAL DISPONIBIL</span>
             <span class="total-value" id="playerBalance">-</span>
         </div>
 
@@ -61,8 +61,8 @@
                 <span class="hold-key">E</span>
             </div>
         </div>
-        <div class="hold-caption" id="holdCaption">ȚINE APĂSAT PENTRU A ALIMENTA</div>
-        <div class="hud-status" id="hudStatus">ÎN AȘTEPTARE</div>
+        <div class="hold-caption" id="holdCaption" data-i18n="vehicles.ui_hold_to_refuel">ȚINE APĂSAT PENTRU A ALIMENTA</div>
+        <div class="hud-status" id="hudStatus" data-i18n="vehicles.ui_waiting">ÎN AȘTEPTARE</div>
 
         <div class="hud-progress-wrap">
             <div class="hud-progress-bg">
@@ -73,52 +73,52 @@
 
         <div class="hud-stats">
             <div class="hud-stat">
-                <div class="hud-stat-label">LITRI</div>
+                <div class="hud-stat-label" data-i18n="vehicles.ui_litres">LITRI</div>
                 <div class="hud-stat-value" id="hudLitres">0.00L</div>
             </div>
             <div class="hud-stat">
-                <div class="hud-stat-label">COST</div>
+                <div class="hud-stat-label" data-i18n="vehicles.ui_cost">COST</div>
                 <div class="hud-stat-value" id="hudCost">-</div>
             </div>
             <div class="hud-stat">
-                <div class="hud-stat-label">REZERVOR</div>
+                <div class="hud-stat-label" data-i18n="vehicles.ui_tank">REZERVOR</div>
                 <div class="hud-stat-value" id="hudTankLevel">-%</div>
             </div>
         </div>
 
         <div id="hudFundsWarn" class="hud-funds-warn hidden">
-            <i data-lucide="alert-triangle"></i> Fonduri insuficiente - alimentare oprită
+            <i data-lucide="alert-triangle"></i> <span data-i18n="vehicles.ui_insufficient_funds_stopped">Fonduri insuficiente - alimentare oprită</span>
         </div>
 
         <div class="cable-wrap">
-            <div class="cable-label">FURTUN</div>
+            <div class="cable-label" data-i18n="vehicles.ui_hose">FURTUN</div>
             <div class="cable-bar-bg">
                 <div id="cableBar" class="cable-bar-fill" style="width:0%"></div>
             </div>
-            <div class="cable-status" id="cableStatus">OK</div>
+            <div class="cable-status" id="cableStatus" data-i18n="vehicles.ui_cable_ok">OK</div>
         </div>
     </div>
 </div>
 
 <div id="cableSnap" class="hidden">
     <div class="snap-icon"><i data-lucide="zap"></i></div>
-    <div class="snap-text">FURTUN RUPT!</div>
+    <div class="snap-text" data-i18n="vehicles.ui_hose_snapped">FURTUN RUPT!</div>
 </div>
 
 <div id="paymentModal" class="hidden">
     <div class="pay-frame">
         <div class="pay-header">
             <img src="logo.svg" alt="SwitCore" class="brand-logo brand-logo-lg">
-            <span>METODĂ DE PLATĂ</span>
+            <span data-i18n="vehicles.ui_payment_method">METODĂ DE PLATĂ</span>
         </div>
 
         <div class="pay-summary">
             <div class="pay-summary-row">
-                <span class="pay-summary-label">Alimentat</span>
+                <span class="pay-summary-label" data-i18n="vehicles.ui_refueled">Alimentat</span>
                 <span class="pay-summary-value" id="paySummaryLitres">- L</span>
             </div>
             <div class="pay-summary-row pay-summary-total">
-                <span class="pay-summary-label">DE PLATĂ</span>
+                <span class="pay-summary-label" data-i18n="vehicles.ui_to_pay">DE PLATĂ</span>
                 <span class="pay-summary-value" id="paySummaryCost">-</span>
             </div>
         </div>
@@ -132,7 +132,7 @@
                     <circle cx="12" cy="12" r="2"/>
                 </svg>
                 <div class="pay-btn-body">
-                    <div class="pay-btn-title">CASH</div>
+                    <div class="pay-btn-title" data-i18n="vehicles.ui_cash">CASH</div>
                     <div class="pay-btn-balance" id="payCashBalance">-</div>
                 </div>
             </button>
@@ -143,16 +143,17 @@
                     <path d="M6 16h4"/>
                 </svg>
                 <div class="pay-btn-body">
-                    <div class="pay-btn-title">CARD</div>
+                    <div class="pay-btn-title" data-i18n="vehicles.ui_card">CARD</div>
                     <div class="pay-btn-balance" id="payCardBalance">-</div>
                 </div>
             </button>
         </div>
 
-        <div class="pay-footer">Apasă pe metoda dorită pentru a finaliza plata</div>
+        <div class="pay-footer" data-i18n="vehicles.ui_payment_footer">Apasă pe metoda dorită pentru a finaliza plata</div>
     </div>
 </div>
 
+<script src="nui://core/ui/i18n.js"></script>
 <script src="script.js"></script>
 <script>document.addEventListener('DOMContentLoaded', () => { if (window.lucide) lucide.createIcons(); });</script>
 </body>

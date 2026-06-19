@@ -12,6 +12,21 @@ const state = {
     management: null,
 };
 
+// Traducere prin helperul standard SwI18n (core/ui/i18n.js); fallback pe cheie.
+function t(key, ...args) {
+    return SwI18n.t(`police.${key}`, ...args);
+}
+
+// re-randare a stringurilor generate din JS la schimbarea dictionarului
+document.addEventListener('sw:i18n', () => {
+    renderWarrants();
+    renderOfficers(state.officers);
+    if (state.searchResults && state.searchResults.length) {
+        renderMainSearchResults(state.searchResults);
+    }
+    if (state.management) renderManagement();
+});
+
 function postNUI(action, data = {}) {
     if (typeof GetParentResourceName !== 'undefined') {
         fetch(`https://${GetParentResourceName()}/${action}`, {
@@ -82,7 +97,7 @@ function switchTab(tabName) {
 function renderWarrants() {
     const tbody = document.getElementById('warrants-body');
     if (!state.warrants.length) {
-        tbody.innerHTML = '<tr><td colspan="5" class="empty-row">Niciun mandat activ</td></tr>';
+        tbody.innerHTML = `<tr><td colspan="5" class="empty-row">${t('ui.no_active_warrant')}</td></tr>`;
         return;
     }
     tbody.innerHTML = state.warrants.map(w => `
@@ -91,7 +106,7 @@ function renderWarrants() {
             <td class="charges-cell">${esc(w.charges)}</td>
             <td>${w.bail_amount > 0 ? '$' + w.bail_amount : '-'}</td>
             <td>${formatDate(w.issued_at)}</td>
-            <td><button class="btn-danger-sm" onclick="closeWarrant(${w.id})">Inchide</button></td>
+            <td><button class="btn-danger-sm" onclick="closeWarrant(${w.id})">${t('ui.close')}</button></td>
         </tr>
     `).join('');
 }
@@ -150,12 +165,12 @@ function renderSearchResults(results) {
 
 function renderWarrantSearchResults(results) {
     const el = document.getElementById('warrant-search-results');
-    if (!results.length) { el.innerHTML = '<div class="empty-msg">Niciun rezultat</div>'; return; }
+    if (!results.length) { el.innerHTML = `<div class="empty-msg">${t('ui.no_result')}</div>`; return; }
     el.innerHTML = results.map(c => `
         <div class="result-row" onclick="selectWarrantChar(${c.id}, '${esc(c.first_name)} ${esc(c.last_name)}')">
             <span>${esc(c.first_name)} ${esc(c.last_name)}</span>
-            ${c.hasWarrant ? '<span class="badge badge-warn">Mandat</span>' : ''}
-            ${c.isJailed   ? '<span class="badge badge-danger">Inchis</span>' : ''}
+            ${c.hasWarrant ? `<span class="badge badge-warn">${t('ui.badge_warrant')}</span>` : ''}
+            ${c.isJailed   ? `<span class="badge badge-danger">${t('ui.badge_jailed')}</span>` : ''}
         </div>
     `).join('');
 }
@@ -163,7 +178,7 @@ function renderWarrantSearchResults(results) {
 function selectWarrantChar(charId, name) {
     document.getElementById('warrant-char-id').value = charId;
     const display = document.getElementById('warrant-char-display');
-    display.textContent = 'Suspect: ' + name;
+    display.textContent = t('ui.suspect_prefix', name);
     display.classList.remove('hidden');
     document.getElementById('warrant-search-results').innerHTML = '';
     document.getElementById('warrant-search').value = '';
@@ -174,7 +189,7 @@ function submitWarrant() {
     const charges = document.getElementById('warrant-charges').value.trim();
     const bail    = parseInt(document.getElementById('warrant-bail').value) || 0;
     if (!charId || charges.length < 3) {
-        alert('Completeaza toate campurile.');
+        alert(t('ui.fill_fields_alert'));
         return;
     }
     postNUI('createWarrant', { characterId: parseInt(charId), charges, bailAmount: bail });
@@ -195,21 +210,22 @@ function onSearchInput() {
 }
 
 function renderMainSearchResults(results) {
+    state.searchResults = results || [];
     const el = document.getElementById('search-results');
-    if (!results.length) { el.innerHTML = '<div class="empty-msg">Niciun rezultat</div>'; return; }
+    if (!results.length) { el.innerHTML = `<div class="empty-msg">${t('ui.no_result')}</div>`; return; }
     el.innerHTML = results.map(c => `
         <div class="person-card">
             <div class="person-card-name">
                 ${esc(c.first_name)} ${esc(c.last_name)}
-                <span class="person-age">${c.age} ani</span>
+                <span class="person-age">${t('ui.age_suffix', c.age)}</span>
             </div>
             <div class="person-card-badges">
-                ${c.hasWarrant ? '<span class="badge badge-warn">Mandat activ</span>' : ''}
-                ${c.isJailed   ? '<span class="badge badge-danger">Inchis</span>' : ''}
+                ${c.hasWarrant ? `<span class="badge badge-warn">${t('ui.badge_warrant_active')}</span>` : ''}
+                ${c.isJailed   ? `<span class="badge badge-danger">${t('ui.badge_jailed')}</span>` : ''}
             </div>
             <div class="person-card-actions">
-                <button class="btn-secondary-sm" onclick="quickWarrant(${c.id}, '${esc(c.first_name)} ${esc(c.last_name)}')">Emite Mandat</button>
-                ${c.isJailed ? `<button class="btn-secondary-sm" onclick="unjailChar(${c.id})">Elibereaza</button>` : ''}
+                <button class="btn-secondary-sm" onclick="quickWarrant(${c.id}, '${esc(c.first_name)} ${esc(c.last_name)}')">${t('ui.issue_warrant_short')}</button>
+                ${c.isJailed ? `<button class="btn-secondary-sm" onclick="unjailChar(${c.id})">${t('ui.release')}</button>` : ''}
             </div>
         </div>
     `).join('');
@@ -221,14 +237,14 @@ function quickWarrant(charId, name) {
 }
 
 function unjailChar(charId) {
-    if (!confirm('Esti sigur ca vrei sa eliberezi acest personaj?')) return;
+    if (!confirm(t('ui.confirm_release'))) return;
     postNUI('unjailEarly', { characterId: charId });
 }
 
 function renderOfficers(officers) {
     state.officers = officers || [];
     const el = document.getElementById('officers-list');
-    if (!officers.length) { el.innerHTML = '<div class="empty-msg">Niciun ofiter activ</div>'; return; }
+    if (!officers.length) { el.innerHTML = `<div class="empty-msg">${t('ui.no_active_officer')}</div>`; return; }
     el.innerHTML = officers.map(o => `
         <div class="officer-row">
             <span class="officer-name">${esc(o.first_name)} ${esc(o.last_name)}</span>
@@ -250,7 +266,7 @@ function submitArrest() {
     const reason    = document.getElementById('arrest-reason').value.trim();
     const minutes   = parseInt(document.getElementById('arrest-minutes').value) || 10;
     const bail      = parseInt(document.getElementById('arrest-bail').value) || 0;
-    if (reason.length < 3) { alert('Introdu un motiv valid.'); return; }
+    if (reason.length < 3) { alert(t('ui.valid_reason_alert')); return; }
     postNUI('submitArrest', { targetSrc: parseInt(targetSrc), reason, minutes, bail });
     document.getElementById('arrest-modal').classList.add('hidden');
 }
@@ -260,15 +276,15 @@ function openArmory(weapons, equipment) {
     document.getElementById('armory-weapons').innerHTML = (weapons || []).map(w => `
         <div class="armory-item">
             <span>${esc(w.label)}</span>
-            <button class="btn-primary-sm" onclick="takeItem('${esc(w.itemName)}', true)">Ridica</button>
+            <button class="btn-primary-sm" onclick="takeItem('${esc(w.itemName)}', true)">${t('ui.take')}</button>
         </div>
-    `).join('') || '<div class="empty-msg">Nicio arma configurata</div>';
+    `).join('') || `<div class="empty-msg">${t('ui.no_weapon_configured')}</div>`;
     document.getElementById('armory-equipment').innerHTML = (equipment || []).map(e => `
         <div class="armory-item">
             <span>${esc(e.label)}</span>
-            <button class="btn-primary-sm" onclick="takeItem('${esc(e.itemName)}', false)">Ridica</button>
+            <button class="btn-primary-sm" onclick="takeItem('${esc(e.itemName)}', false)">${t('ui.take')}</button>
         </div>
-    `).join('') || '<div class="empty-msg">Niciun echipament configurat</div>';
+    `).join('') || `<div class="empty-msg">${t('ui.no_equipment_configured')}</div>`;
 }
 
 function takeItem(itemName, isWeapon) {
@@ -317,7 +333,7 @@ function openGarage(data) {
 function renderFleet(fleet) {
     const el = document.getElementById('fleet-list');
     if (!fleet.length) {
-        el.innerHTML = '<div class="empty-msg">Niciun vehicul in flota</div>';
+        el.innerHTML = `<div class="empty-msg">${t('ui.no_vehicle_fleet')}</div>`;
         return;
     }
     el.innerHTML = fleet.map(v => {
@@ -325,7 +341,7 @@ function renderFleet(fleet) {
         const unavailable   = !v.is_available && !isCurrentUser;
         const mileageStr    = formatMileage(v.mileage, garageMileageUnit);
         const fuelPct       = Math.round(v.fuel || 0);
-        const statusLabel   = v.is_available ? 'Disponibil' : (isCurrentUser ? 'Al tau' : 'Preluat');
+        const statusLabel   = v.is_available ? t('ui.status_available') : (isCurrentUser ? t('ui.status_yours') : t('ui.status_taken'));
         const statusClass   = v.is_available ? 'badge-ok' : (isCurrentUser ? 'badge-warn' : 'badge-danger');
 
         return `
@@ -342,9 +358,9 @@ function renderFleet(fleet) {
             </div>
             <div class="fleet-card-actions">
                 ${isCurrentUser
-                    ? `<button class="btn-danger-sm" onclick="postNUI('returnVehicle'); closeGaragePanel()">Returneaza</button>`
+                    ? `<button class="btn-danger-sm" onclick="postNUI('returnVehicle'); closeGaragePanel()">${t('ui.return_vehicle')}</button>`
                     : v.is_available
-                        ? `<button class="btn-primary-sm" onclick="checkoutVehicle(${v.id})">Preia</button>`
+                        ? `<button class="btn-primary-sm" onclick="checkoutVehicle(${v.id})">${t('ui.checkout')}</button>`
                         : ''
                 }
             </div>
@@ -394,7 +410,7 @@ function startJailHUD(remaining, reason, bail) {
 
     const bailBtn = document.getElementById('bail-btn');
     if (state.bailAmount > 0) {
-        bailBtn.textContent = 'Plateste Cautiune ($' + state.bailAmount + ')';
+        bailBtn.textContent = t('ui.pay_bail_amount', state.bailAmount);
         bailBtn.classList.remove('hidden');
     } else {
         bailBtn.classList.add('hidden');
@@ -468,7 +484,7 @@ function renderBudget(balance, transactions) {
 
     const tbody = document.getElementById('budget-tx-body');
     if (!transactions || !transactions.length) {
-        tbody.innerHTML = '<tr><td colspan="4" class="empty-row">Nicio tranzactie</td></tr>';
+        tbody.innerHTML = `<tr><td colspan="4" class="empty-row">${t('ui.no_transaction')}</td></tr>`;
         return;
     }
     tbody.innerHTML = transactions.map(t => {
@@ -489,7 +505,7 @@ function renderMgmtFleet(fleet, models, sellRatio, balance) {
     const modelsEl = document.getElementById('mgmt-models-list');
 
     if (!fleet || !fleet.length) {
-        fleetEl.innerHTML = '<div class="empty-msg">Niciun vehicul in flota</div>';
+        fleetEl.innerHTML = `<div class="empty-msg">${t('ui.no_vehicle_fleet')}</div>`;
     } else {
         fleetEl.innerHTML = fleet.map(v => {
             const sellPrice  = Math.floor((parseFloat(v.purchase_price) || 0) * (sellRatio || 0.6));
@@ -497,19 +513,19 @@ function renderMgmtFleet(fleet, models, sellRatio, balance) {
             return `<div class="mgmt-fleet-row ${unavail ? 'mgmt-fleet-inuse' : ''}">
                 <span class="fleet-model">${esc(v.label)}</span>
                 <span class="fleet-plate">${esc(v.plate)}</span>
-                <span class="badge ${v.is_available ? 'badge-ok' : 'badge-danger'}">${v.is_available ? 'Liber' : 'In uz'}</span>
+                <span class="badge ${v.is_available ? 'badge-ok' : 'badge-danger'}">${v.is_available ? t('ui.status_free') : t('ui.status_in_use')}</span>
                 ${v.is_available
                     ? `<button class="btn-danger-sm" onclick="sellVehicle(${v.id}, '${esc(v.plate)}', '${esc(v.label)}', ${sellPrice})">
-                         Vinde $${sellPrice.toLocaleString('ro-RO')}
+                         ${t('ui.sell_for', sellPrice.toLocaleString('ro-RO'))}
                        </button>`
-                    : '<span class="mgmt-inuse-label">Nu poate fi vandut</span>'
+                    : `<span class="mgmt-inuse-label">${t('ui.cannot_sell')}</span>`
                 }
             </div>`;
         }).join('');
     }
 
     if (!models || !models.length) {
-        modelsEl.innerHTML = '<div class="empty-msg">Niciun model configurat</div>';
+        modelsEl.innerHTML = `<div class="empty-msg">${t('ui.no_model_configured')}</div>`;
     } else {
         modelsEl.innerHTML = models.map(m => {
             const price    = parseInt(m.price) || 0;
@@ -519,8 +535,8 @@ function renderMgmtFleet(fleet, models, sellRatio, balance) {
                 <span class="mgmt-model-price">$${price.toLocaleString('ro-RO')}</span>
                 <button class="btn-primary-sm ${canAfford ? '' : 'btn-disabled'}"
                     onclick="${canAfford ? `purchaseVehicle('${esc(m.model)}', '${esc(m.label)}')` : ''}"
-                    ${canAfford ? '' : 'disabled title="Fonduri insuficiente"'}>
-                    Achizitioneaza
+                    ${canAfford ? '' : `disabled title="${t('ui.insufficient_funds_title')}"`}>
+                    ${t('ui.buy')}
                 </button>
             </div>`;
         }).join('');
@@ -528,12 +544,12 @@ function renderMgmtFleet(fleet, models, sellRatio, balance) {
 }
 
 function purchaseVehicle(model, label) {
-    if (!confirm(`Achizitionezi "${label}"? Suma va fi dedusa din bugetul departamentului.`)) return;
+    if (!confirm(t('ui.confirm_purchase', label))) return;
     postNUI('purchaseFleetVehicle', { model });
 }
 
 function sellVehicle(vehicleId, plate, label, sellPrice) {
-    if (!confirm(`Vinzi vehiculul ${label} (${plate}) pentru $${sellPrice}?`)) return;
+    if (!confirm(t('ui.confirm_sell', label, plate, sellPrice))) return;
     postNUI('sellFleetVehicle', { vehicleId });
 }
 
@@ -555,27 +571,27 @@ function renderMgmtArmory(weapons, equipment) {
     const equipmentEl = document.getElementById('mgmt-armory-equipment');
 
     if (!weapons || !weapons.length) {
-        weaponsEl.innerHTML = '<div class="empty-msg">Nicio arma configurata</div>';
+        weaponsEl.innerHTML = `<div class="empty-msg">${t('ui.no_weapon_configured')}</div>`;
     } else {
         weaponsEl.innerHTML = weapons.map(w => `
             <div class="mgmt-armory-row">
                 <span>${esc(w.label)}</span>
                 <code class="item-code">${esc(w.itemName)}</code>
                 ${w.ammoItem ? `<span class="ammo-info">${esc(w.ammoItem)} ×${w.ammoAmount}</span>` : ''}
-                <button class="btn-danger-sm" onclick="removeArmoryWeapon('${esc(w.itemName)}')">Sterge</button>
+                <button class="btn-danger-sm" onclick="removeArmoryWeapon('${esc(w.itemName)}')">${t('ui.delete')}</button>
             </div>
         `).join('');
     }
 
     if (!equipment || !equipment.length) {
-        equipmentEl.innerHTML = '<div class="empty-msg">Niciun echipament configurat</div>';
+        equipmentEl.innerHTML = `<div class="empty-msg">${t('ui.no_equipment_configured')}</div>`;
     } else {
         equipmentEl.innerHTML = equipment.map(e => `
             <div class="mgmt-armory-row">
                 <span>${esc(e.label)}</span>
                 <code class="item-code">${esc(e.itemName)}</code>
                 <span class="ammo-info">×${e.amount}</span>
-                <button class="btn-danger-sm" onclick="removeArmoryEquipment('${esc(e.itemName)}')">Sterge</button>
+                <button class="btn-danger-sm" onclick="removeArmoryEquipment('${esc(e.itemName)}')">${t('ui.delete')}</button>
             </div>
         `).join('');
     }
@@ -586,7 +602,7 @@ function submitAddWeapon() {
     const label      = document.getElementById('new-weapon-label').value.trim();
     const ammoItem   = document.getElementById('new-weapon-ammo').value.trim();
     const ammoAmount = parseInt(document.getElementById('new-weapon-ammo-amount').value) || 0;
-    if (!itemName || !label) { alert('Completeaza itemName si numele afișat.'); return; }
+    if (!itemName || !label) { alert(t('ui.fill_item_name_alert')); return; }
     postNUI('addArmoryWeapon', { itemName, label, ammoItem, ammoAmount });
     document.getElementById('new-weapon-item').value  = '';
     document.getElementById('new-weapon-label').value = '';
@@ -598,7 +614,7 @@ function submitAddEquipment() {
     const itemName = document.getElementById('new-equip-item').value.trim();
     const label    = document.getElementById('new-equip-label').value.trim();
     const amount   = parseInt(document.getElementById('new-equip-amount').value) || 1;
-    if (!itemName || !label) { alert('Completeaza itemName si numele afișat.'); return; }
+    if (!itemName || !label) { alert(t('ui.fill_item_name_alert')); return; }
     postNUI('addArmoryEquipment', { itemName, label, amount });
     document.getElementById('new-equip-item').value   = '';
     document.getElementById('new-equip-label').value  = '';
@@ -606,12 +622,12 @@ function submitAddEquipment() {
 }
 
 function removeArmoryWeapon(itemName) {
-    if (!confirm('Stergi arma "' + itemName + '" din armament?')) return;
+    if (!confirm(t('ui.confirm_delete_weapon', itemName))) return;
     postNUI('removeArmoryWeapon', { itemName });
 }
 
 function removeArmoryEquipment(itemName) {
-    if (!confirm('Stergi echipamentul "' + itemName + '" din armament?')) return;
+    if (!confirm(t('ui.confirm_delete_equipment', itemName))) return;
     postNUI('removeArmoryEquipment', { itemName });
 }
 

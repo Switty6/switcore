@@ -13,7 +13,7 @@ Sw.SecureEvent('garages:server:openGarage', {
 
     local garage = GaragesDatabase.getGarageByCode(garageCode)
     if not garage then
-        return ctx.error('Garaj inexistent', 3000)
+        return ctx.error(Sw.TP(ctx.source, 'garages.error_garage_not_found'), 3000)
     end
 
     local vehicles  = GaragesManager.getGarageVehicles(characterId)
@@ -41,7 +41,7 @@ Sw.SecureEvent('garages:server:parkVehicle', {
     if not ok then
         ctx.error(err, 4000)
     else
-        ctx.success('Vehicul parcat', 3000)
+        ctx.success(Sw.TP(ctx.source, 'garages.vehicle_parked'), 3000)
     end
 end)
 
@@ -83,7 +83,7 @@ Sw.SecureEvent('garages:server:payTicket', {
     if not ok then
         ctx.error(err, 4000)
     else
-        ctx.success('Amendă achitată', 3000)
+        ctx.success(Sw.TP(ctx.source, 'garages.ticket_paid'), 3000)
     end
 end)
 

@@ -1,0 +1,22 @@
+{
+    "loadscreen": {
+        "tagline": "Roleplay. Freedom. Community.",
+        "status": {
+            "initializing": "Initializing...",
+            "loading": "Loading resources...",
+            "almost_done": "Almost done...",
+            "finalizing": "Finalizing...",
+            "ready": "Ready!"
+        },
+        "tips": {
+            "interact": "Press E to interact with the world around you.",
+            "inventory": "Press TAB to open your inventory.",
+            "help_command": "Use /help to see available commands.",
+            "banking": "Visit an ATM or bank to manage your funds.",
+            "character": "Choose your character wisely - personality matters!",
+            "rp_chat": "RP communication with other players improves everyone's experience.",
+            "rules": "Respect the server rules for an enjoyable experience.",
+            "discord": "Find help and updates on our community Discord."
+        }
+    }
+}

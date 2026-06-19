@@ -182,7 +182,7 @@ CreateThread(function()
                         if engineRunning then
                             tempKeys[GetVehicleNumberPlateText(vehicle):gsub('%s+', '')] = true
                         else
-                            TriggerEvent('switcore:notify:local', 'error', 'Acest vehicul este încuiat sau nu ai cheia!', 4000)
+                            TriggerEvent('switcore:notify:local', 'error', Sw.T('vehicles.vehicle_locked_no_key'), 4000)
                         end
                     end
                     SetVehicleEngineOn(vehicle, engineRunning, true, true)
@@ -205,17 +205,17 @@ RegisterCommand('toggleengine', function()
             local isEngineOn = GetIsVehicleEngineRunning(vehicle)
             if isEngineOn then
                 SetVehicleEngineOn(vehicle, false, false, true)
-                TriggerEvent('switcore:notify:local', 'info', 'Ai oprit motorul.', 3000)
+                TriggerEvent('switcore:notify:local', 'info', Sw.T('vehicles.engine_off'), 3000)
             else
                 SetVehicleEngineOn(vehicle, true, false, true)
-                TriggerEvent('switcore:notify:local', 'success', 'Ai pornit motorul.', 3000)
+                TriggerEvent('switcore:notify:local', 'success', Sw.T('vehicles.engine_on'), 3000)
             end
         else
-            TriggerEvent('switcore:notify:local', 'error', 'Nu ai acces la acest vehicul.', 3000)
+            TriggerEvent('switcore:notify:local', 'error', Sw.T('vehicles.no_vehicle_access'), 3000)
         end
     end
 end, false)
-RegisterKeyMapping('toggleengine', 'Porneste/Opreste Motorul', 'keyboard', 'y')
+RegisterKeyMapping('toggleengine', Sw.T('vehicles.keymap_toggle_engine'), 'keyboard', 'y')
 
 CreateThread(function()
     while true do
@@ -436,7 +436,7 @@ CreateThread(function()
                 end
 
                 if newPct < 3.0 and newPct > 0.5 then
-                    TriggerEvent('switcore:notify:local', 'warning', 'Combustibil critic! Alimentați imediat.', 5000)
+                    TriggerEvent('switcore:notify:local', 'warning', Sw.T('vehicles.fuel_critical'), 5000)
                 elseif newPct <= 0.5 then
                     SetVehicleEngineOn(inVehicleEntity, false, true, false)
                 end

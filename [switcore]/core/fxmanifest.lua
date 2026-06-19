@@ -1,4 +1,4 @@
-version '1.1.0'
+version '1.2.0'
 description 'Core - Sistemul de player management (core an plm)'
 author 'Switty'
 
@@ -36,6 +36,11 @@ client_scripts {
     'client/localization.lua',
     'client/language.lua',
     'client/npc_management.lua'
+}
+
+-- helper de i18n pentru NUI, referit de alte resurse ca nui://core/ui/i18n.js
+files {
+    'ui/i18n.js'
 }
 
 lua54 'yes'

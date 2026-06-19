@@ -74,17 +74,17 @@ function GovManager.proposeLaw(source, characterId, data)
     duration = math.max(5, math.min(duration, 10080))
 
     if #title < 3 or #description < 5 or #category < 2 then
-        notify(source, 'error', 'Completeaza toate campurile obligatorii.')
+        notify(source, 'error', Sw.TP(source, 'government.fill_required_fields'))
         return
     end
 
     local proposal = GovDB.createProposal(title, description, category, penalty, fineAmount, characterId, duration)
     if not proposal then
-        notify(source, 'error', 'Eroare la crearea propunerii.')
+        notify(source, 'error', Sw.TP(source, 'government.proposal_create_failed'))
         return
     end
 
-    notifyGovMembers('info', 'Propunere noua: ' .. title .. ' - voteaza in panoul de guvern.')
+    notifyGovMembers('info', Sw.T('government.new_proposal_notify', title))
     return proposal
 end
 
@@ -100,10 +100,10 @@ function GovManager.finalizeExpiredProposals()
         if yesVotes >= quorum then
             GovDB.setProposalStatus(p.id, 'passed')
             GovDB.createLaw(p.id, p.title, p.description, p.category, p.penalty, p.fine_amount, p.proposed_by)
-            notifyGovMembers('success', 'Legea "' .. p.title .. '" a fost adoptata la finalul votului (' .. yesVotes .. '/' .. quorum .. ').')
+            notifyGovMembers('success', Sw.T('government.law_passed_on_expiry', p.title, yesVotes, quorum))
         else
             GovDB.setProposalStatus(p.id, 'rejected')
-            notifyGovMembers('warning', 'Propunerea "' .. p.title .. '" a fost respinsa - voturi insuficiente (' .. yesVotes .. '/' .. quorum .. ').')
+            notifyGovMembers('warning', Sw.T('government.proposal_rejected_insufficient', p.title, yesVotes, quorum))
         end
     end
     return true
@@ -112,19 +112,19 @@ end
 function GovManager.voteLaw(source, characterId, proposalId, vote)
     proposalId = tonumber(proposalId)
     if not proposalId or (vote ~= 'yes' and vote ~= 'no') then
-        notify(source, 'error', 'Date invalide.')
+        notify(source, 'error', Sw.TP(source, 'government.invalid_data'))
         return
     end
 
     local proposal = GovDB.getProposal(proposalId)
     if not proposal or proposal.status ~= 'pending' then
-        notify(source, 'error', 'Propunerea nu mai este activa.')
+        notify(source, 'error', Sw.TP(source, 'government.proposal_not_active'))
         return
     end
 
     local existing = GovDB.getVote(proposalId, characterId)
     if existing then
-        notify(source, 'error', 'Ai votat deja aceasta propunere.')
+        notify(source, 'error', Sw.TP(source, 'government.already_voted_proposal'))
         return
     end
 
@@ -140,23 +140,23 @@ function GovManager.voteLaw(source, characterId, proposalId, vote)
                 proposal.title, proposal.description, proposal.category,
                 proposal.penalty, proposal.fine_amount, characterId
             )
-            notifyGovMembers('success', 'Legea "' .. proposal.title .. '" a fost adoptata! (' .. yesVotes .. '/' .. quorum .. ' voturi)')
+            notifyGovMembers('success', Sw.T('government.law_passed_notify', proposal.title, yesVotes, quorum))
             return 'passed'
         end
     end
 
-    notify(source, 'success', 'Vot inregistrat.')
+    notify(source, 'success', Sw.TP(source, 'government.vote_registered'))
     return 'voted'
 end
 
 function GovManager.repealLaw(source, characterId, lawId)
     lawId = tonumber(lawId)
     if not lawId then
-        notify(source, 'error', 'ID invalid.')
+        notify(source, 'error', Sw.TP(source, 'government.invalid_id'))
         return
     end
     GovDB.repealLaw(lawId, characterId)
-    notify(source, 'success', 'Legea a fost abrogata.')
+    notify(source, 'success', Sw.TP(source, 'government.law_repealed'))
     return true
 end
 
@@ -164,7 +164,7 @@ function GovManager.rejectProposal(source, characterId, proposalId)
     proposalId = tonumber(proposalId)
     if not proposalId then return end
     GovDB.setProposalStatus(proposalId, 'rejected')
-    notify(source, 'success', 'Propunerea a fost respinsa.')
+    notify(source, 'success', Sw.TP(source, 'government.proposal_rejected'))
     return true
 end
 
@@ -173,30 +173,30 @@ function GovManager.createParty(source, characterId, name, color)
     color = tostring(color or '#00b4ff'):sub(1, 7)
 
     if #name < 3 then
-        notify(source, 'error', 'Numele partidului este prea scurt.')
+        notify(source, 'error', Sw.TP(source, 'government.party_name_too_short'))
         return
     end
 
     local existing = GovDB.getPartyByName(name)
     if existing then
-        notify(source, 'error', 'Exista deja un partid cu acest nume.')
+        notify(source, 'error', Sw.TP(source, 'government.party_name_exists'))
         return
     end
 
     local myParty = GovDB.getCharacterParty(characterId)
     if myParty then
-        notify(source, 'error', 'Esti deja membru intr-un partid.')
+        notify(source, 'error', Sw.TP(source, 'government.already_in_party'))
         return
     end
 
     local party = GovDB.createParty(name, color, characterId)
     if not party then
-        notify(source, 'error', 'Eroare la crearea partidului.')
+        notify(source, 'error', Sw.TP(source, 'government.party_create_failed'))
         return
     end
 
     GovDB.joinParty(party.id, characterId, 'leader')
-    notify(source, 'success', 'Partidul "' .. name .. '" a fost infiintat.')
+    notify(source, 'success', Sw.TP(source, 'government.party_created', name))
     return party
 end
 
@@ -206,25 +206,25 @@ function GovManager.joinParty(source, characterId, partyId)
 
     local myParty = GovDB.getCharacterParty(characterId)
     if myParty then
-        notify(source, 'error', 'Esti deja intr-un partid. Iesi mai intai.')
+        notify(source, 'error', Sw.TP(source, 'government.already_in_party_leave_first'))
         return
     end
 
     local party = GovDB.getParty(partyId)
     if not party or not party.is_active then
-        notify(source, 'error', 'Partidul nu exista.')
+        notify(source, 'error', Sw.TP(source, 'government.party_not_found'))
         return
     end
 
     GovDB.joinParty(partyId, characterId, 'member')
-    notify(source, 'success', 'Te-ai alaturat partidului "' .. party.name .. '".')
+    notify(source, 'success', Sw.TP(source, 'government.party_joined', party.name))
     return true
 end
 
 function GovManager.leaveParty(source, characterId)
     local myParty = GovDB.getCharacterParty(characterId)
     if not myParty then
-        notify(source, 'error', 'Nu esti in niciun partid.')
+        notify(source, 'error', Sw.TP(source, 'government.not_in_party'))
         return
     end
 
@@ -250,14 +250,14 @@ function GovManager.leaveParty(source, characterId)
     end
 
     GovDB.leaveParty(myParty.party_id, characterId)
-    notify(source, 'info', 'Ai parasit partidul.')
+    notify(source, 'info', Sw.TP(source, 'government.party_left'))
     return true
 end
 
 function GovManager.kickPartyMember(source, characterId, targetCharId)
     targetCharId = tonumber(targetCharId)
     if not targetCharId or targetCharId == characterId then
-        notify(source, 'error', 'Actiune invalida.')
+        notify(source, 'error', Sw.TP(source, 'government.invalid_action'))
         return
     end
 
@@ -265,32 +265,32 @@ function GovManager.kickPartyMember(source, characterId, targetCharId)
     local tgtParty = GovDB.getCharacterParty(targetCharId)
 
     if not myParty or not tgtParty or myParty.party_id ~= tgtParty.party_id then
-        notify(source, 'error', 'Nu sunteti in acelasi partid.')
+        notify(source, 'error', Sw.TP(source, 'government.not_same_party'))
         return
     end
     if myParty.role ~= 'leader' and myParty.role ~= 'vice' then
-        notify(source, 'error', 'Nu ai permisiunea de a exclude membri.')
+        notify(source, 'error', Sw.TP(source, 'government.no_perm_kick'))
         return
     end
     if tgtParty.role == 'leader' then
-        notify(source, 'error', 'Nu poti exclude liderul.')
+        notify(source, 'error', Sw.TP(source, 'government.cannot_kick_leader'))
         return
     end
 
     GovDB.leaveParty(myParty.party_id, targetCharId)
-    notify(source, 'success', 'Membrul a fost exclus din partid.')
+    notify(source, 'success', Sw.TP(source, 'government.member_kicked'))
     return true
 end
 
 function GovManager.updateManifesto(source, characterId, manifesto)
     local myParty = GovDB.getCharacterParty(characterId)
     if not myParty or (myParty.role ~= 'leader' and myParty.role ~= 'secretary') then
-        notify(source, 'error', 'Doar liderul sau secretarul poate edita manifestul.')
+        notify(source, 'error', Sw.TP(source, 'government.only_leader_secretary_manifesto'))
         return
     end
     manifesto = tostring(manifesto or ''):sub(1, 5000)
     GovDB.updateManifesto(myParty.party_id, manifesto)
-    notify(source, 'success', 'Manifest actualizat.')
+    notify(source, 'success', Sw.TP(source, 'government.manifesto_updated'))
     return true
 end
 
@@ -299,17 +299,17 @@ function GovManager.startElection(source, characterId, position, description)
     description = tostring(description or ''):sub(1, 500)
 
     if #position < 3 then
-        notify(source, 'error', 'Specificati pozitia pentru alegere.')
+        notify(source, 'error', Sw.TP(source, 'government.specify_position'))
         return
     end
 
     local election = GovDB.createElection(position, description, characterId)
     if not election then
-        notify(source, 'error', 'Eroare la deschiderea alegerilor.')
+        notify(source, 'error', Sw.TP(source, 'government.election_open_failed'))
         return
     end
 
-    notifyGovMembers('info', 'Alegeri deschise pentru: ' .. position .. ' - inscrie-te in panoul de guvern.')
+    notifyGovMembers('info', Sw.T('government.election_opened_notify', position))
     return election
 end
 
@@ -319,7 +319,7 @@ function GovManager.candidateElection(source, characterId, electionId)
 
     local election = GovDB.getElection(electionId)
     if not election or election.status ~= 'active' then
-        notify(source, 'error', 'Alegerile nu sunt active.')
+        notify(source, 'error', Sw.TP(source, 'government.election_not_active'))
         return
     end
 
@@ -330,15 +330,15 @@ function GovManager.candidateElection(source, characterId, electionId)
         return GovDB.addCandidate(electionId, characterId, partyId)
     end)
     if not ok then
-        notify(source, 'error', 'Eroare la inscrierea ca si candidat.')
+        notify(source, 'error', Sw.TP(source, 'government.candidate_register_failed'))
         return
     end
     if res and tonumber(res.rowCount) == 0 then
-        notify(source, 'error', 'Esti deja inscris ca si candidat.')
+        notify(source, 'error', Sw.TP(source, 'government.already_candidate'))
         return
     end
 
-    notify(source, 'success', 'Te-ai inscris ca si candidat.')
+    notify(source, 'success', Sw.TP(source, 'government.candidate_registered'))
     return true
 end
 
@@ -349,17 +349,17 @@ function GovManager.voteElection(source, characterId, electionId, candidateId)
 
     local election = GovDB.getElection(electionId)
     if not election or election.status ~= 'active' then
-        notify(source, 'error', 'Alegerile nu sunt active.')
+        notify(source, 'error', Sw.TP(source, 'government.election_not_active'))
         return
     end
 
     if GovDB.hasVotedElection(electionId, characterId) then
-        notify(source, 'error', 'Ai votat deja la aceste alegeri.')
+        notify(source, 'error', Sw.TP(source, 'government.already_voted_election'))
         return
     end
 
     GovDB.voteElection(electionId, characterId, candidateId)
-    notify(source, 'success', 'Vot exprimat.')
+    notify(source, 'success', Sw.TP(source, 'government.vote_cast'))
     return true
 end
 
@@ -369,7 +369,7 @@ function GovManager.closeElection(source, characterId, electionId)
 
     local election = GovDB.getElection(electionId)
     if not election or election.status ~= 'active' then
-        notify(source, 'error', 'Alegerile nu exista sau sunt deja inchise.')
+        notify(source, 'error', Sw.TP(source, 'government.election_not_found_or_closed'))
         return
     end
 
@@ -381,11 +381,11 @@ function GovManager.closeElection(source, characterId, electionId)
                 { winnerId }
             )
         end)
-        local winnerName = (ok and wd) and (wd.first_name .. ' ' .. wd.last_name) or 'necunoscut'
-        notifyGovMembers('success', 'Alegerile pentru "' .. election.position .. '" s-au incheiat. Castigator: ' .. winnerName)
+        local winnerName = (ok and wd) and (wd.first_name .. ' ' .. wd.last_name) or Sw.T('government.winner_unknown')
+        notifyGovMembers('success', Sw.T('government.election_closed_notify', election.position, winnerName))
     end
 
-    notify(source, 'success', 'Alegerile au fost inchise.')
+    notify(source, 'success', Sw.TP(source, 'government.election_closed'))
     return true
 end
 

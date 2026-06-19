@@ -10,7 +10,7 @@ Sw.SecureEvent('showroom:server:openDealership', {
 
     local data, err = ShowroomManager.getDealershipCatalog(ctx.args.dealershipCode)
     if not data then
-        return ctx.error(err or 'Eroare catalog', 3000)
+        return ctx.error(err or Sw.TP(ctx.source, 'showroom.error_catalog'), 3000)
     end
 
     local activeDrive = ShowroomDatabase.getActiveTestDrive(ctx.character.id)
@@ -40,7 +40,22 @@ Sw.SecureEvent('showroom:server:purchaseVehicle', {
 }, function(ctx)
     local source = ctx.source
 
-    local ok, err, vehicleId = ShowroomManager.purchaseVehicle(source, ctx.character.id, ctx.args.catalogId, ctx.args.paymentMethod, ctx.args.customPlate, ctx.args.colorIndex)
+    -- pcall: daca un modul din lant (ex. finantare/credit) arunca o eroare Lua,
+    -- tot trimitem un raspuns clientului ca butonul de cumparare sa nu ramana blocat.
+    local pcOk, ok, err, vehicleId = pcall(
+        ShowroomManager.purchaseVehicle,
+        source, ctx.character.id, ctx.args.catalogId,
+        ctx.args.paymentMethod, ctx.args.customPlate, ctx.args.colorIndex
+    )
+
+    if not pcOk then
+        print('[SHOWROOM] Eroare la cumparare (' .. tostring(ctx.args.paymentMethod) .. '): ' .. tostring(ok))
+        local msg = Sw.TP(source, 'showroom.error_purchase_failed')
+        ctx.error(msg, 5000)
+        TriggerClientEvent('showroom:client:purchaseResult', source, { success = false, error = msg })
+        return
+    end
+
     if not ok then
         ctx.error(err, 5000)
         TriggerClientEvent('showroom:client:purchaseResult', source, { success = false, error = err })
@@ -68,7 +83,7 @@ Sw.SecureEvent('showroom:server:endTestDrive', {
     rateLimit = { max = 5, window = 3000 },
 }, function(ctx)
     ShowroomManager.endTestDrive(ctx.source, ctx.character.id)
-    ctx.notify('info', 'Test drive finalizat', 3000)
+    ctx.notify('info', Sw.TP(ctx.source, 'showroom.notify_test_drive_ended'), 3000)
 end)
 
 AddEventHandler('playerDropped', function()

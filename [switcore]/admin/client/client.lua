@@ -4,6 +4,12 @@ local invisible       = false
 local noWantedActive  = false
 local frozenTime      = false
 
+local function pushI18n()
+    SendNUIMessage({ action = 'sw:i18n', dict = exports.core:getLocaleDict() })
+end
+
+AddEventHandler('switcore:client:localeUpdated', pushI18n)
+
 local function CloseAdmin()
     if not isUIOpen then return end
     isUIOpen = false
@@ -18,10 +24,11 @@ end
 
 RegisterNetEvent('admin:client:open', function(data)
     if not data or not data.tabs or #data.tabs == 0 then
-        exports.notifications:Notify('error', 'Acces interzis.', 3000)
+        exports.notifications:Notify('error', Sw.T('admin.client.access_denied'), 3000)
         return
     end
     isUIOpen = true
+    pushI18n()
     SetNuiFocus(true, true)
     SendNUIMessage({
         action     = 'open',
@@ -278,10 +285,31 @@ RegisterNUICallback('toggleNoclip', function(_, cb)
     cb('ok')
 end)
 
+local godmodeThread = false
 RegisterNUICallback('toggleGodmode', function(_, cb)
     godmode = not godmode
-    SetEntityInvincible(PlayerPedId(), godmode)
+    local ped = PlayerPedId()
+    SetEntityInvincible(ped, godmode)
+    SetPlayerInvincible(PlayerId(), godmode)
     SendNUIMessage({ action = 'godmodeState', active = godmode })
+
+    -- Re-aplica invincibilitatea pe ped-ul curent: dupa moarte/respawn ped-ul e
+    -- recreat si SetEntityInvincible setat o singura data se pierde.
+    if godmode and not godmodeThread then
+        godmodeThread = true
+        CreateThread(function()
+            while godmode do
+                local p = PlayerPedId()
+                SetEntityInvincible(p, true)
+                SetPlayerInvincible(PlayerId(), true)
+                local maxHp = GetEntityMaxHealth(p)
+                if GetEntityHealth(p) < maxHp then SetEntityHealth(p, maxHp) end
+                ClearPedBloodDamage(p)
+                Wait(500)
+            end
+            godmodeThread = false
+        end)
+    end
     cb('ok')
 end)
 
@@ -655,7 +683,7 @@ end)
 local function TeleportToWaypoint()
     local waypointBlip = GetFirstBlipInfoId(8)
     if not DoesBlipExist(waypointBlip) then
-        exports.notifications:Notify('error', 'Nu ai marcat niciun waypoint.', 3000)
+        exports.notifications:Notify('error', Sw.T('admin.client.no_waypoint'), 3000)
         return
     end
 
@@ -681,7 +709,7 @@ local function TeleportToWaypoint()
 
     SetEntityCoordsNoOffset(entity, coords.x, coords.y, (found and groundZ + 1.0) or 100.0, false, false, false)
     FreezeEntityPosition(entity, false)
-    exports.notifications:Notify('success', 'Teleportat la waypoint.', 2500)
+    exports.notifications:Notify('success', Sw.T('admin.client.teleported_waypoint'), 2500)
 end
 
 RegisterNetEvent('admin:client:teleportToWaypoint', TeleportToWaypoint)
@@ -689,7 +717,7 @@ RegisterNetEvent('admin:client:teleportToWaypoint', TeleportToWaypoint)
 RegisterNetEvent('admin:client:toggleOverlay', function()
     local active = ToggleOverlay()
     SaveOverlayKVP()
-    exports.notifications:Notify('info', 'Dev Overlay: ' .. (active and 'ACTIVAT' or 'DEZACTIVAT'), 3000)
+    exports.notifications:Notify('info', active and Sw.T('admin.client.dev_overlay_on') or Sw.T('admin.client.dev_overlay_off'), 3000)
 end)
 
 RegisterCommand('devoverlay', function()
@@ -701,7 +729,11 @@ AddEventHandler('onResourceStop', function(name)
     if isUIOpen then CloseAdmin() end
     if IsNoclipActive() then ToggleNoclip() end
     if IsSpectating() then StopSpectate() end
-    if godmode then SetEntityInvincible(PlayerPedId(), false) end
+    if godmode then
+        godmode = false
+        SetEntityInvincible(PlayerPedId(), false)
+        SetPlayerInvincible(PlayerId(), false)
+    end
     if invisible then SetEntityVisible(PlayerPedId(), true, false) end
     if IsOverlayActive() then SetOverlayActive(false) end
     if noWantedActive then

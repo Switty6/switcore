@@ -98,7 +98,32 @@ return {
     },
     language = {
         changed = 'Limba a fost schimbată în {1}',
-        invalid = 'Limba invalidă. Disponibile: ro, en'
+        invalid = 'Limba invalidă. Disponibile: ro, en',
+        not_available = 'Limba nu este disponibilă: {1}',
+        not_allowed = 'Schimbarea limbii nu este permisă pe acest server.',
+        usage = 'Utilizare: /language [ro|en]',
+        current = 'Limba curentă: {1}',
+        available = 'Limbi disponibile: ro (Română), en (Engleză)',
+        changing = 'Se schimbă limba în: {1}...'
+    },
+    core = {
+        validation = {
+            required_field = 'Lipsește câmpul obligatoriu "{1}".',
+            field_int = 'Câmpul "{1}" trebuie să fie un număr întreg.',
+            field_min = 'Câmpul "{1}" trebuie să fie cel puțin {2}.',
+            field_max = 'Câmpul "{1}" trebuie să fie cel mult {2}.',
+            field_number = 'Câmpul "{1}" trebuie să fie un număr.',
+            field_string = 'Câmpul "{1}" trebuie să fie text.',
+            field_too_short = 'Câmpul "{1}" e prea scurt.',
+            field_boolean = 'Câmpul "{1}" trebuie să fie boolean.',
+            field_table = 'Câmpul "{1}" trebuie să fie un tabel.',
+            invalid_value = 'Valoare invalidă pentru "{1}".'
+        },
+        secure = {
+            rate_limited = 'Prea multe cereri. Așteaptă o clipă.',
+            no_permission = 'Nu ai permisiunea necesară.',
+            no_character = 'Nu ai un personaj activ.'
+        }
     }
 }
 

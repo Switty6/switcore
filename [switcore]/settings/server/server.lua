@@ -1,3 +1,12 @@
+-- settings si core se referentiaza reciproc, asa ca nu putem garanta ca core
+-- e pornit cand se incarca scriptul asta. Asteptam sa fie 'started' inainte de
+-- a-i apela exportul, altfel apelul sincron arunca si opreste restul fisierului
+-- (inclusiv inregistrarea exportului IsReady, de care depind toate modulele).
+CreateThread(function()
+    while GetResourceState('core') ~= 'started' do Wait(50) end
+    exports.core:registerModuleLocales(GetCurrentResourceName())
+end)
+
 local cache    = {}
 local cacheMeta = {}
 local isLoaded = false
@@ -334,21 +343,19 @@ local function setSetting(key, value)
     return true
 end
 
-local categoryLabels = {
-    core          = 'Core',
-    characters    = 'Personaje',
-    inventory     = 'Inventar',
-    banking       = 'Banking',
-    vehicles      = 'Vehicule',
-    garages       = 'Garaje',
-    showroom      = 'Showroom',
-    notifications = 'Notificări',
-    hud           = 'HUD',
-    proximity     = 'Proximity',
-    needs         = 'Nevoi',
-    blips         = 'Blips & Markere',
-    general       = 'General',
+local categoryKeys = {
+    'core', 'characters', 'inventory', 'banking', 'vehicles', 'garages',
+    'showroom', 'notifications', 'hud', 'proximity', 'needs', 'blips', 'general',
 }
+
+local function categoryLabel(cat)
+    for _, k in ipairs(categoryKeys) do
+        if k == cat then
+            return Sw.T('settings.category.' .. cat)
+        end
+    end
+    return cat
+end
 
 local categoryIcons = {
     core          = 'settings',
@@ -399,7 +406,7 @@ local function buildSettingsPayload()
         if categoriesSet[c] then
             table.insert(categories, {
                 id    = c,
-                label = categoryLabels[c] or c,
+                label = categoryLabel(c),
                 icon  = categoryIcons[c]  or 'sliders',
             })
             categoriesSet[c] = nil
@@ -408,7 +415,7 @@ local function buildSettingsPayload()
     for c in pairs(categoriesSet) do
         table.insert(categories, {
             id    = c,
-            label = categoryLabels[c] or c,
+            label = categoryLabel(c),
             icon  = categoryIcons[c]  or 'sliders',
         })
     end
@@ -430,16 +437,16 @@ RegisterNetEvent('settings:server:save', function(key, value)
     local src = source
     if not IsPlayerAceAllowed(tostring(src), 'admin.settings') and
        not IsPlayerAceAllowed(tostring(src), 'admin.all') then
-        TriggerClientEvent('settings:client:saveResult', src, { key = key, success = false, error = 'Permisiune refuzată' })
+        TriggerClientEvent('settings:client:saveResult', src, { key = key, success = false, error = Sw.TP(src, 'settings.error_permission_denied') })
         return
     end
     if not key or value == nil then
-        TriggerClientEvent('settings:client:saveResult', src, { key = key, success = false, error = 'Date invalide' })
+        TriggerClientEvent('settings:client:saveResult', src, { key = key, success = false, error = Sw.TP(src, 'settings.error_invalid_data') })
         return
     end
     local meta = cacheMeta[key]
     if meta and meta.readonly then
-        TriggerClientEvent('settings:client:saveResult', src, { key = key, success = false, error = 'Setare read-only' })
+        TriggerClientEvent('settings:client:saveResult', src, { key = key, success = false, error = Sw.TP(src, 'settings.error_readonly') })
         return
     end
     local ok = setSetting(key, value)

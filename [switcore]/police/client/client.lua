@@ -3,9 +3,21 @@ PoliceConfig   = {}
 local myJob    = nil
 local proximityIds = {}
 
+function PushPoliceI18n()
+    SendNUIMessage({ action = 'sw:i18n', dict = exports.core:getLocaleDict() })
+end
+
+AddEventHandler('switcore:client:localeUpdated', PushPoliceI18n)
+
+CreateThread(function()
+    Wait(1500)
+    PushPoliceI18n()
+end)
+
 local isJailed      = false
 local jailRemaining = 0
 local savedComponents = {}
+local isWearingUniform = false
 
 local function isMale()
     return GetEntityModel(PlayerPedId()) ~= GetHashKey('mp_f_freemode_01')
@@ -42,7 +54,7 @@ function RegisterPoliceBlips()
         SetBlipScale(blip, data.scale or 0.8)
         SetBlipAsShortRange(blip, true)
         BeginTextCommandSetBlipName('STRING')
-        AddTextComponentSubstringPlayerName(data.label or 'Politie')
+        AddTextComponentSubstringPlayerName(data.label or Sw.T('police.blip_default'))
         EndTextCommandSetBlipName(blip)
         table.insert(blipHandles, blip)
     end
@@ -75,7 +87,7 @@ function RegisterPoliceZones()
         if hasArmory then
             proximityIds['armory'] = exports.proximity:AddInteraction(
                 PoliceConfig.armoryCoords,
-                'Armament - Ridica Echipament',
+                Sw.T('police.prox_armory'),
                 'police_armory',
                 {},
                 function() TriggerServerEvent('police:server:openArmory') end,
@@ -87,7 +99,7 @@ function RegisterPoliceZones()
     if myJob.isOnDuty and PoliceConfig.cloakroomCoords then
         proximityIds['cloakroom'] = exports.proximity:AddInteraction(
             PoliceConfig.cloakroomCoords,
-            'Vestiar - Schimba Tinuta',
+            Sw.T('police.prox_cloakroom'),
             'police_cloakroom',
             {},
             function() TriggerServerEvent('police:server:openCloakroom') end,
@@ -134,6 +146,7 @@ RegisterNetEvent('police:client:released', function(data)
 end)
 
 RegisterNetEvent('police:client:openArmory', function(weapons, equipment)
+    PushPoliceI18n()
     SendNUIMessage({ action = 'openArmory', weapons = weapons, equipment = equipment })
     SetNuiFocus(true, true)
 end)
@@ -149,6 +162,7 @@ RegisterNUICallback('takeArmoryItem', function(data, cb)
 end)
 
 RegisterNetEvent('police:client:openCloakroom', function(gender)
+    PushPoliceI18n()
     SendNUIMessage({ action = 'openCloakroom', gender = gender })
     SetNuiFocus(true, true)
 end)
@@ -159,13 +173,20 @@ RegisterNUICallback('closeCloakroom', function(_, cb)
 end)
 
 RegisterNUICallback('wearUniform', function(_, cb)
-    saveCurrentComponents()
+    -- Salvam tinuta civila DOAR cand nu suntem deja in uniforma. Altfel un al doilea
+    -- click pe "Uniforma" ar suprascrie snapshot-ul cu uniforma si nu te-ai mai putea
+    -- intoarce in civil (raman blocat in uniforma).
+    if not isWearingUniform then
+        saveCurrentComponents()
+    end
+    isWearingUniform = true
     TriggerServerEvent('police:server:applyUniform', isMale() and 'male' or 'female')
     SetNuiFocus(false, false)
     cb('ok')
 end)
 
 RegisterNUICallback('wearCivilian', function(_, cb)
+    isWearingUniform = false
     TriggerServerEvent('police:server:setCivilianClothes')
     SetNuiFocus(false, false)
     cb('ok')

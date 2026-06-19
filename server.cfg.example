@@ -19,6 +19,10 @@ sv_licenseKey "YOUR_LICENSE_KEY_HERE"
 # OneSync - necesar pentru servere cu mai multi jucatori si sync avansat
 set onesync on
 
+# Limba serverului (ro/en). Toate mesajele si interfetele folosesc limba de aici.
+# Replicat la clienti (setr) ca sa fie citibil si in loadscreen.
+setr sw_locale "ro"
+
 # Blocheaza ScriptHook in productie
 set sv_scriptHookAllowed 0
 

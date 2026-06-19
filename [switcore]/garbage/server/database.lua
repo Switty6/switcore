@@ -39,6 +39,16 @@ function GarbageDB.getActiveSession(charId)
     return ok and result or nil
 end
 
+function GarbageDB.getSessionById(sessionId)
+    local ok, result = pcall(function()
+        return pg():queryOne(
+            'SELECT * FROM garbage_sessions WHERE id = $1',
+            { sessionId }
+        )
+    end)
+    return ok and result or nil
+end
+
 function GarbageDB.incrementCollected(sessionId)
     local ok, result = pcall(function()
         return pg():queryOne(

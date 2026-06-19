@@ -1,10 +1,17 @@
 
+local function pushI18n()
+    SendNUIMessage({ action = 'sw:i18n', dict = exports.core:getLocaleDict() })
+end
+
+AddEventHandler('switcore:client:localeUpdated', pushI18n)
+
 local currentDealershipCode = nil
 local isUIOpen = false
 
 local testDriveEntity = 0
 local testDriveTimer  = nil
 local testDriveActive = false
+local testDriveReturnCoords = nil
 
 local dealershipLocations = {}
 local registeredInteractions = {}
@@ -126,6 +133,7 @@ end)
 RegisterNetEvent('showroom:client:openUI', function(data)
     isUIOpen = true
     SetNuiFocus(true, true)
+    pushI18n()
     SendNUIMessage({
         action          = 'open',
         dealership      = data.dealership,
@@ -160,12 +168,14 @@ RegisterNetEvent('showroom:client:startTestDrive', function(data)
     for _, loc in ipairs(dealershipLocations) do
         if loc.code == currentDealershipCode then
             spawnPoint = loc.testDriveSpawn
+            -- Retinem punctul de intoarcere (intrarea dealership-ului) pentru finalul testului.
+            testDriveReturnCoords = loc.coords
             break
         end
     end
 
     if not spawnPoint then
-        TriggerEvent('switcore:notify:local', 'error', 'Punct de spawn test drive lipsă', 3000)
+        TriggerEvent('switcore:notify:local', 'error', Sw.T('showroom.notify_test_drive_spawn_missing'), 3000)
         return
     end
 
@@ -178,7 +188,7 @@ RegisterNetEvent('showroom:client:startTestDrive', function(data)
     end
 
     if not HasModelLoaded(model) then
-        TriggerEvent('switcore:notify:local', 'error', 'Model vehicul indisponibil', 3000)
+        TriggerEvent('switcore:notify:local', 'error', Sw.T('showroom.notify_vehicle_model_unavailable'), 3000)
         return
     end
 
@@ -230,6 +240,12 @@ RegisterNetEvent('showroom:client:endTestDrive', function()
         DeleteVehicle(testDriveEntity)
     end
     testDriveEntity = 0
+
+    -- Punctul de iesire din test-drive: aducem jucatorul inapoi la dealership.
+    if testDriveReturnCoords then
+        SetEntityCoords(ped, testDriveReturnCoords.x, testDriveReturnCoords.y, testDriveReturnCoords.z, false, false, false, false)
+        testDriveReturnCoords = nil
+    end
 
     SendNUIMessage({ action = 'testDriveEnded' })
 end)

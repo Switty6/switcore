@@ -73,9 +73,9 @@ function RevivePlayer(source, emsSrc)
 
     EmsDB.logRecord(charId, emsCharId, 'revive', { hp = reviveHP })
 
-    Notify(source, 'success', 'Ai fost resuscitat de EMS.', 6000)
+    Notify(source, 'success', Sw.TP(source, 'ems.revived_short'), 6000)
     if emsSrc then
-        Notify(emsSrc, 'success', 'Pacient resuscitat cu succes.', 4000)
+        Notify(emsSrc, 'success', Sw.TP(emsSrc, 'ems.patient_revived'), 4000)
     end
 
     BroadcastToEMS('ems:client:playerRevived', { source = source })
@@ -91,7 +91,7 @@ function RespawnAtHospital(source)
 
     if elapsed < respawnTimer then
         local remaining = respawnTimer - elapsed
-        Notify(source, 'warning', 'Mai ai ' .. remaining .. 's pana la optiunea de respawn.', 4000)
+        Notify(source, 'warning', Sw.TP(source, 'ems.respawn_remaining', remaining), 4000)
         return false
     end
 

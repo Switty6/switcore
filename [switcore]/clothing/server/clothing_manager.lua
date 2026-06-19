@@ -69,7 +69,7 @@ function ClothingManager.equipItem(source, characterId, storeItemId, texture)
         end
 
         if not owned then
-            TriggerClientEvent('switcore:notify', source, 'error', 'Nu deții acest articol.', 4000)
+            TriggerClientEvent('switcore:notify', source, 'error', Sw.TP(source, 'clothing.item_not_owned'), 4000)
             return
         end
 
@@ -101,7 +101,7 @@ function ClothingManager.equipItem(source, characterId, storeItemId, texture)
 
         ClothingDB.saveEquippedClothing(characterId, equipped)
         TriggerClientEvent('clothing:applyComponents', source, equipped)
-        TriggerClientEvent('switcore:notify', source, 'success', 'Ai echipat: ' .. item.label, 4000)
+        TriggerClientEvent('switcore:notify', source, 'success', Sw.TP(source, 'clothing.equipped', item.label), 4000)
     end)
 end
 
@@ -111,7 +111,7 @@ function ClothingManager.unequipItem(source, characterId, componentType, compone
     local prev         = equipped[componentKey]
 
     if not prev then
-        TriggerClientEvent('switcore:notify', source, 'error', 'Nu ai nimic echipat pe acel slot.', 4000)
+        TriggerClientEvent('switcore:notify', source, 'error', Sw.TP(source, 'clothing.nothing_equipped_slot'), 4000)
         return
     end
 
@@ -122,5 +122,5 @@ function ClothingManager.unequipItem(source, characterId, componentType, compone
 
     ClothingDB.saveEquippedClothing(characterId, equipped)
     TriggerClientEvent('clothing:applyComponents', source, equipped)
-    TriggerClientEvent('switcore:notify', source, 'info', 'Ai dezechipat: ' .. (prev.label or 'articolul'), 4000)
+    TriggerClientEvent('switcore:notify', source, 'info', Sw.TP(source, 'clothing.unequipped', prev.label or Sw.TP(source, 'clothing.unequipped_fallback')), 4000)
 end

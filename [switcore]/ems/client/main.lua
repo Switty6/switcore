@@ -3,6 +3,17 @@ isEMS         = false
 emsOnDuty     = false
 Cfg           = {}
 
+function EmsPushI18n()
+    SendNUIMessage({ action = 'sw:i18n', dict = exports.core:getLocaleDict() })
+end
+
+AddEventHandler('switcore:client:localeUpdated', EmsPushI18n)
+
+CreateThread(function()
+    Wait(1000)
+    EmsPushI18n()
+end)
+
 RegisterNetEvent('ems:client:config')
 AddEventHandler('ems:client:config', function(data)
     Cfg.respawnTimer        = data.respawnTimer
@@ -36,6 +47,7 @@ AddEventHandler('ems:client:youAreUnconscious', function(timerSec)
 
     AnimpostfxPlay('DeathFailOut', 0, true)
 
+    EmsPushI18n()
     SendNUIMessage({ action = 'showUnconsciousTimer', seconds = timerSec })
 
     unconsciousThread = true
@@ -65,7 +77,7 @@ AddEventHandler('ems:client:revived', function(hp)
         SetEntityHealth(ped, target)
     end
 
-    exports.notifications:Notify('success', 'Ai fost resuscitat de EMS!', 5000)
+    exports.notifications:Notify('success', Sw.T('ems.revived'), 5000)
 end)
 
 RegisterNetEvent('ems:client:teleportToHospital')
@@ -84,7 +96,7 @@ AddEventHandler('ems:client:teleportToHospital', function(coords)
         SetEntityHealth(ped, math.min(coords.hp, maxHP))
     end
 
-    exports.notifications:Notify('info', 'Ai fost transportat la spital. Cost: 5000 RON.', 7000)
+    exports.notifications:Notify('info', Sw.T('ems.transported_hospital'), 7000)
 end)
 
 CreateThread(function()
@@ -116,10 +128,24 @@ RegisterCommand('911', function(source, args)
 
     local message = table.concat(args, ' ')
     if not message or #message < 3 then
-        exports.notifications:Notify('warning', 'Folosire: /911 [mesaj]', 3000)
+        exports.notifications:Notify('warning', Sw.T('ems.call_usage'), 3000)
         return
     end
 
     TriggerServerEvent('ems:server:call112', message)
 end, false)
+
+-- Plasa de siguranta pentru efectul de inconstienta: DeathFailOut e pornit in bucla
+-- si oprit doar la revive/transport. Daca jucatorul iese din starea de inconstienta
+-- pe alta cale (respawn de baza, restart resursa), efectul ramanea blocat (blur persistent).
+AddEventHandler('playerSpawned', function()
+    isUnconscious = false
+    AnimpostfxStop('DeathFailOut')
+end)
+
+AddEventHandler('onResourceStop', function(name)
+    if GetCurrentResourceName() ~= name then return end
+    AnimpostfxStopAll()
+    ClearTimecycleModifier()
+end)
 

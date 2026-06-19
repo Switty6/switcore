@@ -1,3 +1,5 @@
+exports.core:registerModuleLocales(GetCurrentResourceName())
+
 local inventories = {}
 local usableItems = {}
 local invLocks = {}

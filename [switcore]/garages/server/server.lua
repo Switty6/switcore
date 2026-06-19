@@ -1,3 +1,5 @@
+exports.core:registerModuleLocales(GetCurrentResourceName())
+
 local function SeedGarages()
     local locations = exports.settings:GetSettingList('garages.locations', {})
     for _, loc in ipairs(locations) do

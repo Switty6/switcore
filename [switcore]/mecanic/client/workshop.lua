@@ -47,7 +47,7 @@ CreateThread(function()
                 local capturedEntity = info.entity
                 exports.proximity:AddInteraction(
                     info.coords,
-                    'Servicii Vehicul [' .. plate .. ']',
+                    Sw.T('mecanic.prox_vehicle_services', plate),
                     intId, {},
                     function() OpenWorkshopMenu(capturedPlate, capturedEntity) end
                 )
@@ -76,6 +76,7 @@ RegisterNetEvent('mecanic:client:vehicleByPlate', function(data)
     activeVehicleId = data.vehicleId
     activeClientSrc = data.ownerSrc
 
+    PushMecanicI18n()
     SendNUIMessage({
         action       = 'openWorkshop',
         vehicleId    = data.vehicleId,
@@ -97,10 +98,9 @@ local WheelOffsets = {
     rl = {x=-1.25, y=-0.85, z=0},
     rr = {x=1.25,  y=-0.85, z=0},
 }
-local WheelLabels = {
-    fl='Stanga-fata', fr='Dreapta-fata',
-    rl='Stanga-spate', rr='Dreapta-spate',
-}
+local function wheelLabel(pos)
+    return Sw.T('mecanic.wheel.' .. pos)
+end
 
 local ServiceColors = {
     inspect    = {r=0,   g=180, b=255},
@@ -120,13 +120,13 @@ end
 local function buildTargets(data)
     local st = data.serviceType
     if st == 'inspect' then
-        return {{ offset={x=0, y=2.2, z=0}, label='Diagnosticare auto' }}
+        return {{ offset={x=0, y=2.2, z=0}, label=Sw.T('mecanic.target.inspect') }}
 
     elseif st == 'oil_change' then
-        return {{ offset={x=0.5, y=0.4, z=0}, label='Schimb ulei motor' }}
+        return {{ offset={x=0.5, y=0.4, z=0}, label=Sw.T('mecanic.target.oil_change') }}
 
     elseif st == 'brakes' then
-        return {{ offset={x=1.4, y=0.6, z=0}, label='Schimb placute frana' }}
+        return {{ offset={x=1.4, y=0.6, z=0}, label=Sw.T('mecanic.target.brakes') }}
 
     elseif st == 'tire' then
         local targets = {}
@@ -134,30 +134,30 @@ local function buildTargets(data)
             if WheelOffsets[pos] then
                 table.insert(targets, {
                     offset   = WheelOffsets[pos],
-                    label    = 'Anvelopa ' .. (WheelLabels[pos] or pos),
+                    label    = Sw.T('mecanic.target.tire_pos', wheelLabel(pos)),
                     wheelPos = pos,
                 })
             end
         end
         if #targets == 0 then
-            targets = {{ offset={x=1.25, y=0.85, z=0}, label='Schimb anvelopa' }}
+            targets = {{ offset={x=1.25, y=0.85, z=0}, label=Sw.T('mecanic.target.tire_generic') }}
         end
         return targets
 
     elseif st == 'suspension' then
         return {
-            { offset={x=1.4,  y=0.2, z=0}, label='Suspensie dreapta', suspSide='r' },
-            { offset={x=-1.4, y=0.2, z=0}, label='Suspensie stanga',  suspSide='l' },
+            { offset={x=1.4,  y=0.2, z=0}, label=Sw.T('mecanic.target.suspension_right'), suspSide='r' },
+            { offset={x=-1.4, y=0.2, z=0}, label=Sw.T('mecanic.target.suspension_left'),  suspSide='l' },
         }
 
     elseif st == 'battery' then
-        return {{ offset={x=0, y=2.2, z=0}, label='Inlocuire baterie' }}
+        return {{ offset={x=0, y=2.2, z=0}, label=Sw.T('mecanic.target.battery') }}
 
     elseif st == 'engine' then
-        return {{ offset={x=0, y=2.2, z=0}, label='Reparatie motor' }}
+        return {{ offset={x=0, y=2.2, z=0}, label=Sw.T('mecanic.target.engine') }}
 
     elseif st == 'bodywork' then
-        return {{ offset={x=1.8, y=0.0, z=0.2}, label='Reparatie caroserie' }}
+        return {{ offset={x=1.8, y=0.0, z=0.2}, label=Sw.T('mecanic.target.bodywork') }}
 
     else
         return {{ offset={x=0, y=1.5, z=0}, label=st }}
@@ -205,8 +205,8 @@ function onTargetReached(target, idx)
             target.completed = false
             registerTargetInteraction(target, idx)
             TriggerEvent('notifications:client:send', {
-                type='warning', title='Esuat',
-                message='Minijoc esuat. Incearca din nou.', duration=3000
+                type='warning', title=Sw.T('mecanic.notify.service_failed_title'),
+                message=Sw.T('mecanic.notify.minigame_failed'), duration=3000
             })
             return
         end
@@ -248,8 +248,8 @@ function onTargetReached(target, idx)
             clearSvcInteractions()
 
             TriggerEvent('notifications:client:send', {
-                type='success', title='Serviciu finalizat',
-                message='Serviciul a fost efectuat cu succes!', duration=4000
+                type='success', title=Sw.T('mecanic.notify.service_done_title'),
+                message=Sw.T('mecanic.notify.service_done_msg'), duration=4000
             })
         end
     end)
@@ -319,8 +319,8 @@ local function startServiceInteraction(data, vehicle)
     end
 
     TriggerEvent('notifications:client:send', {
-        type='info', title='Serviciu activ',
-        message='Mergi la zona marcata si interactioneaza.', duration=5000
+        type='info', title=Sw.T('mecanic.notify.service_active_title'),
+        message=Sw.T('mecanic.notify.service_active_msg'), duration=5000
     })
 end
 

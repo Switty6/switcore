@@ -136,7 +136,7 @@ function InflationManager.calculateAccountInterest()
                         currencyId,
                         0.0,
                         nil,
-                        'Dobândă cont',
+                        Sw.T('banking.tx.interest_desc'),
                         {account_type = account.account_type}
                     )
                 end
@@ -171,4 +171,4 @@ function InflationManager.getTotalMoneySupply(currencyId)
 end
 
 return InflationManager
-
+

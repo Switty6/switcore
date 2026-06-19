@@ -26,7 +26,13 @@ function VehiclesDatabase.getOwnedVehicleById(vehicleId)
 end
 
 function VehiclesDatabase.getOwnedVehicleByPlate(plate)
-    return exports.postgres:queryOne('SELECT * FROM owned_vehicles WHERE plate = $1', { plate })
+    -- Comparam fara spatii: textul placutei din joc (GetVehicleNumberPlateText) e adesea
+    -- completat cu spatii pana la 8 caractere, iar placuta stocata in DB poate diferi ca
+    -- spatiere. Fara normalizare, anumite vehicule nu erau gasite (ex. acces tuning refuzat).
+    return exports.postgres:queryOne(
+        "SELECT * FROM owned_vehicles WHERE REPLACE(plate, ' ', '') = REPLACE($1, ' ', '')",
+        { plate }
+    )
 end
 
 function VehiclesDatabase.getCharacterVehicles(characterId)
