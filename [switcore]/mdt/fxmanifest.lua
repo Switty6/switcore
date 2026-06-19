@@ -4,7 +4,7 @@ lua54 'yes'
 
 description 'MDT unificat Politie + EMS - SwitCore'
 author 'Switty'
-version '1.1.0'
+version '1.2.0'
 
 dependencies {
     'core',

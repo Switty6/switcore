@@ -1,4 +1,4 @@
-version '1.1.0'
+version '1.2.0'
 description 'Sistem dinamic de incarcare interioare GTA V'
 author 'Switty'
 
