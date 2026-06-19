@@ -1,4 +1,4 @@
-version     '1.1.0'
+version     '1.2.0'
 description 'Job Mecanic Auto - service player-owned cu sistem de componente vehicul'
 author      'Switty'
 

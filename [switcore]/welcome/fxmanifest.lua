@@ -5,7 +5,7 @@ lua54 'yes'
 name        'SwitCore - Welcome'
 description 'Camera cinematic + notificari de bun venit la primul spawn'
 author      'Switty'
-version     '1.1.0'
+version     '1.2.0'
 
 dependencies { 'core', 'notifications' }
 

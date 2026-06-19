@@ -1,4 +1,4 @@
-version '1.1.0'
+version '1.2.0'
 description 'Core - Sistemul de player management (core an plm)'
 author 'Switty'
 

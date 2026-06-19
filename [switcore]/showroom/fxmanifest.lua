@@ -1,4 +1,4 @@
-version     '1.1.0'
+version     '1.2.0'
 description 'Sistem showroom pentru SwitCore. Catalog vehicule, cumpărare cash/finanțare, test drive.'
 author      'Switty'
 

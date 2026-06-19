@@ -4,7 +4,7 @@ lua54 'yes'
 
 description 'HUD custom pentru SwitCore - health, armor, hunger, thirst, cash, timp, speedometer.'
 author 'Switty'
-version '1.1.0'
+version '1.2.0'
 
 dependencies {
     'core',

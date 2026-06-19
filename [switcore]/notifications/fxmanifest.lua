@@ -4,7 +4,7 @@ lua54 'yes'
 
 description 'Sistem de notificări NUI pentru SwitCore.'
 author 'Switty'
-version '1.1.0'
+version '1.2.0'
 
 dependencies {
     'core',

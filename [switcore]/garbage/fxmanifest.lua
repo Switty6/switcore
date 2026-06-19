@@ -1,4 +1,4 @@
-version     '1.1.0'
+version     '1.2.0'
 description 'Job Salubritate - colectare gunoi pe rute predefinite, plata per container'
 author      'Switty'
 

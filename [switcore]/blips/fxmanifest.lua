@@ -4,7 +4,7 @@ lua54 'yes'
 
 name        'switcore-blips'
 description 'Blips și markere 3D pentru locații - SwitCore'
-version     '1.1.0'
+version     '1.2.0'
 
 dependencies {
     'settings',

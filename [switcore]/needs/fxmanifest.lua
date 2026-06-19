@@ -1,4 +1,4 @@
-version '1.1.0'
+version '1.2.0'
 description 'Needs - Sistem de hunger & thirst pentru SwitCore.'
 author 'Switty'
 
