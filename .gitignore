@@ -37,6 +37,9 @@ config.local.js
 .env.local
 .env.*.local
 
+# server.cfg local (contine credentiale); versionam doar server.cfg.example
+server.cfg
+
 # ============================================================================
 # Foldere ignorate (gameplay e per-server, builders e build output)
 # ============================================================================

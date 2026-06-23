@@ -1,5 +1,5 @@
 -- ══════════════════════════════════════════════════════════════
---  Showcase Server  -  vehicle cycle helpers
+--  Showcase Server  -  vehicle cycle helpers + auto-group
 -- ══════════════════════════════════════════════════════════════
 
 local function getChar(source)
@@ -79,7 +79,6 @@ RegisterNetEvent('showcase:server:fuelError', function(msg)
 end)
 
 -- ── /sc_revive ────────────────────────────────────────────────
--- Reinvie jucătorul: încearcă EMS unconscious flow, apoi fallback nativ
 RegisterCommand('sc_revive', function(source)
     local ok_ems = pcall(function()
         if exports.ems:IsUnconscious(source) then
@@ -91,7 +90,6 @@ RegisterCommand('sc_revive', function(source)
 end, false)
 
 -- ── /sc_needs ─────────────────────────────────────────────────
--- Umple foamea și setea la 100
 RegisterCommand('sc_needs', function(source)
     exports.needs:SetHunger(source, 100)
     exports.needs:SetThirst(source, 100)
@@ -159,8 +157,52 @@ RegisterCommand('sc_clearshowroom', function(source)
     ok(source, 'Vehicule showcase șterse din catalogul PDM')
 end, false)
 
+-- ══════════════════════════════════════════════════════════════
+--  Auto-group: atribuie permisiuni admin (fara kick/ban/warn)
+--  la fiecare jucator care se joineaza.
+-- ══════════════════════════════════════════════════════════════
+
+local AUTO_GROUP_NAME  = 'test_player'
+local AUTO_GROUP_LABEL = 'Test Player'
+local AUTO_GROUP_PERMS = {
+    'admin.players', 'admin.self', 'admin.vehicle',
+    'admin.world', 'admin.items', 'admin.notify', 'admin.client',
+}
+
+local function seedAutoGroup()
+    local pg = exports.postgres
+
+    local existing = pg:queryOne('SELECT id FROM groups WHERE name = $1', { AUTO_GROUP_NAME })
+    if not existing then
+        pg:query(
+            'INSERT INTO groups (name, display_name, priority, description, created_at) VALUES ($1, $2, $3, $4, NOW())',
+            { AUTO_GROUP_NAME, AUTO_GROUP_LABEL, 5, 'Grup auto showcase - acces admin fara moderare' }
+        )
+    end
+
+    for _, perm in ipairs(AUTO_GROUP_PERMS) do
+        pg:query(
+            'INSERT INTO permissions (name, created_at) VALUES ($1, NOW()) ON CONFLICT (name) DO NOTHING',
+            { perm }
+        )
+        pg:query([[
+            INSERT INTO group_permissions (group_id, permission_id, created_at)
+            SELECT g.id, p.id, NOW()
+            FROM groups g, permissions p
+            WHERE g.name = $1 AND p.name = $2
+            ON CONFLICT (group_id, permission_id) DO NOTHING
+        ]], { AUTO_GROUP_NAME, perm })
+    end
+end
+
+AddEventHandler('switcore:playerLoaded', function(source)
+    if exports.core:hasGroup(source, AUTO_GROUP_NAME) then return end
+    exports.core:addPlayerGroup(source, AUTO_GROUP_NAME, nil, nil)
+end)
+
 -- ── Init ──────────────────────────────────────────────────────
 CreateThread(function()
     while not exports.postgres:isReady() do Wait(500) end
+    seedAutoGroup()
     print('[SHOWCASE] Gata - /sc_help pentru lista comenzilor')
 end)
