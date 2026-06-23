@@ -165,8 +165,24 @@ end, false)
 local AUTO_GROUP_NAME  = 'test_player'
 local AUTO_GROUP_LABEL = 'Test Player'
 local AUTO_GROUP_PERMS = {
-    'admin.players', 'admin.self', 'admin.vehicle',
-    'admin.world', 'admin.items', 'admin.notify', 'admin.client',
+    -- players (fara moderate = fara kick/ban/warn din meniu)
+    'admin.players.view', 'admin.players.teleport', 'admin.players.freeze',
+    'admin.players.spectate', 'admin.players.cash', 'admin.players.groups',
+    'admin.players.bucket', 'admin.players.inventory', 'admin.players.needs',
+    'admin.players.character', 'admin.players.vehicles', 'admin.players.jobs',
+    -- self
+    'admin.self.noclip', 'admin.self.godmode', 'admin.self.invisible',
+    'admin.self.weapons', 'admin.self.cash', 'admin.self.heal',
+    'admin.self.teleport', 'admin.self.overlay', 'admin.self.model',
+    -- vehicle
+    'admin.vehicle.spawn', 'admin.vehicle.delete', 'admin.vehicle.modify',
+    -- world
+    'admin.world.time', 'admin.world.weather', 'admin.world.announce',
+    'admin.world.resources',
+    -- items
+    'admin.items.manage',
+    -- client (deschide meniul)
+    'admin.client',
 }
 
 local function seedAutoGroup()
