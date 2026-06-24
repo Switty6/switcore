@@ -18,9 +18,6 @@ CreateThread(function()
     PushLocale()
 end)
 
--- Închide loadscreen-ul când jucătorul este activ în sesiunea de rețea.
--- Acesta este cel mai fiabil indicator că resursele s-au terminat de încărcat.
-
 local screenShutdown = false
 
 local function Shutdown()
@@ -31,13 +28,6 @@ local function Shutdown()
     ShutdownLoadingScreen()
     ShutdownLoadingScreenNui()
 end
-
--- NetworkIsPlayerActive devine true după ce toate resursele sunt încărcate
--- și clientul s-a conectat la sesiunea de joc.
-CreateThread(function()
-    repeat Wait(150) until NetworkIsPlayerActive(PlayerId())
-    Shutdown()
-end)
 
 RegisterNetEvent('switcore:openCharacterSelection', function()
     Shutdown()

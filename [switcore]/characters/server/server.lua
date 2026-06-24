@@ -5,8 +5,11 @@ CreateThread(function()
     print('[CHARACTERS] PostgreSQL gata, sistem inițializat')
 end)
 
-AddEventHandler('playerJoining', function()
-    local source = source
+local selectionOpened = {}
+
+local function openSelectionFor(source)
+    if selectionOpened[source] then return end
+    selectionOpened[source] = true
 
     local waited = 0
     while not exports.postgres:isReady() and waited < 15000 do
@@ -23,10 +26,27 @@ AddEventHandler('playerJoining', function()
         Wait(500)
     end
 
-    if not GetPlayerName(source) then return end
+    if not GetPlayerName(source) then
+        selectionOpened[source] = nil
+        return
+    end
     if CharacterCache.getCharacter(source) then return end
 
     TriggerClientEvent('switcore:openCharacterSelection', source)
+end
+
+Sw.SecureEvent('switcore:clientReady', {
+    rateLimit = { max = 3, window = 10000 },
+}, function(ctx)
+    openSelectionFor(ctx.source)
+end)
+
+AddEventHandler('playerJoining', function()
+    local source = source
+    CreateThread(function()
+        Wait(3000)
+        openSelectionFor(source)
+    end)
 end)
 
 -- Aceste evenimente ruleaza pe ecranul de selectie, inainte de a exista un
@@ -172,6 +192,7 @@ AddEventHandler('playerDropped', function()
 
     CharacterCache.removeCharacter(source)
     lastPositions[source] = nil
+    selectionOpened[source] = nil
 end)
 
 CreateThread(function()

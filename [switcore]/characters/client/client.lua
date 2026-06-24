@@ -1,6 +1,11 @@
 local characterSelected = false
 local currentCharacter  = nil
 
+CreateThread(function()
+    while not NetworkIsPlayerActive(PlayerId()) do Wait(200) end
+    TriggerServerEvent('switcore:clientReady')
+end)
+
 RegisterNetEvent('switcore:openCharacterSelection', function()
     local ped = PlayerPedId()
     FreezeEntityPosition(ped, true)
@@ -34,7 +39,8 @@ RegisterNetEvent('switcore:characterSelected', function(character)
     end
 
     local pos = character.position
-    RequestCollisionAtCoord(pos.x, pos.y, pos.z)
+
+    DoScreenFadeOut(0)
 
     if character.appearance and character.appearance.gender ~= nil then
         local modelStr = (character.appearance.gender == 0) and 'mp_m_freemode_01' or 'mp_f_freemode_01'
@@ -48,8 +54,19 @@ RegisterNetEvent('switcore:characterSelected', function(character)
     end
 
     local ped = PlayerPedId()
+    FreezeEntityPosition(ped, true)
+    SetEntityVisible(ped, false, false)
     SetEntityCoordsNoOffset(ped, pos.x, pos.y, pos.z, false, false, false, true)
     SetEntityHeading(ped, pos.heading or 0.0)
+
+    local attempts = 0
+    RequestCollisionAtCoord(pos.x, pos.y, pos.z)
+    while not HasCollisionLoadedAroundEntity(ped) and attempts < 1000 do
+        RequestCollisionAtCoord(pos.x, pos.y, pos.z)
+        Wait(10)
+        attempts = attempts + 1
+    end
+
     FreezeEntityPosition(ped, false)
     SetEntityVisible(ped, true, false)
     NetworkResurrectLocalPlayer(pos.x, pos.y, pos.z, pos.heading or 0.0, true, false)
@@ -61,6 +78,8 @@ RegisterNetEvent('switcore:characterSelected', function(character)
         if character.stats.health then SetEntityHealth(ped2, tonumber(character.stats.health)) end
         if character.stats.armor  then SetPedArmour(ped2, tonumber(character.stats.armor))    end
     end
+
+    DoScreenFadeIn(500)
 
     TriggerEvent('switcore:characterLoaded', character)
     TriggerServerEvent('switcore:characterLoaded', character)
