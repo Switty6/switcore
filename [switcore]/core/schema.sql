@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS players (
     updated_at TIMESTAMP,
     last_seen TIMESTAMP,
     playtime INTEGER DEFAULT 0 NOT NULL,
-    language VARCHAR(10) DEFAULT 'ro'
+    language VARCHAR(10) DEFAULT NULL
 );
 
 CREATE INDEX IF NOT EXISTS idx_players_name ON players(name);

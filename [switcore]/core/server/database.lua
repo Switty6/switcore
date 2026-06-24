@@ -79,7 +79,7 @@ function Database.findPlayerByIdentifier(identifier)
         last_seen = player.last_seen,
         playtime = player.playtime or 0,
         created_at = player.created_at,
-        language = player.language or 'ro'
+        language = player.language
     }
 end
 
@@ -99,8 +99,8 @@ function Database.createPlayer(identifiers, name)
     end
     
     local playerResult = postgres:query(
-        'INSERT INTO players (name, created_at, updated_at, last_seen, playtime, language) VALUES ($1, NOW(), NOW(), NOW(), 0, $2) RETURNING *',
-        {name, LocalizationServer.getLanguage()}
+        'INSERT INTO players (name, created_at, updated_at, last_seen, playtime) VALUES ($1, NOW(), NOW(), NOW(), 0) RETURNING *',
+        {name}
     )
     
     if not playerResult or not playerResult.rows or not playerResult.rows[1] then

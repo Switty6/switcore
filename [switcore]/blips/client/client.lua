@@ -91,6 +91,10 @@ AddEventHandler('switcore:characterLoaded', function()
     TriggerServerEvent('blips:server:getConfig')
 end)
 
+RegisterNetEvent('switcore:languageChanged', function()
+    TriggerServerEvent('blips:server:getConfig')
+end)
+
 CreateThread(function()
     Wait(3000)
     if #blipsData == 0 then
