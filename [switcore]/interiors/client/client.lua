@@ -31,22 +31,6 @@ local PREDEFINED_INTERIORS = {
     },
 
     {
-        id             = 'pillbox_hospital',
-        name           = 'Pillbox Hospital',
-        entrance       = vector3(295.6, -592.0, 43.28),
-        interiorCoords = vector3(295.6, -592.0, 43.28),
-        triggerDistance = 50.0,
-    },
-
-    {
-        id             = 'sandy_medical',
-        name           = 'Sandy Shores Medical',
-        entrance       = vector3(1839.6, 3672.9, 34.28),
-        interiorCoords = vector3(1839.6, 3672.9, 34.28),
-        triggerDistance = 40.0,
-    },
-
-    {
         id             = 'bank_hawick',
         name           = 'Fleeca Bank Hawick',
         entrance       = vector3(-350.14, -50.37, 49.04),

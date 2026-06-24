@@ -51,7 +51,6 @@ INSERT INTO jobs (name, label, type, blip_sprite, blip_color) VALUES
     ('unemployed', 'Șomer',     'self_serve',  NULL, NULL),
     ('police',     'Poliție',   'whitelisted',   60,   29),
     ('ems',        'EMS',       'whitelisted',   61,    1),
-    ('mechanic',   'Mecanic',   'whitelisted',  446,    5),
     ('taxi',       'Taxi',      'self_serve',   198,    2),
     ('garbage',    'Salubritate','self_serve',  318,    4),
     ('ballas',     'Ballas',    'illegal',       84,   22),
@@ -76,10 +75,6 @@ INSERT INTO job_grades (job_name, grade, label, salary, can_manage, permissions)
     ('ems',     0, 'Paramedic',    2000, false, '[]'),
     ('ems',     1, 'Medic',        3000, false, '["revive"]'),
     ('ems',     2, 'Medic Șef',    4500, true,  '["revive","manage"]'),
-
-    ('mechanic',0, 'Ucenic',       1500, false, '[]'),
-    ('mechanic',1, 'Mecanic',      2500, false, '["repair"]'),
-    ('mechanic',2, 'Șef Atelier',  3500, true,  '["repair","manage"]'),
 
     ('taxi',    0, 'Șofer Taxi',      0, false, '[]'),
 

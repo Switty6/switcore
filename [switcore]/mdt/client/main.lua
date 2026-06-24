@@ -27,9 +27,15 @@ end
 
 local function OpenMDT()
     if isMDTOpen then CloseMDT(); return end
-    if not currentJob or not currentJob.isOnDuty then return end
+    if not currentJob then return end
 
     local jobName = currentJob.name
+    if jobName ~= 'police' and jobName ~= 'ems' then return end
+
+    if not currentJob.isOnDuty then
+        exports.notifications:Notify('error', Sw.T('mdt.notify.must_be_on_duty'), 4000)
+        return
+    end
 
     if jobName == 'police' then
         TriggerServerEvent('police:server:openMDT')

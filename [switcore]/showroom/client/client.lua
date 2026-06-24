@@ -36,6 +36,22 @@ local function DestroyShowroomCam()
     end
 end
 
+local function FindFreeTestDriveSpawn(sp)
+    local heading        = sp.heading or 0.0
+    local rad            = math.rad(heading)
+    local rightX, rightY = math.cos(rad), math.sin(rad)
+    local lateral        = { 0.0, 3.5, -3.5, 7.0, -7.0, 10.5, -10.5 }
+    for _, off in ipairs(lateral) do
+        local px      = sp.x + rightX * off
+        local py      = sp.y + rightY * off
+        local closest = GetClosestVehicle(px, py, sp.z, 2.5, 0, 70)
+        if not closest or closest == 0 or not DoesEntityExist(closest) then
+            return px, py, sp.z, heading
+        end
+    end
+    return sp.x, sp.y, sp.z, heading
+end
+
 local function SpawnDisplayVehicle(modelName, colorIndex)
     spawnToken = spawnToken + 1
     local myToken = spawnToken
@@ -192,12 +208,8 @@ RegisterNetEvent('showroom:client:startTestDrive', function(data)
         return
     end
 
-    testDriveEntity = CreateVehicle(
-        model,
-        spawnPoint.x, spawnPoint.y, spawnPoint.z,
-        spawnPoint.heading or 0.0,
-        true, false
-    )
+    local sx, sy, sz, sh = FindFreeTestDriveSpawn(spawnPoint)
+    testDriveEntity = CreateVehicle(model, sx, sy, sz, sh, true, false)
 
     SetVehicleNumberPlateText(testDriveEntity, data.plate)
     SetEntityAsMissionEntity(testDriveEntity, true, true)

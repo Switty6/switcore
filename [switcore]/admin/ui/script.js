@@ -609,6 +609,7 @@ function setToggleCard(btnId, on, flagKey, sidebarId) {
             if (tag) {
                 tag.textContent = on ? t('state_on') : t('state_off');
                 tag.className   = on ? 'status-on' : 'status-off';
+                tag.dataset.i18n = on ? 'admin.ui.state_on' : 'admin.ui.state_off';
             }
         }
     }

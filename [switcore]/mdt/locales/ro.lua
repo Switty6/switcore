@@ -23,6 +23,8 @@ return {
             impound_done = 'Vehiculul {1} a fost sechestrat.',
             impound_released = 'Vehicul eliberat din sechestru.',
             waypoint_set = 'Waypoint setat la locatia apelului.',
+            must_be_on_duty_title = 'MDT',
+            must_be_on_duty = 'Trebuie sa fii in tura pentru a deschide MDT-ul.',
         },
 
         -- Comanda / keymapping

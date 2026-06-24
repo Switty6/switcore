@@ -23,6 +23,8 @@ return {
             impound_done = 'Vehicle {1} has been impounded.',
             impound_released = 'Vehicle released from impound.',
             waypoint_set = 'Waypoint set to the call location.',
+            must_be_on_duty_title = 'MDT',
+            must_be_on_duty = 'You must be on duty to open the MDT.',
         },
 
         -- Command / keymapping

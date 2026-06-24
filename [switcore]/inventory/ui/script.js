@@ -47,7 +47,8 @@ window.addEventListener('message', (event) => {
                 uiConfig.MaxSlots = data.inventory.maxSlots;
                 setupGrids();
             }
-            if (playerInventory.id === null || data.invId.startsWith("char:")) {
+            if (data.invId.startsWith("char:")) {
+                if (playerInventory.id !== null && playerInventory.id !== data.invId) break;
                 playerInventory.id = data.invId;
                 playerInventory.slots = data.inventory.slots;
                 playerInventory.maxWeight = data.inventory.maxWeight;

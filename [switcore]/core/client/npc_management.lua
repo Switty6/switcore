@@ -19,7 +19,9 @@ CreateThread(function()
         SetCreateRandomCops(false)
         SetCreateRandomCopsNotOnScenarios(false)
         SetCreateRandomCopsOnScenarios(false)
-        SetCanAttackFriendly(ped, true, false)
+
+        SetCanAttackFriendly(ped, true, true)
+        NetworkSetFriendlyFireOption(true)
 
         Wait(2000)
     end

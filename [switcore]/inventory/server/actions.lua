@@ -118,9 +118,9 @@ Sw.SecureEvent('switcore:inventoryMoveItem', {
         InventoryDB.saveSlot(toInvId, toSlot, toInv.slots[toSlot])
     end
 
-    TriggerClientEvent("switcore:inventoryUpdated", -1, fromInvId, fromInv)
+    TriggerClientEvent("switcore:inventoryUpdated", src, fromInvId, fromInv)
     if fromInvId ~= toInvId then
-        TriggerClientEvent("switcore:inventoryUpdated", -1, toInvId, toInv)
+        TriggerClientEvent("switcore:inventoryUpdated", src, toInvId, toInv)
     end
 end)
 

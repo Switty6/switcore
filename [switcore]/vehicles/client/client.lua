@@ -176,16 +176,15 @@ CreateThread(function()
             if GetPedInVehicleSeat(vehicle, -1) == ped then
                 if not wasInVehicle then
                     wasInVehicle = true
-                    local hasKey       = HasKeyForVehicle(vehicle)
-                    local engineRunning = GetIsVehicleEngineRunning(vehicle)
-                    if not hasKey then
-                        if engineRunning then
-                            tempKeys[GetVehicleNumberPlateText(vehicle):gsub('%s+', '')] = true
-                        else
-                            TriggerEvent('switcore:notify:local', 'error', Sw.T('vehicles.vehicle_locked_no_key'), 4000)
-                        end
+                    local hasKey = HasKeyForVehicle(vehicle)
+                    if hasKey then
+                        SetVehicleEngineOn(vehicle, GetIsVehicleEngineRunning(vehicle), true, true)
+                    else
+                        SetVehicleEngineOn(vehicle, false, true, true)
+                        TriggerEvent('switcore:notify:local', 'error', Sw.T('vehicles.vehicle_locked_no_key'), 4000)
+                        TaskLeaveVehicle(ped, vehicle, 16)
+                        wasInVehicle = false
                     end
-                    SetVehicleEngineOn(vehicle, engineRunning, true, true)
                 end
             else
                 wasInVehicle = true
