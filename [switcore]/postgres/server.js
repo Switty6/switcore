@@ -55,7 +55,8 @@ function normalizeParams(params) {
             const maxIndex = Math.max(...keys.map(k => parseInt(k)));
             const arr = [];
             for (let i = 1; i <= maxIndex; i++) {
-                const val = params[String(i)] ?? params[i] ?? null;
+                const raw = params[String(i)] ?? params[i];
+                const val = raw === false ? null : (raw ?? null);
                 arr.push(val);
             }
             return arr;

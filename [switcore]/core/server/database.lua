@@ -495,7 +495,7 @@ function Database.addGroupToPlayer(dbId, groupId, assignedBy, expiresAt)
     local success, err = pcall(function()
         postgres:query(
             'INSERT INTO player_groups (player_id, group_id, assigned_at, assigned_by, expires_at) VALUES ($1, $2, NOW(), $3, $4) ON CONFLICT (player_id, group_id) DO UPDATE SET expires_at = $4, assigned_at = NOW()',
-            {dbId, groupId, assignedBy or json.null, expiresAt or json.null}
+            {dbId, groupId, assignedBy or false, expiresAt or false}
         )
     end)
     
