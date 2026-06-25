@@ -63,7 +63,7 @@ pool.on('error', (err) => {
 
 function sanitizeParam(v) {
     if (typeof v === 'function') return false;
-    if (v === null || v === undefined) return null;
+    if (v === false || v === null || v === undefined) return null;
     return v;
 }
 
