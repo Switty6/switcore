@@ -30,10 +30,29 @@ async function start() {
     if (isInitialized || isInitializing) return;
 
     isInitializing = true;
-    await initialize(pool);
-    isInitialized = true;
+
+    const MAX_RETRIES = 10;
+    const RETRY_DELAY_MS = 3000;
+
+    let success = false;
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+        success = await initialize(pool);
+        if (success) break;
+
+        if (attempt < MAX_RETRIES) {
+            console.log(`[POSTGRES] Reîncerc în ${RETRY_DELAY_MS / 1000}s... (${attempt}/${MAX_RETRIES})`);
+            await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS));
+        }
+    }
+
     isInitializing = false;
 
+    if (!success) {
+        console.error('[POSTGRES] ✗ Nu s-a putut conecta după toate încercările. postgres:ready nu va fi emis.');
+        return;
+    }
+
+    isInitialized = true;
     emit('postgres:ready');
     console.log('[POSTGRES] ✓ Eveniment postgres:ready emis');
 }
