@@ -6,6 +6,31 @@ CreateThread(function()
     TriggerServerEvent('switcore:clientReady')
 end)
 
+-- Plasa de siguranta intre spawn si incarcarea unui caracter. Spawnmanager-ul
+-- baga ped-ul in lume automat; in mod normal e ascuns/inghetat de
+-- switcore:openCharacterSelection. Daca evenimentul ala intarzie sau lantul
+-- intro -> meniu se rupe (ex. reconectare dupa abandon in selectia de parinti),
+-- jucatorul ramanea sub harta, fara meniu. Cat timp nu exista caracter si nu
+-- suntem in creator, tinem ped-ul inghetat si invizibil, iar daca dupa intro
+-- meniul tot nu s-a deschis, il fortam.
+CreateThread(function()
+    local elapsed = 0
+    while not characterSelected do
+        if not CharacterSelection.isCreatorActive() then
+            local ped = PlayerPedId()
+            if ped and ped ~= 0 then
+                FreezeEntityPosition(ped, true)
+                SetEntityVisible(ped, false, false)
+            end
+            if elapsed >= 12000 and not CharacterSelection.isOpen() then
+                CharacterSelection.open()
+            end
+        end
+        Wait(500)
+        elapsed = elapsed + 500
+    end
+end)
+
 RegisterNetEvent('switcore:openCharacterSelection', function()
     local ped = PlayerPedId()
     FreezeEntityPosition(ped, true)
@@ -33,6 +58,11 @@ RegisterNetEvent('switcore:characterSelected', function(character)
     CharacterSelection.close()
 
     if not (character and character.position) then
+        -- Fara pozitie nu teleportam, dar tot trebuie sa eliberam ped-ul din
+        -- starea de inghetat/invizibil pusa de garda de spawn.
+        local ped = PlayerPedId()
+        FreezeEntityPosition(ped, false)
+        SetEntityVisible(ped, true, false)
         TriggerEvent('switcore:characterLoaded', character)
         TriggerServerEvent('switcore:characterLoaded', character)
         return
