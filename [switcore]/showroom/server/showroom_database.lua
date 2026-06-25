@@ -79,6 +79,9 @@ end
 function ShowroomDatabase.seedCatalogItem(dealershipId, model, label, category, price, financeEligible, vipOnly, sortOrder)
     if not ensurePostgres() then return nil end
 
+    financeEligible = financeEligible ~= false  -- default true
+    vipOnly         = not not vipOnly            -- default false
+
     local result = getPostgres():query([[
         INSERT INTO vehicle_catalog
             (dealership_id, model, label, category, price, finance_eligible, vip_only, sort_order)
