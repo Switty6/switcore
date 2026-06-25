@@ -42,27 +42,31 @@ pool.on('error', (err) => {
     console.error('[POSTGRES] Eroare neașteptată pe client inactiv', err);
 });
 
+function sanitizeParam(v) {
+    if (v === false || v === null || v === undefined || typeof v === 'function') return null;
+    return v;
+}
+
 function normalizeParams(params) {
     if (params === null || params === undefined) return [];
-    if (Array.isArray(params)) return params;
-    
+    if (Array.isArray(params)) return params.map(sanitizeParam);
+
     if (typeof params === 'object') {
         const keys = Object.keys(params);
         if (keys.length === 0) return [];
-        
+
         const isSparseArray = keys.every(key => !isNaN(parseInt(key)));
         if (isSparseArray) {
             const maxIndex = Math.max(...keys.map(k => parseInt(k)));
             const arr = [];
             for (let i = 1; i <= maxIndex; i++) {
                 const raw = params[String(i)] ?? params[i];
-                const val = raw === false ? null : (raw ?? null);
-                arr.push(val);
+                arr.push(sanitizeParam(raw));
             }
             return arr;
         }
     }
-    
+
     return [params];
 }
 
