@@ -1,6 +1,9 @@
 
 PoliceConfig   = {}
-local myJob    = nil
+-- Global (nu local) in mod deliberat: handcuffs.lua si vehicles.lua citesc myJob
+-- direct, la fel cum citesc deja PoliceConfig. Cu "local" aici, acele fisiere
+-- vedeau mereu nil - meniul de catusare si zona garajului nu se activau niciodata.
+myJob    = nil
 local proximityIds = {}
 
 function PushPoliceI18n()

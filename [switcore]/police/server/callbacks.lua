@@ -78,6 +78,7 @@ Sw.SecureEvent('police:server:handcuffPlayer', {
     end
     TriggerClientEvent('police:client:handcuffed', targetSrc)
     notify(src, 'success', Sw.TP(src, 'police.title_handcuffed'), Sw.TP(src, 'police.player_cuffed'))
+    notify(targetSrc, 'warning', Sw.TP(targetSrc, 'police.title_handcuffed'), Sw.TP(targetSrc, 'police.you_were_cuffed'))
 end)
 
 Sw.SecureEvent('police:server:unhandcuffPlayer', {
@@ -103,6 +104,7 @@ Sw.SecureEvent('police:server:unhandcuffPlayer', {
     exports.police:RemoveHandcuff(targetChar.id)
     TriggerClientEvent('police:client:unhandcuffed', targetSrc)
     notify(src, 'success', Sw.TP(src, 'police.title_uncuffed'), Sw.TP(src, 'police.cuffs_removed'))
+    notify(targetSrc, 'success', Sw.TP(targetSrc, 'police.title_uncuffed'), Sw.TP(targetSrc, 'police.you_were_uncuffed'))
 end)
 
 Sw.SecureEvent('police:server:arrestPlayer', {

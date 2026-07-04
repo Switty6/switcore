@@ -161,6 +161,37 @@ RegisterNetEvent('police:client:playerHandcuffedByMe', function(targetSrc)
     nearbyInteractions[targetSrc .. '_arrest'] = arrestId
 end)
 
+RegisterCommand('handcuff', function()
+    if not isOfficerWithArrest() then return end
+
+    local maxDist  = (PoliceConfig.handcuffDist or 2.5) + 0.5
+    local myPed    = PlayerPedId()
+    local myCoords = GetEntityCoords(myPed)
+    local mySrc    = GetPlayerServerId(PlayerId())
+
+    local closestSrc, closestDist = nil, maxDist
+    for _, playerId in ipairs(GetActivePlayers()) do
+        local targetSrc = GetPlayerServerId(playerId)
+        if targetSrc ~= mySrc then
+            local targetPed = GetPlayerPed(playerId)
+            if DoesEntityExist(targetPed) then
+                local dist = #(myCoords - GetEntityCoords(targetPed))
+                if dist <= closestDist then
+                    closestSrc  = targetSrc
+                    closestDist = dist
+                end
+            end
+        end
+    end
+
+    if not closestSrc then
+        TriggerEvent('switcore:notify:local', 'warning', Sw.T('police.no_player_nearby'), 3000)
+        return
+    end
+
+    TriggerServerEvent('police:server:handcuffPlayer', closestSrc)
+end, false)
+
 AddEventHandler('onResourceStop', function(resourceName)
     if resourceName ~= GetCurrentResourceName() then return end
     cleanNearbyInteractions()
