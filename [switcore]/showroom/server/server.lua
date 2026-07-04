@@ -6,7 +6,7 @@ local function SeedDefaultSettings()
             key   = 'showroom.dealership_locations',
             value = json.encode({
                 {
-                    code           = 'pdm',
+                    code           = 'PDM',
                     name           = 'Premium Deluxe Motorsport',
                     coords         = { x = -43.65, y = -1098.73, z = 26.42 },
                     testDriveSpawn = { x = -36.35, y = -1100.73, z = 26.42, heading = 90.0 },
