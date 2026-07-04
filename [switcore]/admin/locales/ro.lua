@@ -61,6 +61,7 @@ return {
             item_add_failed      = 'Adăugare eșuată: {1}',
             item_removed         = 'Șters {1}x {2}.',
             item_remove_failed   = 'Ștergere eșuată: {1}',
+            target_received_item = 'Ai primit {1}x {2} de la un administrator.',
 
             item_invalid_name    = 'Nume invalid (doar a-z, 0-9, _, max 50).',
             item_invalid_label   = 'Label invalid (1-100 caractere).',

@@ -711,11 +711,22 @@ Sw.SecureEvent('admin:server:givePlayerItem', {
         end
         logAdminAction(src, 'inventory.give', targetId, { item = itemName, amount = amount })
         notify(src, 'success', Sw.TP(src, 'admin.notify.item_added', amount, itemName))
+        if targetId ~= src then
+            notify(targetId, 'info', Sw.TP(targetId, 'admin.notify.target_received_item', amount, itemName))
+        end
 
         local payload = buildInventoryPayload(charId)
         if payload then
             payload.targetId = targetId
             TriggerClientEvent('admin:client:playerInventory', src, payload)
+        end
+        -- notifyInventoryUpdate din AddItem targeteaza deja jucatorul-tinta,
+        -- dar il redeclansam explicit ca sa nu depindem doar de randul lui din AddItem
+        -- daca panoul admin si inventarul propriu al jucatorului au desincronizat randarea.
+        local invId = 'char:' .. tostring(charId)
+        local inv = exports.inventory:GetInventory(invId)
+        if inv then
+            TriggerClientEvent('switcore:inventoryUpdated', targetId, invId, inv)
         end
     end)
 end)
@@ -746,6 +757,11 @@ Sw.SecureEvent('admin:server:takePlayerItem', {
         if payload then
             payload.targetId = targetId
             TriggerClientEvent('admin:client:playerInventory', src, payload)
+        end
+        local invIdLive = 'char:' .. tostring(charId)
+        local invLive = exports.inventory:GetInventory(invIdLive)
+        if invLive then
+            TriggerClientEvent('switcore:inventoryUpdated', targetId, invIdLive, invLive)
         end
     end)
 end)

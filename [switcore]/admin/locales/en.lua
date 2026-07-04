@@ -61,6 +61,7 @@ return {
             item_add_failed      = 'Add failed: {1}',
             item_removed         = 'Removed {1}x {2}.',
             item_remove_failed   = 'Remove failed: {1}',
+            target_received_item = 'You received {1}x {2} from an admin.',
 
             item_invalid_name    = 'Invalid name (only a-z, 0-9, _, max 50).',
             item_invalid_label   = 'Invalid label (1-100 characters).',
