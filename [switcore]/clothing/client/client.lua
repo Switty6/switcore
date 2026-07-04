@@ -6,7 +6,7 @@ local tryOnCam         = nil
 local isAutoRotating   = false
 local isInTryOn        = false
 local storeBlips       = {}
-local interactionsSet  = false
+local registeredStores = {}
 
 local BLIP_SPRITE = 73   -- t-shirt
 local BLIP_COLOR  = 4    -- alb
@@ -43,19 +43,29 @@ function ApplyAllComponents(components, targetPed)
 end
 
 function SetupStoreInteractions()
-    -- proximity nu permite stergerea interactiunilor statice; le adaugam o singura data
-    if interactionsSet then return end
-    interactionsSet = true
+    -- proximity nu permite stergerea interactiunilor statice; inregistram fiecare
+    -- magazin o singura data (nu tot lotul), ca magazinele adaugate in DB dupa
+    -- primul push (clothing:receiveStores) sa primeasca si ele interactiunea,
+    -- nu doar blip-ul (SetupStoreBlips se reruleaza mereu de la zero).
     for _, store in ipairs(stores) do
-        local coords = store.shop_coords
-        if type(coords) == 'string' then coords = json.decode(coords) end
-        if coords then
-            exports.proximity:AddStaticInteraction(
-                vector3(coords.x, coords.y, coords.z),
-                store.label,
-                'clothing_store',
-                {storeName = store.name}
-            )
+        if store.name and not registeredStores[store.name] then
+            local coords = store.shop_coords
+            if type(coords) == 'string' then
+                local ok, decoded = pcall(json.decode, coords)
+                coords = ok and decoded or nil
+                if not ok then
+                    print(('[CLOTHING] Coordonate invalide pentru magazinul %s'):format(tostring(store.name)))
+                end
+            end
+            if coords then
+                exports.proximity:AddStaticInteraction(
+                    vector3(coords.x, coords.y, coords.z),
+                    store.label,
+                    'clothing_store',
+                    {storeName = store.name}
+                )
+                registeredStores[store.name] = true
+            end
         end
     end
 end
@@ -68,7 +78,10 @@ function SetupStoreBlips()
 
     for _, store in ipairs(stores) do
         local coords = store.shop_coords
-        if type(coords) == 'string' then coords = json.decode(coords) end
+        if type(coords) == 'string' then
+            local ok, decoded = pcall(json.decode, coords)
+            coords = ok and decoded or nil
+        end
         if coords then
             local blip = AddBlipForCoord(coords.x, coords.y, coords.z)
             SetBlipSprite(blip, BLIP_SPRITE)
