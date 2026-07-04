@@ -109,7 +109,13 @@ local function buildBlipsConfig(src)
         { x = 1322.7,  y = -1651.6, z = 52.3,  sprite = 75,  labelKey = 'blips.label.tattoo' },
         { x = -293.7,  y = 6200.0,  z = 31.5,  sprite = 75,  labelKey = 'blips.label.tattoo' },
     }
+    -- Daca setarea exista dar a fost salvata goala (randuri mai vechi din
+    -- baza de date, dinainte sa existe aceste POI-uri implicite), revenim la
+    -- lista implicita in loc sa afisam harta fara ele.
     local pois = exports.settings:GetSettingJSON('blips.pois', defaultPois)
+    if not pois or #pois == 0 then
+        pois = defaultPois
+    end
 
     local blipsList = {}
 

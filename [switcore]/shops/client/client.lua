@@ -34,7 +34,17 @@ CreateThread(function()
     TriggerServerEvent('shops:server:getShops')
 end)
 
+local shopBlips = {}
+
+local function ClearShopBlips()
+    for _, blip in ipairs(shopBlips) do
+        if DoesBlipExist(blip) then RemoveBlip(blip) end
+    end
+    shopBlips = {}
+end
+
 RegisterNetEvent('shops:client:shopsData', function(shops)
+    ClearShopBlips()
     for _, shop in ipairs(shops) do
         local coords = shop.coords
         if type(coords) == 'string' then
@@ -47,9 +57,24 @@ RegisterNetEvent('shops:client:shopsData', function(shops)
                 'shop_interaction',
                 { shopName = shop.name }
             )
+
+            local blip = AddBlipForCoord(coords.x, coords.y, coords.z)
+            SetBlipSprite(blip, tonumber(shop.blip_sprite) or 52)
+            SetBlipColour(blip, tonumber(shop.blip_color) or 2)
+            SetBlipScale(blip, 0.8)
+            SetBlipAsShortRange(blip, true)
+            BeginTextCommandSetBlipName('STRING')
+            AddTextComponentString(shop.label or '')
+            EndTextCommandSetBlipName(blip)
+            table.insert(shopBlips, blip)
         end
     end
     print('[SHOPS-CLIENT] ' .. #shops .. ' magazine înregistrate în proximity.')
+end)
+
+AddEventHandler('onResourceStop', function(name)
+    if GetCurrentResourceName() ~= name then return end
+    ClearShopBlips()
 end)
 
 RegisterNetEvent('switcore:proximity:interact', function(interaction)
