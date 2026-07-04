@@ -11,6 +11,7 @@ function InitializeBankingSystem()
     CreateDefaultBanks()
     
     CreateDefaultCurrencies()
+    SeedDefaultExchangeRates()
     CreateDefaultFees()
     StartPeriodicTasks()
     OrgManager.ensureOrgAccount('police', 'MAZE')
@@ -49,6 +50,41 @@ function CreateDefaultCurrencies()
             )
             if success then
                 exports.core:log('info', 'BANKING', string.format('Valută creată: %s (%s)', currencyData.name, currencyData.code))
+            end
+        end
+    end
+end
+
+-- Fara randuri in currency_exchange_rates, orice schimb valutar esua cu
+-- "eroare la calcularea cursului". Semanam cursuri initiale pentru perechile
+-- care nu au niciun curs salvat (in nicio directie).
+function SeedDefaultExchangeRates()
+    local currencies = BankingDatabase.getActiveCurrencies()
+    if not currencies or #currencies < 2 then return end
+
+    local defaultRates = exports.settings:GetSettingJSON('banking.default_exchange_rates', {
+        USD_EUR = 0.92,
+    })
+
+    for i = 1, #currencies do
+        for j = i + 1, #currencies do
+            local a, b = currencies[i], currencies[j]
+            local existing = CurrencyManager.getDirectOrReverseRate(a.id, b.id)
+            if not existing then
+                local rate = tonumber(defaultRates[a.code .. '_' .. b.code])
+                if not rate then
+                    local reverse = tonumber(defaultRates[b.code .. '_' .. a.code])
+                    if reverse and reverse > 0 then rate = 1.0 / reverse end
+                end
+                if not rate then
+                    rate = 1.0
+                    exports.core:log('warn', 'BANKING', string.format(
+                        'Nicio valoare implicita pentru perechea %s/%s in banking.default_exchange_rates - folosesc 1.0', a.code, b.code))
+                end
+                local ok = CurrencyManager.setExchangeRate(a.id, b.id, rate)
+                if ok then
+                    exports.core:log('info', 'BANKING', string.format('Curs de schimb semanat: %s -> %s = %.4f', a.code, b.code, rate))
+                end
             end
         end
     end

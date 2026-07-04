@@ -68,15 +68,16 @@ function CurrencyManager.getExchangeRate(currencyFromId, currencyToId)
         return exchangeRateCache[cacheKey].rate
     end
     
-    local rate = CurrencyManager.getLatestExchangeRate(currencyFromId, currencyToId)
-    
+    local rate = CurrencyManager.getDirectOrReverseRate(currencyFromId, currencyToId)
+
     if not rate then
-        local reverseRate = CurrencyManager.getLatestExchangeRate(currencyToId, currencyFromId)
-        if reverseRate and reverseRate > 0 then
-            rate = 1.0 / reverseRate
-        end
+        rate = CurrencyManager.getCrossRate(currencyFromId, currencyToId)
     end
-    
+
+    if not rate then
+        print(string.format('[BANKING] Niciun curs de schimb pentru perechea %s -> %s (nici direct, nici invers, nici prin triangulare). Seteaza un curs cu setExchangeRate sau prin setarea banking.default_exchange_rates.', tostring(currencyFromId), tostring(currencyToId)))
+    end
+
     if rate then
         local fluctuation = CurrencyManager.calculateVolumeFluctuation(currencyFromId, currencyToId)
         rate = rate * (1.0 + fluctuation)
@@ -88,6 +89,36 @@ function CurrencyManager.getExchangeRate(currencyFromId, currencyToId)
     end
     
     return rate
+end
+
+function CurrencyManager.getDirectOrReverseRate(currencyFromId, currencyToId)
+    local rate = CurrencyManager.getLatestExchangeRate(currencyFromId, currencyToId)
+    if rate then return rate end
+
+    local reverseRate = CurrencyManager.getLatestExchangeRate(currencyToId, currencyFromId)
+    if reverseRate and reverseRate > 0 then
+        return 1.0 / reverseRate
+    end
+
+    return nil
+end
+
+-- Triangulare printr-o valuta pivot cand nu exista curs direct intre cele doua.
+function CurrencyManager.getCrossRate(currencyFromId, currencyToId)
+    local currencies = BankingDatabase.getActiveCurrencies()
+    if not currencies then return nil end
+
+    for _, pivot in ipairs(currencies) do
+        if pivot.id ~= currencyFromId and pivot.id ~= currencyToId then
+            local fromToPivot = CurrencyManager.getDirectOrReverseRate(currencyFromId, pivot.id)
+            local pivotToTo   = CurrencyManager.getDirectOrReverseRate(pivot.id, currencyToId)
+            if fromToPivot and pivotToTo then
+                return fromToPivot * pivotToTo
+            end
+        end
+    end
+
+    return nil
 end
 
 function CurrencyManager.getLatestExchangeRate(currencyFromId, currencyToId)
