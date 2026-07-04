@@ -29,13 +29,17 @@ RegisterNetEvent('switcore:needsUpdate', function(hunger, thirst)
     -- Aplicam/curatam tint-ul doar la tranzitie. Altfel ClearTimecycleModifier()
     -- pe fiecare update ar sterge si modificatorii setati de medical (febra etc.),
     -- iar tint-ul 'damage' albastrui ar parea ca apare/dispare aleator.
-    if hunger <= 10.0 and thirst <= 10.0 then
+    -- Praguri diferite pentru activare (<=15, oricare din foame/sete) si
+    -- dezactivare (>20 amandoua) - altfel un singur stat scazut (ex. doar sete)
+    -- nu declansa niciodata efectul, sau acesta disparea instant la o mica
+    -- fluctuatie in jurul unui prag unic.
+    if hunger <= 15.0 or thirst <= 15.0 then
         if not needsTintActive then
             SetTimecycleModifier('damage')
             SetTimecycleModifierStrength(0.3)
             needsTintActive = true
         end
-    elseif needsTintActive then
+    elseif hunger > 20.0 and thirst > 20.0 and needsTintActive then
         ClearTimecycleModifier()
         needsTintActive = false
     end
