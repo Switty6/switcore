@@ -1,6 +1,36 @@
 
 GaragesManager = {}
 
+-- garage.spawn_point ramane un singur JSONB (fara migrare de schema): acceptam
+-- fie un obiect unic {x,y,z,heading}, fie un array de asemenea obiecte, pentru
+-- garaje cu mai multe locuri de parcare configurate manual in DB. Expuse pe
+-- tabelul GaragesManager (nu 'local') ca sa fie folosite si din
+-- impound_manager.lua, alt fisier din acelasi resource.
+function GaragesManager.normalizeSpawnPoints(raw)
+    if not raw then return {} end
+    if raw.x then return { raw } end
+    return raw
+end
+
+-- Necesita OneSync (obligatoriu pentru framework, vezi avertismentul din
+-- core la pornire) ca GetAllVehicles()/GetEntityCoords server-side sa
+-- returneze date corecte.
+function GaragesManager.pickFreeSpawnPoint(points)
+    if #points == 0 then return nil end
+    for _, sp in ipairs(points) do
+        local spCoords = vector3(sp.x, sp.y, sp.z)
+        local blocked  = false
+        for _, veh in ipairs(GetAllVehicles()) do
+            if DoesEntityExist(veh) and #(spCoords - GetEntityCoords(veh)) <= 3.0 then
+                blocked = true
+                break
+            end
+        end
+        if not blocked then return sp end
+    end
+    return points[1]
+end
+
 function GaragesManager.parkVehicle(source, characterId, vehicleId, garageCode, state)
     if not characterId or not vehicleId or not garageCode then
         return false, Sw.TP(source, 'garages.error_invalid_parameters')
@@ -68,7 +98,8 @@ function GaragesManager.retrieveVehicle(source, characterId, vehicleId, garageCo
         return false, Sw.TP(source, 'garages.error_use_impound_interface')
     end
 
-    local ok, err = exports.vehicles:spawnVehicleForPlayer(source, vehicleId, garage.spawn_point)
+    local spawnPoint = GaragesManager.pickFreeSpawnPoint(GaragesManager.normalizeSpawnPoints(garage.spawn_point))
+    local ok, err = exports.vehicles:spawnVehicleForPlayer(source, vehicleId, spawnPoint)
     if not ok then return false, err end
 
     GaragesDatabase.logAction(vehicleId, characterId, garage.id, 'retrieved', tonumber(vehicle.fuel))

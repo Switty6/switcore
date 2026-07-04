@@ -69,7 +69,8 @@ function ImpoundManager.releaseVehicle(source, characterId, vehicleId)
     local impoundCode = exports.settings:GetSetting('garages.impound_garage_code', 'IMPOUND_LSIA')
     local garage = GaragesDatabase.getGarageByCode(impoundCode)
 
-    local ok, err = exports.vehicles:spawnVehicleForPlayer(source, vehicleId, garage and garage.spawn_point)
+    local spawnPoint = garage and GaragesManager.pickFreeSpawnPoint(GaragesManager.normalizeSpawnPoints(garage.spawn_point))
+    local ok, err = exports.vehicles:spawnVehicleForPlayer(source, vehicleId, spawnPoint)
     if not ok then
         return false, Sw.TP(source, 'garages.error_paid_but_spawn_failed', err or '')
     end
