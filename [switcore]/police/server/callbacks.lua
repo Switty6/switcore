@@ -81,6 +81,36 @@ Sw.SecureEvent('police:server:handcuffPlayer', {
     notify(targetSrc, 'warning', Sw.TP(targetSrc, 'police.title_handcuffed'), Sw.TP(targetSrc, 'police.you_were_cuffed'))
 end)
 
+Sw.SecureEvent('police:server:pullFromVehicle', {
+    character = true,
+    rateLimit = { max = 10, window = 5000 },
+}, function(ctx)
+    local src  = ctx.source
+    local char = ctx.character
+    local targetSrc = tonumber(ctx.args[1])
+
+    if not isPoliceOnDuty(char.id) or not hasArrestPerm(char.id) then
+        notify(src, 'error', Sw.TP(src, 'police.title_access_denied'), Sw.TP(src, 'police.no_perm_handcuff'))
+        return
+    end
+
+    if not targetSrc or not GetPlayerName(targetSrc) then
+        notify(src, 'error', Sw.TP(src, 'police.title_error'), Sw.TP(src, 'police.player_not_exist'))
+        return
+    end
+
+    local srcCoords    = GetEntityCoords(GetPlayerPed(src))
+    local targetCoords = GetEntityCoords(GetPlayerPed(targetSrc))
+    local dist = #(srcCoords - targetCoords)
+    if dist > 5.0 then
+        notify(src, 'error', Sw.TP(src, 'police.title_too_far'), Sw.TP(src, 'police.player_too_far'))
+        return
+    end
+
+    TriggerClientEvent('police:client:pulledFromVehicle', targetSrc)
+    notify(src, 'success', Sw.TP(src, 'police.title_pulled_out'), Sw.TP(src, 'police.pulled_player_out'))
+end)
+
 Sw.SecureEvent('police:server:unhandcuffPlayer', {
     character = true,
     rateLimit = { max = 10, window = 5000 },

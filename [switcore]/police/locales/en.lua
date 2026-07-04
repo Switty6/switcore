@@ -8,6 +8,7 @@ return {
         title_released         = 'Released',
         title_handcuffed       = 'Handcuffed',
         title_uncuffed         = 'Cuffs removed',
+        title_pulled_out       = 'Pulled from vehicle',
         title_arrested         = 'Arrested',
         title_arrest_error     = 'Arrest error',
         title_impossible       = 'Impossible',
@@ -45,6 +46,8 @@ return {
         cuffs_removed          = 'The cuffs have been removed.',
         you_were_uncuffed      = 'Your cuffs were removed.',
         no_player_nearby       = 'No player nearby.',
+        pulled_player_out      = 'You pulled the player out of the vehicle.',
+        you_were_pulled_out    = 'A police officer pulled you out of the vehicle.',
         player_not_cuffed_by_you = 'The player is not handcuffed by you.',
         reason_too_short       = 'Reason too short.',
         player_arrested        = '{1} {2} has been arrested.',
@@ -88,6 +91,7 @@ return {
         prox_handcuff         = 'Handcuff Player',
         prox_uncuff           = 'Remove Cuffs',
         prox_arrest           = 'Send to Jail',
+        prox_pull_out         = 'Pull driver out of vehicle',
         prox_garage           = 'Police Garage',
 
         -- Default blip

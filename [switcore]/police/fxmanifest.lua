@@ -31,6 +31,7 @@ server_scripts {
 client_scripts {
     'client/client.lua',
     'client/handcuffs.lua',
+    'client/pull_from_vehicle.lua',
     'client/mdt.lua',
     'client/vehicles.lua'
 }

@@ -8,6 +8,7 @@ return {
         title_released         = 'Eliberat',
         title_handcuffed       = 'Incatusat',
         title_uncuffed         = 'Catuse scoase',
+        title_pulled_out       = 'Scos din vehicul',
         title_arrested         = 'Arestat',
         title_arrest_error     = 'Eroare arest',
         title_impossible       = 'Imposibil',
@@ -45,6 +46,8 @@ return {
         cuffs_removed          = 'Catusele au fost scoase.',
         you_were_uncuffed      = 'Catusele ti-au fost scoase.',
         no_player_nearby       = 'Niciun jucator in apropiere.',
+        pulled_player_out      = 'Ai scos jucatorul din vehicul.',
+        you_were_pulled_out    = 'Un ofiter de politie te-a scos din vehicul.',
         player_not_cuffed_by_you = 'Jucatorul nu este incatusat de tine.',
         reason_too_short       = 'Motiv prea scurt.',
         player_arrested        = '{1} {2} a fost arestat.',
@@ -88,6 +91,7 @@ return {
         prox_handcuff         = 'Incatuseza Jucator',
         prox_uncuff           = 'Scoate Catusele',
         prox_arrest           = 'Trimite la Inchisoare',
+        prox_pull_out         = 'Scoate soferul din vehicul',
         prox_garage           = 'Garaj Politie',
 
         -- Blip implicit
