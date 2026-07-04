@@ -626,10 +626,11 @@ RegisterNetEvent('admin:client:resourceList', function(list)
 end)
 
 RegisterNetEvent('admin:client:teleport', function(coords)
-    local ped    = PlayerPedId()
-    local veh    = GetVehiclePedIsIn(ped, false)
-    local entity = (veh ~= 0 and GetPedInVehicleSeat(veh, -1) == ped) and veh or ped
-    SetEntityCoordsNoOffset(entity, coords.x, coords.y, coords.z, false, false, false)
+    -- SafeTeleport asteapta coliziunea incarcata inainte sa predea controlul -
+    -- fara asta, teleportul la coordonate indepartate/neincarcate (ex. un
+    -- magazin 24/7 dintr-o zona nevizitata) putea lasa jucatorul sa cada prin
+    -- harta si sa se deconecteze.
+    exports.core:SafeTeleport(coords)
 end)
 
 RegisterNetEvent('admin:client:setFreeze', function(frozen)
