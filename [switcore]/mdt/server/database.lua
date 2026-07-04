@@ -2,131 +2,114 @@ exports.core:registerModuleLocales(GetCurrentResourceName())
 
 MDTDatabase = {}
 
+-- Exporturile postgres sunt sincrone (returneaza valoarea, nu accepta callback).
+-- Pastram semnaturile cu cb(...) pentru ca apelantii din police_mdt.lua sa ramana neschimbati.
+
 function MDTDatabase.createCitation(officerId, suspectId, offense, fineAmount, cb)
-    exports.postgres:query(
+    local row = exports.postgres:queryOne(
         'INSERT INTO police_citations (officer_id, suspect_id, offense, fine_amount) VALUES ($1,$2,$3,$4) RETURNING *',
-        { officerId, suspectId, offense, fineAmount },
-        function(rows)
-            cb(rows and rows[1] or nil)
-        end
+        { officerId, suspectId, offense, fineAmount }
     )
+    cb(row)
 end
 
 function MDTDatabase.getCitations(cb)
-    exports.postgres:queryAll(
+    local rows = exports.postgres:queryAll(
         [[SELECT c.*, sus.first_name, sus.last_name
           FROM police_citations c
           JOIN characters sus ON sus.id = c.suspect_id
           ORDER BY c.issued_at DESC LIMIT 100]],
-        {},
-        function(rows) cb(rows or {}) end
+        {}
     )
+    cb(rows or {})
 end
 
 function MDTDatabase.markCitationPaid(citationId, cb)
-    exports.postgres:query(
+    local row = exports.postgres:queryOne(
         'UPDATE police_citations SET is_paid=TRUE, paid_at=NOW() WHERE id=$1 AND is_paid=FALSE RETURNING id',
-        { citationId },
-        function(rows)
-            cb(rows and rows[1] ~= nil)
-        end
+        { citationId }
     )
+    cb(row ~= nil)
 end
 
 function MDTDatabase.createBOLO(officerId, subjectName, description, vehicleInfo, cb)
-    exports.postgres:query(
+    local row = exports.postgres:queryOne(
         'INSERT INTO police_bolos (officer_id, subject_name, description, vehicle_info) VALUES ($1,$2,$3,$4) RETURNING *',
-        { officerId, subjectName, description, vehicleInfo ~= '' and vehicleInfo or nil },
-        function(rows)
-            cb(rows and rows[1] or nil)
-        end
+        { officerId, subjectName, description, vehicleInfo ~= '' and vehicleInfo or nil }
     )
+    cb(row)
 end
 
 function MDTDatabase.getActiveBOLOs(cb)
-    exports.postgres:queryAll(
+    local rows = exports.postgres:queryAll(
         'SELECT * FROM police_bolos WHERE is_active=TRUE ORDER BY created_at DESC',
-        {},
-        function(rows) cb(rows or {}) end
+        {}
     )
+    cb(rows or {})
 end
 
 function MDTDatabase.closeBOLO(boloId, officerId, cb)
     exports.postgres:query(
         'UPDATE police_bolos SET is_active=FALSE, closed_at=NOW(), closed_by=$2 WHERE id=$1',
-        { boloId, officerId },
-        function() cb() end
+        { boloId, officerId }
     )
+    cb()
 end
 
 function MDTDatabase.createIncident(officerId, title, description, involvedJson, cb)
-    exports.postgres:query(
+    local row = exports.postgres:queryOne(
         'INSERT INTO police_incidents (officer_id, title, description, involved_characters) VALUES ($1,$2,$3,$4::jsonb) RETURNING *',
-        { officerId, title, description, involvedJson },
-        function(rows)
-            cb(rows and rows[1] or nil)
-        end
+        { officerId, title, description, involvedJson }
     )
+    cb(row)
 end
 
 function MDTDatabase.getIncidents(cb)
-    exports.postgres:queryAll(
+    local rows = exports.postgres:queryAll(
         'SELECT * FROM police_incidents ORDER BY created_at DESC LIMIT 50',
-        {},
-        function(rows) cb(rows or {}) end
+        {}
     )
+    cb(rows or {})
 end
 
 function MDTDatabase.createImpound(officerId, plate, model, reason, fee, cb)
-    exports.postgres:query(
+    local row = exports.postgres:queryOne(
         'INSERT INTO police_impounds (officer_id, plate, model, reason, fee) VALUES ($1,$2,$3,$4,$5) RETURNING *',
-        { officerId, plate, model ~= '' and model or nil, reason, fee },
-        function(rows)
-            cb(rows and rows[1] or nil)
-        end
+        { officerId, plate, model ~= '' and model or nil, reason, fee }
     )
+    cb(row)
 end
 
 function MDTDatabase.getImpounds(cb)
-    exports.postgres:queryAll(
+    local rows = exports.postgres:queryAll(
         'SELECT * FROM police_impounds ORDER BY impounded_at DESC LIMIT 100',
-        {},
-        function(rows) cb(rows or {}) end
+        {}
     )
+    cb(rows or {})
 end
 
 function MDTDatabase.retrieveImpound(impoundId, cb)
     exports.postgres:query(
         'UPDATE police_impounds SET is_retrieved=TRUE, retrieved_at=NOW() WHERE id=$1',
-        { impoundId },
-        function() cb() end
+        { impoundId }
     )
+    cb()
 end
 
 function MDTDatabase.getCriminalHistory(characterId, cb)
-    local result = { jails = {}, warrants = {}, citations = {} }
-    local pending = 3
-
-    local function done()
-        pending = pending - 1
-        if pending == 0 then cb(result) end
-    end
-
-    exports.postgres:queryAll(
-        'SELECT * FROM police_jail_sentences WHERE character_id=$1 ORDER BY arrested_at DESC LIMIT 20',
-        { characterId },
-        function(rows) result.jails = rows or {}; done() end
-    )
-
-    exports.postgres:queryAll(
-        'SELECT * FROM police_warrants WHERE character_id=$1 ORDER BY issued_at DESC LIMIT 20',
-        { characterId },
-        function(rows) result.warrants = rows or {}; done() end
-    )
-
-    exports.postgres:queryAll(
-        'SELECT * FROM police_citations WHERE suspect_id=$1 ORDER BY issued_at DESC LIMIT 20',
-        { characterId },
-        function(rows) result.citations = rows or {}; done() end
-    )
+    local result = {
+        jails = exports.postgres:queryAll(
+            'SELECT * FROM police_jail_sentences WHERE character_id=$1 ORDER BY arrested_at DESC LIMIT 20',
+            { characterId }
+        ) or {},
+        warrants = exports.postgres:queryAll(
+            'SELECT * FROM police_warrants WHERE character_id=$1 ORDER BY issued_at DESC LIMIT 20',
+            { characterId }
+        ) or {},
+        citations = exports.postgres:queryAll(
+            'SELECT * FROM police_citations WHERE suspect_id=$1 ORDER BY issued_at DESC LIMIT 20',
+            { characterId }
+        ) or {},
+    }
+    cb(result)
 end
