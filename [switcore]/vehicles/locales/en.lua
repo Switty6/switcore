@@ -77,7 +77,7 @@ return {
         ui_cash = 'CASH',
         ui_bank = 'BANK',
         ui_total_available = 'TOTAL AVAILABLE',
-        ui_hold_to_refuel = 'HOLD TO REFUEL',
+        ui_hold_to_refuel = 'HOLD [E] TO REFUEL',
         ui_waiting = 'WAITING',
         ui_litres = 'LITERS',
         ui_cost = 'COST',

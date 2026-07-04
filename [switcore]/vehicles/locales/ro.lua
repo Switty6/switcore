@@ -77,7 +77,7 @@ return {
         ui_cash = 'CASH',
         ui_bank = 'BANCĂ',
         ui_total_available = 'TOTAL DISPONIBIL',
-        ui_hold_to_refuel = 'ȚINE APĂSAT PENTRU A ALIMENTA',
+        ui_hold_to_refuel = 'ȚINE APĂSAT [E] PENTRU A ALIMENTA',
         ui_waiting = 'ÎN AȘTEPTARE',
         ui_litres = 'LITRI',
         ui_cost = 'COST',
