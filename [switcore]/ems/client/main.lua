@@ -88,8 +88,7 @@ AddEventHandler('ems:client:teleportToHospital', function(coords)
     AnimpostfxStop('DeathFailOut')
     SendNUIMessage({ action = 'hideUnconsciousTimer' })
 
-    SetEntityCoords(ped, coords.x, coords.y, coords.z, false, false, false, false)
-    SetEntityHeading(ped, coords.h or 180.0)
+    exports.core:SafeTeleport({ x = coords.x, y = coords.y, z = coords.z }, coords.h or 180.0)
 
     if coords.hp and coords.hp > 0 then
         local maxHP = GetEntityMaxHealth(ped)

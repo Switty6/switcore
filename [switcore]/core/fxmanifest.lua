@@ -36,7 +36,8 @@ client_scripts {
     'client/localization.lua',
     'client/language.lua',
     'client/npc_management.lua',
-    'client/controls.lua'
+    'client/controls.lua',
+    'client/teleport.lua'
 }
 
 -- helper de i18n pentru NUI, referit de alte resurse ca nui://core/ui/i18n.js
