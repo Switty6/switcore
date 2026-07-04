@@ -388,7 +388,7 @@ Sw.SecureEvent('mecanic:server:performService', {
     end
 
     if itemNeeded then
-        local invId = 'char_' .. char.id
+        local invId = 'char:' .. char.id
         local ok, removed = pcall(function()
             return exports.inventory:RemoveItem(invId, itemNeeded, itemAmount)
         end)
@@ -405,7 +405,7 @@ Sw.SecureEvent('mecanic:server:performService', {
         -- Plata esuata: refund piesa pentru a nu pierde inventar pe tranzactie neefectuata
         if itemNeeded then
             pcall(function()
-                exports.inventory:AddItem('char_' .. char.id, itemNeeded, itemAmount)
+                exports.inventory:AddItem('char:' .. char.id, itemNeeded, itemAmount)
             end)
         end
         return
@@ -434,10 +434,19 @@ Sw.SecureEvent('mecanic:server:performService', {
     local updatedState = {}
     if next(newState) then updatedState = newState end
     updatedState.components = components
-    TriggerClientEvent('mecanic:client:vehicleRepaired', clientSrc, {
+    local repairPayload = {
         vehicleId = vehicleId,
+        plate     = vehicle.plate,
         state     = updatedState,
-    })
+    }
+    -- Masina e de obicei parcata in atelier, nefolosita de nimeni (mecanicul
+    -- lucreaza de langa ea, nu din scaunul soferului) - trimitem si catre
+    -- mecanic, nu doar catre proprietar, ca oricare din ei o poate avea in
+    -- vizor cand se aplica repararea vizuala (SetVehicleFixed etc).
+    TriggerClientEvent('mecanic:client:vehicleRepaired', clientSrc, repairPayload)
+    if src ~= clientSrc then
+        TriggerClientEvent('mecanic:client:vehicleRepaired', src, repairPayload)
+    end
 
     if data.callId then
         MecanicDB.completeCall(tonumber(data.callId), price)
@@ -490,7 +499,7 @@ Sw.SecureEvent('mecanic:server:buyParts', {
     end
 
     local added = pcall(function()
-        exports.inventory:AddItem('char_' .. char.id, data.itemName, amount)
+        exports.inventory:AddItem('char:' .. char.id, data.itemName, amount)
     end)
 
     if added then

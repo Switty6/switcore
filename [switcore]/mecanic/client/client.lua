@@ -1,6 +1,10 @@
 local isUIOpen      = false
-local isMechanic    = false
-local myJob         = nil
+-- Globale (nu locale) in mod deliberat: workshop.lua si roadside.lua citesc
+-- isMechanic/myJob direct. Cu "local" aici, acele fisiere vedeau mereu
+-- false/nil - interactiunile de service in atelier si apelurile roadside nu
+-- se activau niciodata pentru niciun mecanic.
+isMechanic    = false
+myJob         = nil
 local workshopBlip  = nil
 local proximityId   = nil
 

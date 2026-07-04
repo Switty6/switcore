@@ -144,15 +144,39 @@ CreateThread(function()
     end
 end)
 
+-- Cauta vehiculul reparat prin plate in apropiere - masina e de obicei
+-- parcata (nefolosita) in atelier, deci nu putem presupune ca cel care
+-- primeste evenimentul sta in ea (asa cum era inainte, ceea ce insemna ca
+-- repararea vizuala aproape niciodata nu se aplica in fluxul normal).
+local function FindVehicleByPlateNearby(plate, radius)
+    local ped    = PlayerPedId()
+    local coords = GetEntityCoords(ped)
+    for _, veh in ipairs(GetGamePool('CVehicle')) do
+        if DoesEntityExist(veh) then
+            local vPlate = GetVehicleNumberPlateText(veh):gsub('%s+$', '')
+            if vPlate == plate and #(coords - GetEntityCoords(veh)) <= (radius or 30.0) then
+                return veh
+            end
+        end
+    end
+    return nil
+end
+
 RegisterNetEvent('mecanic:client:vehicleRepaired', function(data)
-    local ped = PlayerPedId()
-    if not IsPedInAnyVehicle(ped, false) then return end
+    local plate = data.plate and data.plate:gsub('%s+$', '')
+    local vehicle = plate and FindVehicleByPlateNearby(plate)
 
-    local vehicle = GetVehiclePedIsIn(ped, false)
-    if not DoesEntityExist(vehicle) then return end
+    if not vehicle then
+        local ped = PlayerPedId()
+        if IsPedInAnyVehicle(ped, false) then
+            local occupied = GetVehiclePedIsIn(ped, false)
+            if not plate or GetVehicleNumberPlateText(occupied):gsub('%s+$', '') == plate then
+                vehicle = occupied
+            end
+        end
+    end
 
-    local plate = GetVehicleNumberPlateText(vehicle)
-    if not plate or plate == '' then return end
+    if not vehicle or not DoesEntityExist(vehicle) then return end
 
     local state = data.state or {}
 
@@ -161,6 +185,9 @@ RegisterNetEvent('mecanic:client:vehicleRepaired', function(data)
     end
     if state.body_health then
         SetVehicleBodyHealth(vehicle, state.body_health)
+        -- Doar deformarea (caroserie/geamuri sparte in aspect), NU SetVehicleFixed -
+        -- acela ar reseta si motorul/anvelopele care nu au fost platite la acest service.
+        SetVehicleDeformationFixed(vehicle)
         SetVehicleDirtLevel(vehicle, 0.0)
     end
 
