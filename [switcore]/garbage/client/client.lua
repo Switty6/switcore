@@ -166,6 +166,7 @@ RegisterNetEvent('garbage:client:tabletData', function(data)
         routes     = data.routes,
         job        = data.job,
         hasSession = data.hasSession,
+        sessionId  = data.sessionId,
     })
 end)
 

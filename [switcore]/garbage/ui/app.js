@@ -6,6 +6,7 @@ const state = {
     recent:     [],
     routes:     [],
     hasSession: false,
+    sessionId:  null,
     progress:   { collected: 0, total: 0 },
 };
 
@@ -53,7 +54,7 @@ document.getElementById('btnQuit').addEventListener('click', () => {
 
 document.getElementById('btnAbandon').addEventListener('click', () => {
     askConfirm(SwI18n.t('garbage.ui.confirm_abandon'), () => {
-        postNUI('abandonRoute', {});
+        postNUI('abandonRoute', { sessionId: state.sessionId });
         hidePanel();
     });
 });
@@ -225,6 +226,7 @@ window.addEventListener('message', e => {
         state.recent     = d.recent     ?? [];
         state.routes     = d.routes     ?? [];
         state.hasSession = d.hasSession ?? false;
+        state.sessionId  = d.sessionId  ?? null;
         renderStats();
         renderRoutes();
         renderHistory();

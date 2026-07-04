@@ -274,5 +274,10 @@ Sw.SecureEvent('garbage:server:openTablet', {
         routes     = routeMeta,
         job        = job,
         hasSession = session ~= nil,
+        -- Fara sessionId aici, butonul de abandon din UI nu avea ce sa trimita
+        -- la server (postNUI('abandonRoute', {}) mereu fara sessionId) - o
+        -- sesiune ramasa activa (relog/restart in mijlocul unei rute) nu putea
+        -- fi niciodata abandonata, blocand definitiv jobul cu "sesiune invalida".
+        sessionId  = session and session.id or nil,
     })
 end)
