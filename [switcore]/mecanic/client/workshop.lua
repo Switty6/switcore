@@ -6,8 +6,12 @@ local activeVehicleEntity = nil
 local function isInWorkshop()
     local ped    = PlayerPedId()
     local coords = GetEntityCoords(ped)
-    local c      = Config.WorkshopCoords
-    return #(coords - c) <= Config.WorkshopRadius
+    for _, c in ipairs(Config.WorkshopLocations) do
+        if #(coords - vector3(c.x, c.y, c.z)) <= (c.radius or 25.0) then
+            return true
+        end
+    end
+    return false
 end
 
 CreateThread(function()

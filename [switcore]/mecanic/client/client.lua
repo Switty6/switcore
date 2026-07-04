@@ -5,8 +5,8 @@ local isUIOpen      = false
 -- se activau niciodata pentru niciun mecanic.
 isMechanic    = false
 myJob         = nil
-local workshopBlip  = nil
-local proximityId   = nil
+local workshopBlip  = {}
+local proximityId   = {}
 
 local function Send(data)
     SendNUIMessage(data)
@@ -47,51 +47,64 @@ AddEventHandler('onResourceStart', function(resourceName)
     TriggerServerEvent('jobs:server:getMyJob')
 end)
 
+RegisterNetEvent('mecanic:client:workshopLocations', function(locations)
+    if locations and #locations > 0 then
+        Config.WorkshopLocations = locations
+    end
+    if isMechanic then
+        SetupWorkshopBlip()
+        SetupWorkshopProximity()
+    end
+end)
+
 function SetupWorkshopBlip()
     RemoveWorkshopBlip()
-    local c = Config.WorkshopCoords
-    workshopBlip = AddBlipForCoord(c.x, c.y, c.z)
-    SetBlipSprite(workshopBlip, 446)
-    SetBlipColour(workshopBlip, 5)
-    SetBlipScale(workshopBlip, 0.9)
-    SetBlipAsShortRange(workshopBlip, true)
-    BeginTextCommandSetBlipName('STRING')
-    AddTextComponentString(Sw.T('mecanic.blip_workshop'))
-    EndTextCommandSetBlipName(workshopBlip)
+    for _, c in ipairs(Config.WorkshopLocations) do
+        local blip = AddBlipForCoord(c.x, c.y, c.z)
+        SetBlipSprite(blip, 446)
+        SetBlipColour(blip, 5)
+        SetBlipScale(blip, 0.9)
+        SetBlipAsShortRange(blip, true)
+        BeginTextCommandSetBlipName('STRING')
+        AddTextComponentString(Sw.T('mecanic.blip_workshop'))
+        EndTextCommandSetBlipName(blip)
+        table.insert(workshopBlip, blip)
+    end
 end
 
 function RemoveWorkshopBlip()
-    if workshopBlip and DoesBlipExist(workshopBlip) then
-        RemoveBlip(workshopBlip)
-        workshopBlip = nil
+    for _, blip in ipairs(workshopBlip) do
+        if DoesBlipExist(blip) then RemoveBlip(blip) end
     end
+    workshopBlip = {}
 end
 
 function SetupWorkshopProximity()
     RemoveWorkshopProximity()
     if not isMechanic then return end
 
-    local c = Config.WorkshopCoords
-    proximityId = 'mecanic_workshop'
-
-    exports.proximity:AddInteraction(
-        vector3(c.x, c.y, c.z),
-        Sw.T('mecanic.prox_open_tablet'),
-        proximityId,
-        {},
-        function()
-            if not isUIOpen then
-                OpenTablet()
+    for i, c in ipairs(Config.WorkshopLocations) do
+        local id = 'mecanic_workshop_' .. i
+        exports.proximity:AddInteraction(
+            vector3(c.x, c.y, c.z),
+            Sw.T('mecanic.prox_open_tablet'),
+            id,
+            {},
+            function()
+                if not isUIOpen then
+                    OpenTablet()
+                end
             end
-        end
-    )
+        )
+        table.insert(proximityId, id)
+    end
 end
 
 function RemoveWorkshopProximity()
-    if proximityId then
-        exports.proximity:RemoveInteraction(proximityId)
-        proximityId = nil
+    for _, id in ipairs(proximityId) do
+        exports.proximity:RemoveInteraction(id)
     end
+    proximityId = {}
 end
 
 function OpenTablet()

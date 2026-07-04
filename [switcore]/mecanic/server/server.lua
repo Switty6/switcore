@@ -55,9 +55,40 @@ local function loadPrices()
     Config.Bonus[2] = s:GetSettingNumber('mecanic.bonus_grade_2', 18)
     Config.Bonus[3] = s:GetSettingNumber('mecanic.bonus_grade_3', 25)
 
-    local coordsRaw = s:GetSettingJSON('mecanic.workshop_coords', { x=375.84, y=-1888.77, z=29.41 })
-    if coordsRaw then
-        Config.WorkshopCoords = vector3(coordsRaw.x, coordsRaw.y, coordsRaw.z)
+    -- mecanic.workshop_locations (array) e noua sursa canonica, editabila din
+    -- panoul de setari (JSON generic). Daca lipseste, incapsulam vechea setare
+    -- unica mecanic.workshop_coords intr-o lista cu o singura intrare, fara migrare.
+    local locationsRaw = s:GetSettingJSON('mecanic.workshop_locations', nil)
+    if locationsRaw and #locationsRaw > 0 then
+        Config.WorkshopLocations = locationsRaw
+    else
+        local coordsRaw = s:GetSettingJSON('mecanic.workshop_coords', { x=375.84, y=-1888.77, z=29.41 })
+        if coordsRaw then
+            Config.WorkshopLocations = { {
+                x = coordsRaw.x, y = coordsRaw.y, z = coordsRaw.z,
+                radius = s:GetSettingNumber('mecanic.workshop_radius', 25.0),
+            } }
+        end
+    end
+
+    TriggerClientEvent('mecanic:client:workshopLocations', -1, Config.WorkshopLocations)
+end
+
+-- Semanam si setarea noua (goala implicit -> foloseste fallback-ul de mai sus)
+-- ca sa apara editabila in panoul de setari, la fel ca celelalte preturi.
+local function seedWorkshopLocationsSetting()
+    local ok = pcall(function()
+        exports.postgres:query(
+            'INSERT INTO settings (key, value, description) VALUES ($1, $2, $3) ON CONFLICT (key) DO NOTHING',
+            {
+                'mecanic.workshop_locations',
+                '[]',
+                'Lista atelierelor mecanic [JSON array cu x,y,z,radius]. Daca e goala, se foloseste mecanic.workshop_coords (o singura locatie).',
+            }
+        )
+    end)
+    if ok then
+        pcall(function() exports.settings:ReloadSettings() end)
     end
 end
 
@@ -65,8 +96,17 @@ CreateThread(function()
     while not exports.postgres:isReady() or not exports.settings:IsReady() do
         Wait(500)
     end
+    seedWorkshopLocationsSetting()
     loadPrices()
     print('[MECANIC] Sistem mecanic initializat')
+end)
+
+-- Jucatorii care se conecteaza dupa pornirea serverului nu prind broadcast-ul
+-- initial (-1) din loadPrices; le trimitem lista la incarcarea personajului.
+RegisterNetEvent('switcore:characterLoaded', function(character)
+    if not character then return end
+    local src = source
+    TriggerClientEvent('mecanic:client:workshopLocations', src, Config.WorkshopLocations)
 end)
 
 function CompleteService(mechanicSrc, clientSrc, vehicleId, serviceType, price, clientCharId, mechanicCharId)
