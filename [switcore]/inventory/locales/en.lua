@@ -28,6 +28,7 @@ return {
             keys_title = 'Keys',
             no_keys = 'No keys',
             trunk_title = 'Trunk',
+            glovebox_title = 'Glovebox',
             cloth_hat = 'Hat/Cap',
             cloth_mask = 'Mask',
             cloth_glasses = 'Glasses',

@@ -1,16 +1,31 @@
 local drops = {}
 local dropCounter = 0
 
--- Sistemul foloseste doar inventare char:<id> si keys:<id>, iar un jucator
--- poate accesa prin aceste net events DOAR inventarele propriului personaj activ.
--- (Containerele secundare gen portbagaj/stash nu trec prin aceste evenimente.)
--- Previne ca un client modificat sa trimita un invId arbitrar (ex. char:<alt_id>)
--- pentru a manipula inventarul altui jucator.
+-- Sistemul foloseste inventare char:<id>/keys:<id> (proprietate directa) si,
+-- pentru containere secundare (portbagaj/torpedou vehicul), acces temporar
+-- acordat explicit de modulul care valideaza dreptul de acces (ex. vehicles
+-- verifica cheia inainte sa acorde acces la trunk:<plate>/glove:<plate>).
+-- Previne ca un client modificat sa trimita un invId arbitrar (ex. char:<alt_id>
+-- sau trunk-ul unui vehicul strain) pentru a manipula inventarul altcuiva.
+local grantedAccess = {} -- [characterId][invId] = true
+
 local function ownsInventory(characterId, invId)
     if type(invId) ~= 'string' then return false end
     local invCharId = tonumber(invId:match('^char:(%d+)$')) or tonumber(invId:match('^keys:(%d+)$'))
-    return invCharId ~= nil and invCharId == characterId
+    if invCharId ~= nil and invCharId == characterId then return true end
+    return grantedAccess[characterId] ~= nil and grantedAccess[characterId][invId] == true
 end
+
+exports('GrantInventoryAccess', function(characterId, invId)
+    grantedAccess[characterId] = grantedAccess[characterId] or {}
+    grantedAccess[characterId][invId] = true
+end)
+
+exports('RevokeInventoryAccess', function(characterId, invId)
+    if grantedAccess[characterId] then
+        grantedAccess[characterId][invId] = nil
+    end
+end)
 
 CreateThread(function()
     while true do

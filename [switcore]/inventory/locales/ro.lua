@@ -28,6 +28,7 @@ return {
             keys_title = 'Chei',
             no_keys = 'Nicio cheie',
             trunk_title = 'Portbagaj',
+            glovebox_title = 'Torpedou',
             cloth_hat = 'Pălărie/Șapcă',
             cloth_mask = 'Mască',
             cloth_glasses = 'Ochelari',

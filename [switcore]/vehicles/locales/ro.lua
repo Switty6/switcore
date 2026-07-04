@@ -65,6 +65,11 @@ return {
         lockpick_broken = 'Ranga s-a rupt în timpul încercării.',
         no_lockpick = 'Nu ai o rangă pentru a forța broasca.',
 
+        -- Portbagaj / torpedou (client + server)
+        prox_open_trunk = 'Deschide portbagajul',
+        keymap_glovebox = 'Deschide torpedoul vehiculului',
+        trunk_locked = 'Nu ai cheia acestui vehicul.',
+
         -- Combustibil critic (client)
         fuel_critical = 'Combustibil critic! Alimentați imediat.',
 

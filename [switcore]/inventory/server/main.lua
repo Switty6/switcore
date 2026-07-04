@@ -47,6 +47,10 @@ exports("LoadInventory", function(invId, cb)
     LoadInventoryData(invId, nil, nil, cb)
 end)
 
+exports("LoadInventoryWithCapacity", function(invId, maxWeight, maxSlots, cb)
+    LoadInventoryData(invId, maxWeight, maxSlots, cb)
+end)
+
 exports("ReloadItems", function()
     InventoryDB.loadItems()
 end)

@@ -65,6 +65,11 @@ return {
         lockpick_broken = 'The lockpick broke during the attempt.',
         no_lockpick = 'You do not have a lockpick.',
 
+        -- Trunk / glovebox (client + server)
+        prox_open_trunk = 'Open trunk',
+        keymap_glovebox = 'Open vehicle glovebox',
+        trunk_locked = 'You do not have the key to this vehicle.',
+
         -- Critical fuel (client)
         fuel_critical = 'Critical fuel! Refuel immediately.',
 

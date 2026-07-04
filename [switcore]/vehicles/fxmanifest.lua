@@ -39,13 +39,15 @@ server_scripts {
     'server/keys_manager.lua',
     'server/exports.lua',
     'server/callbacks.lua',
+    'server/storage.lua',
     'server/fuel_station_server.lua',
     'server/server.lua'
 }
 
 client_scripts {
     'client/client.lua',
-    'client/fuel_station.lua'
+    'client/fuel_station.lua',
+    'client/trunk.lua'
 }
 
 exports {

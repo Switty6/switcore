@@ -61,6 +61,7 @@ window.addEventListener('message', (event) => {
                 secondaryInventory.id = data.invId;
                 secondaryInventory.slots = data.inventory.slots;
                 secondaryInventory.maxWeight = data.inventory.maxWeight;
+                updateSecondaryTitle(data.invId);
                 renderInventory('secondary');
             }
             break;
@@ -69,6 +70,18 @@ window.addEventListener('message', (event) => {
             break;
     }
 });
+
+function updateSecondaryTitle(invId) {
+    const titleEl = document.getElementById('secondary-title');
+    if (!titleEl) return;
+    if (invId && invId.startsWith('glove:')) {
+        titleEl.setAttribute('data-i18n', 'inventory.ui.glovebox_title');
+        titleEl.textContent = SwI18n.t('inventory.ui.glovebox_title');
+    } else {
+        titleEl.setAttribute('data-i18n', 'inventory.ui.trunk_title');
+        titleEl.textContent = SwI18n.t('inventory.ui.trunk_title');
+    }
+}
 
 function formatCashAmount(n) {
     n = Number(n) || 0;
