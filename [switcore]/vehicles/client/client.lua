@@ -61,6 +61,18 @@ local function GetVehicleStateSnapshot(entity, vehicleId)
     local livery = GetVehicleLivery(entity)
     if livery >= 0 then mods['livery'] = livery end
 
+    -- Vehiculele sunt networked (OneSync sincronizeaza deformarea/usile/geamurile
+    -- live intre jucatori), dar starea asta nu persista la respawn din DB fara
+    -- sa o salvam explicit aici. Bagata in modifications (merge JSONB aditiv,
+    -- fara schimbare de schema) sub cheia _damage.
+    local damage = { doors = {}, windows = {}, tires = {} }
+    for i = 0, 7 do
+        if IsVehicleDoorDamaged(entity, i) then damage.doors[tostring(i)] = true end
+        if not IsVehicleWindowIntact(entity, i) then damage.windows[tostring(i)] = true end
+        if IsVehicleTyreBurst(entity, i, false) then damage.tires[tostring(i)] = true end
+    end
+    mods['_damage'] = damage
+
     local _tankSnap = GetVehicleHandlingFloat(entity, 'CHandlingData', 'fPetrolTankVolume')
     if not _tankSnap or _tankSnap <= 0 then _tankSnap = 65.0 end
     return {
@@ -108,6 +120,19 @@ local function ApplyModsToVehicle(entity, mods)
     end
     if mods.livery and tonumber(mods.livery) and tonumber(mods.livery) >= 0 then
         SetVehicleLivery(entity, tonumber(mods.livery))
+    end
+
+    local damage = mods._damage
+    if damage and type(damage) == 'table' then
+        for idxStr in pairs(damage.doors or {}) do
+            SetVehicleDoorBroken(entity, tonumber(idxStr), true)
+        end
+        for idxStr in pairs(damage.windows or {}) do
+            SmashVehicleWindow(entity, tonumber(idxStr))
+        end
+        for idxStr in pairs(damage.tires or {}) do
+            SetVehicleTyreBurst(entity, tonumber(idxStr), true, 1000.0)
+        end
     end
 end
 
