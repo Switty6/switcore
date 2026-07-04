@@ -68,6 +68,8 @@ ensure playernames
 ensure basic-gamemode
 ```
 
+**OneSync este obligatoriu** (`set onesync on` sau `set onesync infinity`, înainte de `ensure`-uri). Fără el nu funcționează corect sincronizarea jucătorilor, teleportările din admin, salvarea poziției la deconectare și ștergerea vehiculelor la parcare - serverul afișează un avertisment repetat în consolă dacă lipsește.
+
 Vezi `server.cfg.example` pentru fișierul complet.
 
 **5. Panou de setări** (opțional)

@@ -10,7 +10,20 @@ CreateThread(function()
     InitializeCore()
 end)
 
+local function startOneSyncGuard()
+    local mode = GetConvar('onesync', 'off')
+    if mode ~= 'off' and mode ~= 'legacy' then return end
+
+    CreateThread(function()
+        while true do
+            print(('^1[CORE] AVERTISMENT: OneSync este "%s". Framework-ul necesita "onesync on" sau "onesync infinity" in server.cfg - fara el sincronizarea jucatorilor, teleportarile admin, salvarea pozitiei si stergerea vehiculelor din garaj NU functioneaza corect.^0'):format(mode))
+            Wait(60000)
+        end
+    end)
+end
+
 function InitializeCore()
+    startOneSyncGuard()
     LocalizationServer.initialize()
 
     local updateInterval = exports.settings:GetSettingNumber('core.playtime_update_interval', 60)
