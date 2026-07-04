@@ -147,6 +147,9 @@ local function SpawnVehicle(data)
     ApplyModsToVehicle(entity, data.modifications)
     SetModelAsNoLongerNeeded(model)
     spawnedVehicles[data.plate:gsub('%s+', '')] = { vehicleId = data.vehicleId, entity = entity }
+    if data.vehicleId then
+        TriggerServerEvent('vehicles:server:vehicleSpawned', data.vehicleId, NetworkGetNetworkIdFromEntity(entity))
+    end
     return entity
 end
 

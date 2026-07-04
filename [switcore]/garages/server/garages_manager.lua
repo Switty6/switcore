@@ -32,6 +32,10 @@ function GaragesManager.parkVehicle(source, characterId, vehicleId, garageCode, 
         return false, Sw.TP(source, 'garages.error_park_failed')
     end
 
+    -- Stergere server-side (autoritara, are nevoie de OneSync) - nu depinde
+    -- de cache-ul client-side al jucatorului care a parcat, care poate lipsi
+    -- daca acesta s-a reconectat intre timp si lasa masina fantoma in lume.
+    exports.vehicles:despawnVehicleEntity(vehicleId)
     TriggerClientEvent('vehicles:client:despawnVehicle', source, vehicle.plate)
 
     return true, nil

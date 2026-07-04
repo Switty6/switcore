@@ -14,6 +14,7 @@ return {
         no_key_or_missing = 'You do not have a key for this vehicle or it does not exist',
         no_key_for_vehicle = 'You do not have a key for this vehicle',
         character_no_key = 'The character does not have a key for this vehicle',
+        already_out = 'The vehicle is already out of the garage',
         no_character = 'No character',
 
         -- Vehicle creation / plates

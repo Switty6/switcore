@@ -14,6 +14,7 @@ return {
         no_key_or_missing = 'Nu ai cheie pentru acest vehicul sau este inexistent',
         no_key_for_vehicle = 'Nu ai cheie pentru acest vehicul',
         character_no_key = 'Personajul nu are cheie pentru acest vehicul',
+        already_out = 'Vehiculul este deja scos din garaj',
         no_character = 'No character',
 
         -- Creare vehicul / placute
