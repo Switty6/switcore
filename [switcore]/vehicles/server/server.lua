@@ -109,7 +109,15 @@ end
 AddEventHandler('switcore:characterSelected', function(source, characterId, character)
     if not characterId then return end
     CreateThread(function()
-        Wait(500)
+        -- Asteptam pana se incarca efectiv inventarul keys:<id> (LoadInventoryData
+        -- e asincron pe switcore:characterLoaded, un Wait fix risca sa ruleze
+        -- sync-ul inainte ca inventarul sa existe, gasind mereu 0 chei prezente).
+        local keysInvId = 'keys:' .. tostring(characterId)
+        local attempts = 0
+        while not exports.inventory:GetInventory(keysInvId) and attempts < 50 do
+            Wait(100)
+            attempts = attempts + 1
+        end
         pcall(function() KeysManager.syncKeysToInventory(characterId) end)
         local keys = VehiclesDatabase.getCharacterVehicleKeys(characterId)
         local plates = {}

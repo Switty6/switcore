@@ -48,7 +48,7 @@ function KeysManager.removeKey(vehicleId, characterId)
         return false, Sw.T('vehicles.key_remove_failed')
     end
 
-    removeKeyFromInventory('char:' .. tostring(characterId), vehicleId)
+    removeKeyFromInventory('keys:' .. tostring(characterId), vehicleId)
 
     return true, nil
 end
@@ -85,7 +85,7 @@ function KeysManager.transferOwnership(vehicleId, fromCharacterId, toCharacterId
     end
 
     VehiclesDatabase.removeVehicleKey(vehicleId, fromCharacterId)
-    removeKeyFromInventory('char:' .. tostring(fromCharacterId), vehicleId)
+    removeKeyFromInventory('keys:' .. tostring(fromCharacterId), vehicleId)
 
     local success, err = KeysManager.giveKey(vehicleId, toCharacterId, 'owner')
     if not success then
@@ -102,31 +102,45 @@ end
 function KeysManager.syncKeysToInventory(characterId)
     if not characterId then return end
 
-    local keys = VehiclesDatabase.getCharacterVehicleKeys(characterId)
-    local inventoryId = 'char:' .. tostring(characterId)
+    local keys        = VehiclesDatabase.getCharacterVehicleKeys(characterId)
+    local charInvId    = 'char:' .. tostring(characterId)
+    local keysInvId    = 'keys:' .. tostring(characterId)
 
-    -- Re-creăm de la zero (rebuild) ca să eliminăm cheile orfane din inventar.
-    local inv = exports.inventory:GetInventory(inventoryId)
+    -- Cheile fizic locuiesc in keys:<id> (routeInvId le muta acolo la AddItem).
+    -- Scanam inventarul GRESIT (char:) aici era cauza duplicarii: nu gasea
+    -- niciodata nimic de sters, deci fiecare reconectare readauga toate
+    -- cheile din DB peste cele deja existente. Acum facem diff (nu rebuild
+    -- complet): stergem doar cheile orfane, adaugam doar cele lipsa.
+    local owned = {}
+    for _, key in ipairs(keys) do
+        owned[tonumber(key.vehicle_id)] = key
+    end
+
+    local inv = exports.inventory:GetInventory(keysInvId)
+    local present = {}
     if inv and inv.slots then
-        local total = 0
-        for _, slotData in pairs(inv.slots) do
-            if slotData.name == 'vehicle_key' then
-                total = total + (slotData.amount or 1)
+        for slotIdx, slotData in pairs(inv.slots) do
+            if slotData.name == 'vehicle_key' and slotData.metadata then
+                local vId = tonumber(slotData.metadata.vehicleId)
+                if vId and owned[vId] then
+                    present[vId] = true
+                else
+                    exports.inventory:RemoveItem(charInvId, 'vehicle_key', slotData.amount or 1, slotIdx)
+                end
             end
-        end
-        if total > 0 then
-            exports.inventory:RemoveItem(inventoryId, 'vehicle_key', total)
         end
     end
 
-    for _, key in ipairs(keys) do
-        local metadata = {
-            vehicleId = key.vehicle_id,
-            plate     = key.plate,
-            label     = key.label or key.model,
-            keyType   = key.key_type
-        }
-        exports.inventory:AddItem(inventoryId, 'vehicle_key', 1, metadata)
+    for vehicleId, key in pairs(owned) do
+        if not present[vehicleId] then
+            local metadata = {
+                vehicleId = key.vehicle_id,
+                plate     = key.plate,
+                label     = key.label or key.model,
+                keyType   = key.key_type
+            }
+            exports.inventory:AddItem(charInvId, 'vehicle_key', 1, metadata)
+        end
     end
 end
 
