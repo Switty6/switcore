@@ -193,7 +193,82 @@ local function DespawnVehicle(plate, saveState)
     spawnedVehicles[cleanPlate] = nil
 end
 
-local wasInVehicle = false
+local wasInVehicle  = false
+local lockedVehicle = nil  -- vehicul in care stam fara cheie, needriveable pana la lockpick reusit sau iesire
+local lockpickBusy  = false
+
+-- Skill-check simplu desenat direct (fara NUI): un marker oscileaza pe o bara,
+-- jucatorul apasa E cand marker-ul e in zona verde. Nu necesita pagina NUI noua.
+local function RunLockpickSkillCheck()
+    local barX, barY, barW, barH = 0.5, 0.82, 0.18, 0.02
+    local zoneStart = 0.35 + math.random() * 0.35 -- 0.35-0.70 din latimea barei
+    local zoneWidth = 0.14
+    local pos, dir  = 0.0, 1.0
+    local speed     = 0.9 -- treceri pe secunda peste toata bara
+    local deadline  = GetGameTimer() + 6000
+    local result    = nil
+
+    while result == nil do
+        Wait(0)
+        DisableControlAction(0, 24, true) -- attack
+        DisableControlAction(0, 25, true) -- aim
+
+        pos = pos + dir * speed * (1.0 / 60.0)
+        if pos >= 1.0 then pos = 1.0; dir = -1.0 end
+        if pos <= 0.0 then pos = 0.0; dir = 1.0 end
+
+        DrawRect(barX, barY, barW, barH, 20, 20, 20, 180)
+        DrawRect(barX - barW/2 + zoneStart*barW + (zoneWidth*barW)/2, barY, zoneWidth*barW, barH, 40, 200, 40, 200)
+        DrawRect(barX - barW/2 + pos*barW, barY, 0.004, barH*1.6, 255, 255, 255, 230)
+
+        if IsControlJustPressed(0, 38) then -- E
+            result = (pos >= zoneStart and pos <= zoneStart + zoneWidth)
+        elseif GetGameTimer() > deadline then
+            result = false
+        end
+    end
+
+    return result
+end
+
+local function ClearLockedVehicle(vehicle)
+    if lockedVehicle == vehicle then
+        lockedVehicle = nil
+    end
+end
+
+RegisterNetEvent('vehicles:client:lockpickResult', function(plate, success)
+    local cleanPlate = plate:gsub('%s+', '')
+    if success then
+        tempKeys[cleanPlate] = true
+        TriggerEvent('switcore:notify:local', 'success', Sw.T('vehicles.lockpick_success'), 4000)
+        if lockedVehicle and DoesEntityExist(lockedVehicle)
+           and GetVehicleNumberPlateText(lockedVehicle):gsub('%s+', '') == cleanPlate then
+            SetVehicleUndriveable(lockedVehicle, false)
+            ClearLockedVehicle(lockedVehicle)
+        end
+    end
+end)
+
+RegisterCommand('lockpick', function()
+    if lockpickBusy or not lockedVehicle or not DoesEntityExist(lockedVehicle) then return end
+    local ped = PlayerPedId()
+    if GetVehiclePedIsIn(ped, false) ~= lockedVehicle then return end
+
+    lockpickBusy = true
+    local vehicle = lockedVehicle
+    local plate   = GetVehicleNumberPlateText(vehicle):gsub('%s+', '')
+
+    CreateThread(function()
+        local success = RunLockpickSkillCheck()
+        lockpickBusy = false
+        TriggerServerEvent('vehicles:server:lockpickAttempt', plate, success)
+        if not success then
+            TriggerEvent('switcore:notify:local', 'warning', Sw.T('vehicles.lockpick_failed'), 3500)
+        end
+    end)
+end, false)
+RegisterKeyMapping('lockpick', Sw.T('vehicles.keymap_lockpick'), 'keyboard', 'g')
 
 CreateThread(function()
     while true do
@@ -208,10 +283,12 @@ CreateThread(function()
                     if hasKey then
                         SetVehicleEngineOn(vehicle, GetIsVehicleEngineRunning(vehicle), true, true)
                     else
+                        -- Nu mai ejectam instant: motorul ramane oprit si vehiculul
+                        -- needriveable pana jucatorul reuseste un lockpick sau pleaca.
                         SetVehicleEngineOn(vehicle, false, true, true)
-                        TriggerEvent('switcore:notify:local', 'error', Sw.T('vehicles.vehicle_locked_no_key'), 4000)
-                        TaskLeaveVehicle(ped, vehicle, 16)
-                        wasInVehicle = false
+                        SetVehicleUndriveable(vehicle, true)
+                        lockedVehicle = vehicle
+                        TriggerEvent('switcore:notify:local', 'error', Sw.T('vehicles.vehicle_locked_no_key_lockpick'), 5000)
                     end
                 end
             else
@@ -219,6 +296,12 @@ CreateThread(function()
             end
         else
             wasInVehicle = false
+            if lockedVehicle then
+                if DoesEntityExist(lockedVehicle) then
+                    SetVehicleUndriveable(lockedVehicle, false)
+                end
+                lockedVehicle = nil
+            end
         end
     end
 end)

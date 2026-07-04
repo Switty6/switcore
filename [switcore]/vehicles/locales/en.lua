@@ -51,10 +51,19 @@ return {
 
         -- Engine (client)
         vehicle_locked_no_key = 'This vehicle is locked or you do not have the key!',
+        vehicle_locked_no_key_lockpick = 'This vehicle is locked. If you have a lockpick, press [G] to force the lock.',
         engine_off = 'You turned off the engine.',
         engine_on = 'You started the engine.',
         no_vehicle_access = 'You do not have access to this vehicle.',
         keymap_toggle_engine = 'Start/Stop Engine',
+        keymap_lockpick = 'Lockpick the vehicle',
+
+        -- Lockpick (client + server)
+        lockpick_start = 'You started picking the lock...',
+        lockpick_success = 'You successfully picked the lock!',
+        lockpick_failed = 'You failed to pick the lock.',
+        lockpick_broken = 'The lockpick broke during the attempt.',
+        no_lockpick = 'You do not have a lockpick.',
 
         -- Critical fuel (client)
         fuel_critical = 'Critical fuel! Refuel immediately.',

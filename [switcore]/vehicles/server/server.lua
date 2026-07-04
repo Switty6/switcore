@@ -67,6 +67,22 @@ local function seedVehicleKeyItem()
     end
 end
 
+local function seedLockpickItem()
+    local ok = pcall(function()
+        exports.postgres:query([[
+            INSERT INTO items (name, label, weight, type, usable, stackable, description)
+            VALUES ('lockpick', 'Rangă de spart broasca', 0.5, 'tool', false, true,
+                    'Poate fi folosită pentru a forța încuietoarea unui vehicul fără cheie. Se poate rupe.')
+            ON CONFLICT (name) DO NOTHING
+        ]])
+    end)
+    if ok then
+        print('[VEHICLES] Item lockpick verificat/creat în tabela items')
+    else
+        print('[VEHICLES] Avertisment: eroare la preincarcarea itemului lockpick')
+    end
+end
+
 local function registerVehicleKeyUsable()
     local ok = pcall(function()
         exports.inventory:RegisterUsableItem('vehicle_key', function(source, item)
@@ -101,6 +117,7 @@ function initialize()
     seedSettings()
     exports.postgres:query('CREATE SEQUENCE IF NOT EXISTS plate_number_seq START WITH 1 INCREMENT BY 1')
     seedVehicleKeyItem()
+    seedLockpickItem()
     registerVehicleKeyUsable()
     parkVehiclesLeftOut()
     print('[VEHICLES] Sistemul de vehicule a fost inițializat cu succes!')

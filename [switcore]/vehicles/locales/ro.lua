@@ -51,10 +51,19 @@ return {
 
         -- Motor (client)
         vehicle_locked_no_key = 'Acest vehicul este încuiat sau nu ai cheia!',
+        vehicle_locked_no_key_lockpick = 'Acest vehicul este încuiat. Dacă ai o rangă, apasă [G] pentru a forța broasca.',
         engine_off = 'Ai oprit motorul.',
         engine_on = 'Ai pornit motorul.',
         no_vehicle_access = 'Nu ai acces la acest vehicul.',
         keymap_toggle_engine = 'Porneste/Opreste Motorul',
+        keymap_lockpick = 'Forteaza broasca vehiculului (lockpick)',
+
+        -- Lockpick (client + server)
+        lockpick_start = 'Ai început să forțezi broasca...',
+        lockpick_success = 'Ai reușit să forțezi broasca!',
+        lockpick_failed = 'Nu ai reușit să forțezi broasca.',
+        lockpick_broken = 'Ranga s-a rupt în timpul încercării.',
+        no_lockpick = 'Nu ai o rangă pentru a forța broasca.',
 
         -- Combustibil critic (client)
         fuel_critical = 'Combustibil critic! Alimentați imediat.',

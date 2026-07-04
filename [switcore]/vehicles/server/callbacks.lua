@@ -233,3 +233,66 @@ Sw.SecureEvent('vehicles:server:onKeyItemLost', {
 
     VehiclesDatabase.removeVehicleKey(vehicleId, characterId)
 end)
+
+-- Rezultatul skill-check-ului e determinat client-side (minigame de indemanare,
+-- nu are impact economic direct); serverul valideaza doar preconditiile
+-- (jucatorul chiar detine o ranga, vehiculul e inregistrat si nu are deja
+-- cheie) inainte sa acorde efectele (cheie temporara / ruperea rangii / alerta politie).
+Sw.SecureEvent('vehicles:server:lockpickAttempt', {
+    character = true,
+    silent = true,
+    rateLimit = { max = 10, window = 5000 },
+    args = {
+        { name = 'plate',   type = 'string', minLen = 1, maxLen = 16 },
+        { name = 'success', type = 'boolean' },
+    },
+}, function(ctx)
+    local src         = ctx.source
+    local characterId = ctx.character.id
+    local plate       = ctx.args.plate:gsub('%s+', '')
+    local success     = ctx.args.success
+
+    local invId = 'char:' .. tostring(characterId)
+    local hasLockpick = false
+    local inv = exports.inventory:GetInventory(invId)
+    if inv and inv.slots then
+        for _, slotData in pairs(inv.slots) do
+            if slotData.name == 'lockpick' then hasLockpick = true; break end
+        end
+    end
+    if not hasLockpick then
+        TriggerClientEvent('switcore:notify', src, 'error', Sw.TP(src, 'vehicles.no_lockpick'), 3000)
+        return
+    end
+
+    local vehicle = VehiclesDatabase.getOwnedVehicleByPlate(plate)
+    if not vehicle then return end
+    if KeysManager.hasKey(vehicle.id, characterId) then return end
+
+    if success then
+        TriggerClientEvent('vehicles:client:lockpickResult', src, plate, true)
+        exports.core:log('info', 'VEHICLES', string.format(
+            'Lockpick reusit: characterId=%d plate=%s', characterId, plate))
+        return
+    end
+
+    -- Esec: 25% sansa sa se rupa ranga
+    if math.random(100) <= 25 then
+        pcall(function() exports.inventory:RemoveItem(invId, 'lockpick', 1) end)
+        TriggerClientEvent('switcore:notify', src, 'error', Sw.TP(src, 'vehicles.lockpick_broken'), 4000)
+    end
+
+    -- Alerteaza politistii aflati in tura despre o tentativa de furt vehicul
+    local ok, roster = pcall(function() return exports.jobs:GetJobRoster('police') end)
+    if ok and roster then
+        for _, officer in ipairs(roster) do
+            if officer.is_on_duty then
+                local officerSrc = exports.characters:getSourceByCharacterId(officer.id)
+                if officerSrc then
+                    TriggerClientEvent('switcore:notify', officerSrc, 'warning',
+                        Sw.TP(officerSrc, 'police.alert_vehicle_theft', plate), 6000)
+                end
+            end
+        end
+    end
+end)

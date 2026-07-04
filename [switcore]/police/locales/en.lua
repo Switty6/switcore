@@ -62,6 +62,7 @@ return {
         already_have_vehicle  = 'You already have a vehicle checked out. Return it first.',
         vehicle_not_exist     = 'The vehicle does not exist.',
         vehicle_taken_other   = 'The vehicle is already checked out by someone else.',
+        alert_vehicle_theft   = 'Vehicle break-in attempt (plate {1}).',
         vehicle_checked_out   = '{1} has been checked out.',
         vehicle_not_yours     = 'You did not check out this vehicle.',
         vehicle_returned      = '{1} has been returned.',

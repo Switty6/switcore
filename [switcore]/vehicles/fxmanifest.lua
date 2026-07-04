@@ -13,7 +13,8 @@ dependencies {
     'notifications',
     'settings',
     'banking',
-    'proximity'
+    'proximity',
+    'jobs'
 }
 
 shared_scripts {

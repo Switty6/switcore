@@ -62,6 +62,7 @@ return {
         already_have_vehicle  = 'Ai deja un vehicul preluat. Returneaza-l mai intai.',
         vehicle_not_exist     = 'Vehiculul nu exista.',
         vehicle_taken_other   = 'Vehiculul este deja preluat de altcineva.',
+        alert_vehicle_theft   = 'Tentativă de forțare a unui vehicul (plăcuță {1}).',
         vehicle_checked_out   = '{1} a fost preluat.',
         vehicle_not_yours     = 'Nu ai preluat acest vehicul.',
         vehicle_returned      = '{1} a fost returnat.',
