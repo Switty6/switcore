@@ -125,7 +125,7 @@ function KeysManager.syncKeysToInventory(characterId)
                 if vId and owned[vId] then
                     present[vId] = true
                 else
-                    exports.inventory:RemoveItem(charInvId, 'vehicle_key', slotData.amount or 1, slotIdx)
+                    exports.inventory:RemoveItem(keysInvId, 'vehicle_key', slotData.amount or 1, slotIdx)
                 end
             end
         end
