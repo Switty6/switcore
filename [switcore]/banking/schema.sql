@@ -98,7 +98,7 @@ CREATE TABLE IF NOT EXISTS loans (
     bank_id INTEGER NOT NULL REFERENCES banks(id) ON DELETE RESTRICT,
     loan_type VARCHAR(20) NOT NULL CHECK (loan_type IN ('personal', 'mortgage', 'business')),
     principal_amount NUMERIC(20, 2) NOT NULL,
-    interest_rate NUMERIC(5, 4) NOT NULL,
+    interest_rate NUMERIC(6, 4) NOT NULL,
     remaining_amount NUMERIC(20, 2) NOT NULL,
     monthly_payment NUMERIC(20, 2) NOT NULL,
     total_payments INTEGER NOT NULL,
@@ -114,6 +114,8 @@ CREATE INDEX IF NOT EXISTS idx_loans_character_id ON loans(character_id);
 CREATE INDEX IF NOT EXISTS idx_loans_bank_id ON loans(bank_id);
 CREATE INDEX IF NOT EXISTS idx_loans_status ON loans(status);
 CREATE INDEX IF NOT EXISTS idx_loans_next_payment_date ON loans(next_payment_date);
+
+ALTER TABLE loans ALTER COLUMN interest_rate TYPE NUMERIC(6, 4);
 
 -- Tabela pentru Istoric Plăți Credite
 CREATE TABLE IF NOT EXISTS loan_payments (

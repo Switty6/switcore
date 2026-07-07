@@ -4,6 +4,17 @@ local function getPostgres()
     return exports.postgres
 end
 
+-- Sentinel pentru SQL NULL la parametri nullable. json.null traverseaza granita
+-- de resursa ca boolean false, deci nu poate fi distins de un false real; folosim
+-- sentinel-ul dedicat expus de postgres.
+local sqlNullCache
+local function sqlNull()
+    if sqlNullCache == nil then
+        sqlNullCache = getPostgres():sqlNull()
+    end
+    return sqlNullCache
+end
+
 local function encodeJson(data)
     if not data then return nil end
     local ok, encoded = pcall(json.encode, data)
@@ -495,7 +506,7 @@ function Database.addGroupToPlayer(dbId, groupId, assignedBy, expiresAt)
     local success, err = pcall(function()
         postgres:query(
             'INSERT INTO player_groups (player_id, group_id, assigned_at, assigned_by, expires_at) VALUES ($1, $2, NOW(), $3, $4) ON CONFLICT (player_id, group_id) DO UPDATE SET expires_at = $4, assigned_at = NOW()',
-            {dbId, groupId, assignedBy or false, expiresAt or false}
+            {dbId, groupId, assignedBy or sqlNull(), expiresAt or sqlNull()}
         )
     end)
     

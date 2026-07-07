@@ -3,6 +3,7 @@ CharacterSelection = {}
 local isSelectionOpen   = false
 local currentCharacters = {}
 local pedFather, pedMother, creatorCam
+local creatorActive     = false
 
 local function pushI18n()
     SendNUIMessage({ action = 'sw:i18n', dict = exports.core:getLocaleDict() })
@@ -77,6 +78,10 @@ function CharacterSelection.setupCreatorRoom(gender, appearance)
         return
     end
 
+    -- Marcam creatorul activ inainte de orice Wait, ca garda de spawn sa nu
+    -- ascunda ped-ul fix cand il pozitionam in camera de creare.
+    creatorActive = true
+
     local childModel  = (gender == 0) and 'mp_m_freemode_01' or 'mp_f_freemode_01'
     local fatherModel = 'mp_m_freemode_01'
     local motherModel = 'mp_f_freemode_01'
@@ -144,7 +149,12 @@ function CharacterSelection.updateCreatorRoom(appearance)
     end
 end
 
+function CharacterSelection.isCreatorActive()
+    return creatorActive
+end
+
 function CharacterSelection.cleanupCreatorRoom()
+    creatorActive = false
     if pedFather and pedFather > 0 then DeleteEntity(pedFather); pedFather = nil end
     if pedMother and pedMother > 0 then DeleteEntity(pedMother); pedMother = nil end
     if creatorCam then

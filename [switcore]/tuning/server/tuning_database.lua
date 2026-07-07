@@ -50,7 +50,7 @@ function TuningDatabase.seedPrices(prices)
             [[INSERT INTO tuning_prices (category, tier, price, vip_only)
               VALUES ($1, $2, $3, $4)
               ON CONFLICT (category, tier) DO NOTHING]],
-            { row.category, row.tier, row.price, row.vip_only }
+            { row.category, row.tier, row.price, not not row.vip_only }
         )
     end
 end

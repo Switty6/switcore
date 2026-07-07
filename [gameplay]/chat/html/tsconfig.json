@@ -6,6 +6,7 @@
         "moduleResolution": "node",
         "target": "es6",
         "allowJs": true,
+        "skipLibCheck": true,
         "lib": [
             "es2017",
             "dom"
@@ -14,5 +15,5 @@
     "include": [
         "./**/*"
     ],
-    "exclude": []
+    "exclude": ["node_modules"]
 }

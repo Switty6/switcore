@@ -28,10 +28,29 @@ async function start() {
     if (isInitialized || isInitializing) return;
 
     isInitializing = true;
-    await initialize(pool);
-    isInitialized = true;
+
+    const MAX_RETRIES = 10;
+    const RETRY_DELAY_MS = 3000;
+
+    let success = false;
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+        success = await initialize(pool);
+        if (success) break;
+
+        if (attempt < MAX_RETRIES) {
+            console.log(`[POSTGRES] Reîncerc în ${RETRY_DELAY_MS / 1000}s... (${attempt}/${MAX_RETRIES})`);
+            await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS));
+        }
+    }
+
     isInitializing = false;
 
+    if (!success) {
+        console.error('[POSTGRES] ✗ Nu s-a putut conecta după toate încercările. postgres:ready nu va fi emis.');
+        return;
+    }
+
+    isInitialized = true;
     emit('postgres:ready');
     console.log('[POSTGRES] ✓ Eveniment postgres:ready emis');
 }
@@ -40,8 +59,15 @@ pool.on('error', (err) => {
     console.error('[POSTGRES] Eroare neașteptată pe client inactiv', err);
 });
 
+// Sentinel cross-resource pentru SQL NULL. Lua nil nu poate sta intr-un table
+// fara sa rupa secventa, iar boolean false e o valoare valida care trebuie sa
+// ajunga false in DB (vip_only, finance_eligible). Folosim un string unic pe
+// care il mapam explicit la NULL, ca sa nu confundam NULL cu false.
+const SQL_NULL = '\x00__SQL_NULL__\x00';
+
 function sanitizeParam(v) {
-    if (v === false || v === null || v === undefined || typeof v === 'function') return null;
+    if (v === SQL_NULL) return null;
+    if (v === null || v === undefined || typeof v === 'function') return null;
     return v;
 }
 
@@ -151,6 +177,7 @@ exports('delete', deleteRows);
 exports('transaction', transaction);
 exports('pool', () => pool);
 exports('isReady', () => isInitialized);
+exports('sqlNull', () => SQL_NULL);
 exports('applySchema', (resourceName) => applySchemaForResource(pool, resourceName));
 exports('applySchemasAll', () => applySchemasAutomatically(pool));
 
