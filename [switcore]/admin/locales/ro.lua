@@ -1,6 +1,5 @@
 return {
     admin = {
-        -- Notificari client (client.lua)
         client = {
             access_denied      = 'Acces interzis.',
             no_waypoint        = 'Nu ai marcat niciun waypoint.',
@@ -9,7 +8,6 @@ return {
             dev_overlay_off    = 'Dev Overlay: DEZACTIVAT',
         },
 
-        -- Mesaje server adresate adminului / tintei (server.lua)
         notify = {
             access_denied        = 'Acces interzis.',
             player_not_found     = 'Jucătorul nu a fost găsit.',
@@ -95,14 +93,11 @@ return {
             you_were_fired       = 'Ai fost concediat de un admin.',
         },
 
-        -- Interfata NUI (index.html + script.js)
         ui = {
-            -- Header
             title          = 'SwitCore Admin',
             status_connected = 'connected',
             close_title    = 'Închide (ESC)',
 
-            -- Sidebar / taburi
             tab_players    = 'Jucători',
             tab_self       = 'Personal',
             tab_vehicle    = 'Vehicule',
@@ -117,7 +112,6 @@ return {
             toggle_on      = 'on',
             toggle_off     = 'off',
 
-            -- Tab Jucatori
             players_online = 'Jucători online',
             players_search = 'Caută după ID sau nume...',
             refresh_title  = 'Refresh',
@@ -125,7 +119,6 @@ return {
             empty_no_match   = 'Niciun jucător potrivit.',
             ping_suffix    = '{1}ms',
 
-            -- Tab Personal
             self_tools     = 'Unelte personale',
             card_noclip    = 'Noclip',
             card_godmode   = 'Godmode',
@@ -151,7 +144,6 @@ return {
             model_placeholder = 'mp_m_freemode_01, a_m_y_business_01...',
             apply_btn      = 'Apply',
 
-            -- ESP configurare
             esp_config_title = 'Entity ESP - configurare',
             save_btn       = 'Save',
             saved_btn      = 'Saved',
@@ -188,7 +180,6 @@ return {
             esp_f_zone     = 'Zonă',
             esp_f_fps      = 'FPS',
 
-            -- Tab Vehicule
             vehicle_tools  = 'Unelte vehicule',
             spawn_vehicle_title = 'Spawn vehicul',
             spawn_model_placeholder = 'adder, zentorno, sultan...',
@@ -213,7 +204,6 @@ return {
             livery_label   = 'Livery',
             tint_label     = 'Tint',
 
-            -- Tab Lume
             world_title    = 'Lume / Server',
             time_title     = 'Timp',
             time_hour      = 'Oră',
@@ -231,7 +221,6 @@ return {
             res_stop       = 'Stop',
             res_start      = 'Start',
 
-            -- Tab Iteme
             items_title    = 'Catalog iteme',
             items_search   = 'Caută după nume, label sau tip...',
             reload_title   = 'Reload',
@@ -263,7 +252,6 @@ return {
             delete_btn     = 'Delete',
             confirm_delete_item = 'Ștergi itemul "{1}"?',
 
-            -- Modal jucator
             modal_player   = 'Jucător',
             modal_no_data  = 'fără date',
             modal_db       = 'DB #{1}',
@@ -278,7 +266,6 @@ return {
             mtab_groups    = 'Grupuri',
             mtab_info      = 'Info',
 
-            -- Modal actiuni
             ma_goto        = '→ Goto',
             ma_bring       = '← Bring',
             ma_spectate    = 'Spectate',
@@ -295,11 +282,9 @@ return {
             cancel_btn     = 'Cancel',
             confirm_btn    = 'Confirm',
 
-            -- Modal cash
             cash_amount_placeholder = 'Sumă (poate fi negativă)',
             cash_hint      = 'Suma negativă scoate bani. Banca funcționează doar dacă personajul are cont deschis.',
 
-            -- Modal inventar
             inv_search_placeholder = 'Caută item după nume sau label...',
             add_btn        = 'Add',
             refresh_inv_title = 'Reîncarcă',
@@ -315,13 +300,11 @@ return {
             inv_remove     = 'Remove',
             inv_item_option = '{1} ({2}kg)',
 
-            -- Modal needs
             need_hunger    = 'Foame',
             need_thirst    = 'Sete',
             heal_full_btn  = 'Heal full',
             revive_btn     = 'Revive',
 
-            -- Modal personaj
             char_no_active = 'Niciun personaj activ.',
             char_all       = 'Toate personajele jucătorului',
             char_tp_title  = 'Teleportează personaj la coords',
@@ -334,7 +317,6 @@ return {
             gender_male    = 'Masculin',
             gender_female  = 'Feminin',
 
-            -- Modal vehicule
             empty_loading_veh = 'Se încarcă vehiculele...',
             empty_no_veh   = 'Personajul nu deține vehicule.',
             veh_count      = '{1} vehicule',
@@ -348,7 +330,6 @@ return {
             veh_release    = 'Release',
             veh_set_fuel   = 'Set fuel',
 
-            -- Modal job
             job_no_job     = 'Personajul nu are job.',
             set_job_title  = 'Setează job',
             fire_btn       = 'Fire',
@@ -360,12 +341,10 @@ return {
             duty_on        = 'on',
             duty_off       = 'off',
 
-            -- Modal grupuri
             group_remove_btn = 'Remove',
             current_groups = 'Grupuri curente:',
             group_none     = '- niciun grup -',
 
-            -- Modal info
             info_no_data   = 'Nu s-au găsit date.',
             info_id        = 'ID:',
             info_name      = 'Nume:',
@@ -378,10 +357,8 @@ return {
             info_heading   = 'Heading:',
             info_identifiers = 'Identifiers:',
 
-            -- Diverse selecturi
             currency_none  = '- nicio valută -',
 
-            -- Nume vreme (grid vreme, script.js)
             weather_extrasunny = 'Foarte însorit',
             weather_clear      = 'Senin',
             weather_clouds     = 'Nori',

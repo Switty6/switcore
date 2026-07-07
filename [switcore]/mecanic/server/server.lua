@@ -55,9 +55,6 @@ local function loadPrices()
     Config.Bonus[2] = s:GetSettingNumber('mecanic.bonus_grade_2', 18)
     Config.Bonus[3] = s:GetSettingNumber('mecanic.bonus_grade_3', 25)
 
-    -- mecanic.workshop_locations (array) e noua sursa canonica, editabila din
-    -- panoul de setari (JSON generic). Daca lipseste, incapsulam vechea setare
-    -- unica mecanic.workshop_coords intr-o lista cu o singura intrare, fara migrare.
     local locationsRaw = s:GetSettingJSON('mecanic.workshop_locations', nil)
     if locationsRaw and #locationsRaw > 0 then
         Config.WorkshopLocations = locationsRaw
@@ -74,8 +71,6 @@ local function loadPrices()
     TriggerClientEvent('mecanic:client:workshopLocations', -1, Config.WorkshopLocations)
 end
 
--- Semanam si setarea noua (goala implicit -> foloseste fallback-ul de mai sus)
--- ca sa apara editabila in panoul de setari, la fel ca celelalte preturi.
 local function seedWorkshopLocationsSetting()
     local ok = pcall(function()
         exports.postgres:query(
@@ -101,8 +96,6 @@ CreateThread(function()
     print('[MECANIC] Sistem mecanic initializat')
 end)
 
--- Jucatorii care se conecteaza dupa pornirea serverului nu prind broadcast-ul
--- initial (-1) din loadPrices; le trimitem lista la incarcarea personajului.
 RegisterNetEvent('switcore:characterLoaded', function(character)
     if not character then return end
     local src = source

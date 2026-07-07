@@ -1,13 +1,10 @@
 return {
     vehicles = {
-        -- Permisiuni si comenzi admin
         access_denied = 'Acces refuzat',
         admin_vehicle_received = 'Ai primit vehiculul {1} ({2})',
 
-        -- Chei item (folosire vehicle_key)
         key_item_info = 'Cheie: {1} - {2}',
 
-        -- Erori generale vehicul
         invalid_parameters = 'Parametri invalizi',
         vehicle_not_found = 'Vehicul inexistent',
         vehicle_impounded = 'Vehiculul este sechestrat',
@@ -17,25 +14,21 @@ return {
         already_out = 'Vehiculul este deja scos din garaj',
         no_character = 'No character',
 
-        -- Creare vehicul / placute
         custom_plate_min_length = 'Plăcuța custom trebuie să aibă minim 3 caractere',
         custom_plate_taken = 'Plăcuța custom este deja folosită',
         vehicle_create_db_error = 'Eroare la crearea vehiculului în baza de date',
         plate_generation_failed = 'Nu am putut genera o plăcuță unică după 100 încercări',
         save_state_failed = 'Eroare la salvarea stării vehiculului',
 
-        -- Sechestru
         vehicle_id_missing = 'vehicleId lipsă',
         impound_failed = 'Eroare la sechestrare',
         release_failed = 'Eroare la eliberare din sechestru',
 
-        -- Chei
         key_add_db_error = 'Eroare la adăugarea cheii în baza de date',
         key_remove_failed = 'Eroare la ștergerea cheii',
         not_owner = 'Nu ești proprietarul acestui vehicul',
         ownership_transfer_failed = 'Eroare la transferul proprietății: {1}',
 
-        -- Combustibil / alimentare
         fuel_tank_full = 'Rezervorul este plin',
         banking_unavailable = 'Sistem banking indisponibil',
         no_bank_account = 'Nu ai cont bancar',
@@ -49,7 +42,6 @@ return {
         pay_method_card = 'cardul',
         pay_method_cash = 'cash',
 
-        -- Motor (client)
         vehicle_locked_no_key = 'Acest vehicul este încuiat sau nu ai cheia!',
         vehicle_locked_no_key_lockpick = 'Acest vehicul este încuiat. Dacă ai o rangă, apasă [G] pentru a forța broasca.',
         engine_off = 'Ai oprit motorul.',
@@ -58,22 +50,18 @@ return {
         keymap_toggle_engine = 'Porneste/Opreste Motorul',
         keymap_lockpick = 'Forteaza broasca vehiculului (lockpick)',
 
-        -- Lockpick (client + server)
         lockpick_start = 'Ai început să forțezi broasca...',
         lockpick_success = 'Ai reușit să forțezi broasca!',
         lockpick_failed = 'Nu ai reușit să forțezi broasca.',
         lockpick_broken = 'Ranga s-a rupt în timpul încercării.',
         no_lockpick = 'Nu ai o rangă pentru a forța broasca.',
 
-        -- Portbagaj / torpedou (client + server)
         prox_open_trunk = 'Deschide portbagajul',
         keymap_glovebox = 'Deschide torpedoul vehiculului',
         trunk_locked = 'Nu ai cheia acestui vehicul.',
 
-        -- Combustibil critic (client)
         fuel_critical = 'Combustibil critic! Alimentați imediat.',
 
-        -- Statie de alimentare (client)
         hose_snapped = 'Furtunul s-a rupt!',
         pump_gone = 'Pompa nu mai există.',
         nozzle_pickup_failed = 'Nu am putut prelua furtunul.',
@@ -86,7 +74,6 @@ return {
         insufficient_funds_choose_payment = 'Fonduri insuficiente, alege metoda de plată.',
         payment_failed = 'Plată eșuată',
 
-        -- NUI - HUD alimentare
         ui_pump = 'POMPA',
         ui_price_per_litre = 'PREȚ / LITRU',
         ui_cash = 'CASH',
@@ -107,7 +94,6 @@ return {
         ui_cable_ok = 'OK',
         ui_insufficient_funds = 'FONDURI INSUFICIENTE',
 
-        -- NUI - modal plata
         ui_payment_method = 'METODĂ DE PLATĂ',
         ui_refueled = 'Alimentat',
         ui_to_pay = 'DE PLATĂ',

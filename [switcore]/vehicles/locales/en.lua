@@ -1,13 +1,10 @@
 return {
     vehicles = {
-        -- Permissions and admin commands
         access_denied = 'Access denied',
         admin_vehicle_received = 'You received the vehicle {1} ({2})',
 
-        -- Key item (vehicle_key usage)
         key_item_info = 'Key: {1} - {2}',
 
-        -- General vehicle errors
         invalid_parameters = 'Invalid parameters',
         vehicle_not_found = 'Vehicle does not exist',
         vehicle_impounded = 'The vehicle is impounded',
@@ -17,25 +14,21 @@ return {
         already_out = 'The vehicle is already out of the garage',
         no_character = 'No character',
 
-        -- Vehicle creation / plates
         custom_plate_min_length = 'The custom plate must have at least 3 characters',
         custom_plate_taken = 'The custom plate is already in use',
         vehicle_create_db_error = 'Error creating the vehicle in the database',
         plate_generation_failed = 'Could not generate a unique plate after 100 attempts',
         save_state_failed = 'Error saving the vehicle state',
 
-        -- Impound
         vehicle_id_missing = 'vehicleId missing',
         impound_failed = 'Error impounding',
         release_failed = 'Error releasing from impound',
 
-        -- Keys
         key_add_db_error = 'Error adding the key to the database',
         key_remove_failed = 'Error removing the key',
         not_owner = 'You are not the owner of this vehicle',
         ownership_transfer_failed = 'Error transferring ownership: {1}',
 
-        -- Fuel / refueling
         fuel_tank_full = 'The tank is full',
         banking_unavailable = 'Banking system unavailable',
         no_bank_account = 'You do not have a bank account',
@@ -49,7 +42,6 @@ return {
         pay_method_card = 'card',
         pay_method_cash = 'cash',
 
-        -- Engine (client)
         vehicle_locked_no_key = 'This vehicle is locked or you do not have the key!',
         vehicle_locked_no_key_lockpick = 'This vehicle is locked. If you have a lockpick, press [G] to force the lock.',
         engine_off = 'You turned off the engine.',
@@ -58,22 +50,18 @@ return {
         keymap_toggle_engine = 'Start/Stop Engine',
         keymap_lockpick = 'Lockpick the vehicle',
 
-        -- Lockpick (client + server)
         lockpick_start = 'You started picking the lock...',
         lockpick_success = 'You successfully picked the lock!',
         lockpick_failed = 'You failed to pick the lock.',
         lockpick_broken = 'The lockpick broke during the attempt.',
         no_lockpick = 'You do not have a lockpick.',
 
-        -- Trunk / glovebox (client + server)
         prox_open_trunk = 'Open trunk',
         keymap_glovebox = 'Open vehicle glovebox',
         trunk_locked = 'You do not have the key to this vehicle.',
 
-        -- Critical fuel (client)
         fuel_critical = 'Critical fuel! Refuel immediately.',
 
-        -- Fuel station (client)
         hose_snapped = 'The hose snapped!',
         pump_gone = 'The pump no longer exists.',
         nozzle_pickup_failed = 'Could not pick up the hose.',
@@ -86,7 +74,6 @@ return {
         insufficient_funds_choose_payment = 'Insufficient funds, choose a payment method.',
         payment_failed = 'Payment failed',
 
-        -- NUI - refuel HUD
         ui_pump = 'PUMP',
         ui_price_per_litre = 'PRICE / LITER',
         ui_cash = 'CASH',
@@ -107,7 +94,6 @@ return {
         ui_cable_ok = 'OK',
         ui_insufficient_funds = 'INSUFFICIENT FUNDS',
 
-        -- NUI - payment modal
         ui_payment_method = 'PAYMENT METHOD',
         ui_refueled = 'Refueled',
         ui_to_pay = 'TO PAY',

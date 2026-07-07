@@ -59,7 +59,6 @@ document.getElementById('btnAbandon').addEventListener('click', () => {
     });
 });
 
-// native confirm() blocheaza NUI in CEF, deci folosim modal custom
 let confirmCallback = null;
 const confirmOverlay = document.getElementById('confirmOverlay');
 const confirmTextEl  = document.getElementById('confirmText');
@@ -178,7 +177,7 @@ function renderHistory() {
 function showPanel() { document.getElementById('panel').classList.remove('hidden'); }
 function hidePanel() { document.getElementById('panel').classList.add('hidden'); }
 
-const CIRCUMFERENCE = 163.4; // 2π × r=26
+const CIRCUMFERENCE = 163.4;
 let collectingTimer = null;
 
 function showCollectingRing(duration) {
@@ -189,7 +188,6 @@ function showCollectingRing(duration) {
     ring.style.strokeDashoffset = CIRCUMFERENCE;
     overlay.classList.remove('hidden');
 
-    // Force reflow so the next transition actually animates
     void ring.getBoundingClientRect();
 
     ring.classList.add('animating');
@@ -209,7 +207,6 @@ function hideCollectingRing() {
     ring.style.strokeDashoffset = CIRCUMFERENCE;
 }
 
-// re-randare la schimbarea dictionarului (stringuri generate din JS)
 document.addEventListener('sw:i18n', () => {
     renderStats();
     renderRoutes();

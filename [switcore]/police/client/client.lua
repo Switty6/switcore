@@ -1,8 +1,5 @@
 
 PoliceConfig   = {}
--- Global (nu local) in mod deliberat: handcuffs.lua si vehicles.lua citesc myJob
--- direct, la fel cum citesc deja PoliceConfig. Cu "local" aici, acele fisiere
--- vedeau mereu nil - meniul de catusare si zona garajului nu se activau niciodata.
 myJob    = nil
 local proximityIds = {}
 
@@ -65,7 +62,6 @@ function RegisterPoliceBlips()
     addBlip(PoliceConfig.stationBlip)
     addBlip(PoliceConfig.jailBlip)
 
-    -- Facilitatile interne se vad doar daca esti politist
     if myJob and myJob.name == 'police' then
         addBlip(PoliceConfig.armoryBlip)
         addBlip(PoliceConfig.cloakroomBlip)
@@ -176,9 +172,6 @@ RegisterNUICallback('closeCloakroom', function(_, cb)
 end)
 
 RegisterNUICallback('wearUniform', function(_, cb)
-    -- Salvam tinuta civila DOAR cand nu suntem deja in uniforma. Altfel un al doilea
-    -- click pe "Uniforma" ar suprascrie snapshot-ul cu uniforma si nu te-ai mai putea
-    -- intoarce in civil (raman blocat in uniforma).
     if not isWearingUniform then
         saveCurrentComponents()
     end

@@ -26,7 +26,6 @@ local function HasKeyForVehicle(entity)
     if not DoesEntityExist(entity) then return false end
     local plate = GetVehicleNumberPlateText(entity):gsub('%s+', '')
     if ownedPlates[plate] == true or tempKeys[plate] == true then return true end
-    -- Fallback pentru vehicule spawnate prin spawnVehicleForPlayer înainte ca plate-ul să fi ajuns prin syncKeys.
     for _, data in pairs(spawnedVehicles) do
         if data.entity == entity then return true end
     end
@@ -61,10 +60,6 @@ local function GetVehicleStateSnapshot(entity, vehicleId)
     local livery = GetVehicleLivery(entity)
     if livery >= 0 then mods['livery'] = livery end
 
-    -- Vehiculele sunt networked (OneSync sincronizeaza deformarea/usile/geamurile
-    -- live intre jucatori), dar starea asta nu persista la respawn din DB fara
-    -- sa o salvam explicit aici. Bagata in modifications (merge JSONB aditiv,
-    -- fara schimbare de schema) sub cheia _damage.
     local damage = { doors = {}, windows = {}, tires = {} }
     for i = 0, 7 do
         if IsVehicleDoorDamaged(entity, i) then damage.doors[tostring(i)] = true end
@@ -76,7 +71,6 @@ local function GetVehicleStateSnapshot(entity, vehicleId)
     local _tankSnap = GetVehicleHandlingFloat(entity, 'CHandlingData', 'fPetrolTankVolume')
     if not _tankSnap or _tankSnap <= 0 then _tankSnap = 65.0 end
     return {
-        -- DB stochează fuel ca procent 0-100, indiferent de capacitatea reală a rezervorului.
         fuel          = GetVehicleFuelLevel(entity) * 100.0 / _tankSnap,
         body_health   = GetVehicleBodyHealth(entity),
         engine_health = GetVehicleEngineHealth(entity),
@@ -96,7 +90,6 @@ local function ApplyModsToVehicle(entity, mods)
         end
     end
 
-    -- Paint din paleta GTA aplicat înainte de culorile custom; altfel paleta suprascrie RGB-ul.
     local paintP = tonumber(mods.paint_primary)
     local paintS = tonumber(mods.paint_secondary)
     if paintP or paintS then
@@ -164,7 +157,6 @@ local function SpawnVehicle(data)
     SetVehicleEngineHealth(entity, data.engineHealth or 1000.0)
     SetVehicleBodyHealth(entity, data.bodyHealth or 1000.0)
     do
-        -- DB fuel e procent 0-100; GTA folosește scala internă 0-fPetrolTankVolume.
         local _tank = GetVehicleHandlingFloat(entity, 'CHandlingData', 'fPetrolTankVolume')
         if not _tank or _tank <= 0 then _tank = 65.0 end
         SetVehicleFuelLevel(entity, (data.fuel or 100.0) * _tank / 100.0)
@@ -194,24 +186,22 @@ local function DespawnVehicle(plate, saveState)
 end
 
 local wasInVehicle  = false
-local lockedVehicle = nil  -- vehicul in care stam fara cheie, needriveable pana la lockpick reusit sau iesire
+local lockedVehicle = nil
 local lockpickBusy  = false
 
--- Skill-check simplu desenat direct (fara NUI): un marker oscileaza pe o bara,
--- jucatorul apasa E cand marker-ul e in zona verde. Nu necesita pagina NUI noua.
 local function RunLockpickSkillCheck()
     local barX, barY, barW, barH = 0.5, 0.82, 0.18, 0.02
-    local zoneStart = 0.35 + math.random() * 0.35 -- 0.35-0.70 din latimea barei
+    local zoneStart = 0.35 + math.random() * 0.35
     local zoneWidth = 0.14
     local pos, dir  = 0.0, 1.0
-    local speed     = 0.9 -- treceri pe secunda peste toata bara
+    local speed     = 0.9
     local deadline  = GetGameTimer() + 6000
     local result    = nil
 
     while result == nil do
         Wait(0)
-        DisableControlAction(0, 24, true) -- attack
-        DisableControlAction(0, 25, true) -- aim
+        DisableControlAction(0, 24, true)
+        DisableControlAction(0, 25, true)
 
         pos = pos + dir * speed * (1.0 / 60.0)
         if pos >= 1.0 then pos = 1.0; dir = -1.0 end
@@ -221,7 +211,7 @@ local function RunLockpickSkillCheck()
         DrawRect(barX - barW/2 + zoneStart*barW + (zoneWidth*barW)/2, barY, zoneWidth*barW, barH, 40, 200, 40, 200)
         DrawRect(barX - barW/2 + pos*barW, barY, 0.004, barH*1.6, 255, 255, 255, 230)
 
-        if IsControlJustPressed(0, 38) then -- E
+        if IsControlJustPressed(0, 38) then
             result = (pos >= zoneStart and pos <= zoneStart + zoneWidth)
         elseif GetGameTimer() > deadline then
             result = false
@@ -283,8 +273,6 @@ CreateThread(function()
                     if hasKey then
                         SetVehicleEngineOn(vehicle, GetIsVehicleEngineRunning(vehicle), true, true)
                     else
-                        -- Nu mai ejectam instant: motorul ramane oprit si vehiculul
-                        -- needriveable pana jucatorul reuseste un lockpick sau pleaca.
                         SetVehicleEngineOn(vehicle, false, true, true)
                         SetVehicleUndriveable(vehicle, true)
                         lockedVehicle = vehicle
@@ -365,7 +353,6 @@ CreateThread(function()
     end
 end)
 
--- Procent combustibil/secundă la croazieră, per clasă GTA. Multiplicatorul `vehicles.fuel_consumption_rate` se aplică peste.
 local CLASS_BASE = {
     [0]  = 0.080,
     [1]  = 0.100,
@@ -451,7 +438,6 @@ local function CalculateFuelConsumption(entity)
     if speedKmh <= 80.0 then
         speedFactor = 0.12 + (speedKmh / 80.0) * 0.48
     else
-        -- Peste 80 km/h consumul crește super-linear (rezistența aerului)
         speedFactor = 0.60 + ((speedKmh - 80.0) / 80.0) ^ 1.4 * 0.40
     end
     speedFactor = Clamp(speedFactor, 0.12, 2.0)
@@ -495,7 +481,6 @@ local function CalculateFuelConsumption(entity)
 
     totalRate = totalRate * fuelConsumptionMult
 
-    -- Cap la 5%/secundă: la worst-case un rezervor se golește în 20s (evită bug-uri de consum exploziv)
     return Clamp(totalRate, 0.0, 5.0)
 end
 
@@ -537,7 +522,6 @@ CreateThread(function()
                             accumulatedKm    = 0.0
                         end
                     else
-                        -- Vehicule non-owned (admin spawn): nu raportăm la server, doar acumulăm local
                         if accumulatedKm > 0.001 then
                             currentVehicleKm = currentVehicleKm + accumulatedKm
                             accumulatedKm    = 0.0

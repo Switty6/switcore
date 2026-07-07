@@ -108,7 +108,6 @@ CreateThread(function()
         local ped = PlayerPedId()
         local hp  = GetEntityHealth(ped)
 
-        -- GTA: HP <= 100 inseamna ped mort (100 = 0 HP real)
         if hp <= 100 then
             TriggerServerEvent('ems:server:goUnconscious')
         end
@@ -134,9 +133,6 @@ RegisterCommand('911', function(source, args)
     TriggerServerEvent('ems:server:call112', message)
 end, false)
 
--- Plasa de siguranta pentru efectul de inconstienta: DeathFailOut e pornit in bucla
--- si oprit doar la revive/transport. Daca jucatorul iese din starea de inconstienta
--- pe alta cale (respawn de baza, restart resursa), efectul ramanea blocat (blur persistent).
 AddEventHandler('playerSpawned', function()
     isUnconscious = false
     AnimpostfxStop('DeathFailOut')

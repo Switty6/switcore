@@ -217,7 +217,6 @@ function onTargetReached(target, idx)
 
         target.completed = true
 
-        -- Tire/suspension: server event per target (nu la final)
         if svcType == 'tire' and target.wheelPos then
             TriggerServerEvent('mecanic:server:performService', {
                 serviceType   = 'tire',

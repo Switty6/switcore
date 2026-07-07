@@ -1,8 +1,3 @@
--- ============================================================
--- [switcore]/ems/schema.sql
--- Tabele EMS + seed items + seed settings
--- ============================================================
-
 CREATE TABLE IF NOT EXISTS ems_calls (
     id           SERIAL PRIMARY KEY,
     caller_id    INT NOT NULL REFERENCES characters(id) ON DELETE CASCADE,
@@ -33,19 +28,14 @@ CREATE TABLE IF NOT EXISTS ems_vehicle_inventory (
     UNIQUE(plate, item_name)
 );
 
--- ── Items EMS ────────────────────────────────────────────────
-
 INSERT INTO items (name, label, weight, type, usable, stackable, description) VALUES
 ('iv_fluids',     'IV Fluids',    0.30, 'medical', FALSE, TRUE,  'Solutie IV. Restaureaza HP si hidratare.'),
 ('defibrillator', 'Defibrilator', 1.50, 'medical', FALSE, FALSE, 'Resuscitare cardiaca. Necesita EMS.'),
 ('morphine_iv',   'Morfina IV',   0.10, 'medical', FALSE, TRUE,  'Analgezic IV puternic. Suprima durerea 600s.')
 ON CONFLICT (name) DO NOTHING;
 
--- Actualizeaza permisiunile job EMS
 UPDATE job_grades SET permissions = '["diagnose"]'
 WHERE job_name = 'ems' AND grade = 0;
-
--- ── Settings ─────────────────────────────────────────────────
 
 INSERT INTO settings (key, value, description) VALUES
 ('ems.respawn_timer',         '600',     'Secunde pana la optiunea de respawn la spital'),

@@ -8,8 +8,8 @@ local isInTryOn        = false
 local storeBlips       = {}
 local registeredStores = {}
 
-local BLIP_SPRITE = 73   -- t-shirt
-local BLIP_COLOR  = 4    -- alb
+local BLIP_SPRITE = 73
+local BLIP_COLOR  = 4
 local BLIP_SCALE  = 0.8
 
 local function pushI18n()
@@ -43,10 +43,6 @@ function ApplyAllComponents(components, targetPed)
 end
 
 function SetupStoreInteractions()
-    -- proximity nu permite stergerea interactiunilor statice; inregistram fiecare
-    -- magazin o singura data (nu tot lotul), ca magazinele adaugate in DB dupa
-    -- primul push (clothing:receiveStores) sa primeasca si ele interactiunea,
-    -- nu doar blip-ul (SetupStoreBlips se reruleaza mereu de la zero).
     for _, store in ipairs(stores) do
         if store.name and not registeredStores[store.name] then
             local coords = store.shop_coords
@@ -196,7 +192,6 @@ function SetupFittingRoomCamera(coords)
         tryOnCam = nil
     end
 
-    -- Camera in fata personajului. In GTA 5: forward = (-sin(h), cos(h), 0)
     local h    = math.rad(coords.heading or 0.0)
     local fwdX = -math.sin(h)
     local fwdY =  math.cos(h)
@@ -237,7 +232,6 @@ RegisterNUICallback('rotateView', function(data, cb)
     cb({ok = true})
 end)
 
--- 4 pasi de 90°, pauza 2s intre ei
 RegisterNUICallback('autoRotate', function(_, cb)
     if isAutoRotating or not isInTryOn then
         cb({ok = false, reason = 'busy'})
@@ -307,8 +301,6 @@ CreateThread(function()
     end
 end)
 
--- Fallback: daca am ratat switcore:characterLoaded (restart de resource
--- sau race la pornire), cerem singuri lista de magazine.
 CreateThread(function()
     Wait(2000)
     if #stores == 0 then

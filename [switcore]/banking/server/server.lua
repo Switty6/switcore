@@ -55,9 +55,6 @@ function CreateDefaultCurrencies()
     end
 end
 
--- Fara randuri in currency_exchange_rates, orice schimb valutar esua cu
--- "eroare la calcularea cursului". Semanam cursuri initiale pentru perechile
--- care nu au niciun curs salvat (in nicio directie).
 function SeedDefaultExchangeRates()
     local currencies = BankingDatabase.getActiveCurrencies()
     if not currencies or #currencies < 2 then return end

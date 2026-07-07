@@ -78,12 +78,12 @@ local function applyHandcuffRestrictions()
     handcuffRestricted = true
     CreateThread(function()
         while isHandcuffed do
-            DisableControlAction(0, 19,  true)  -- Sprint
-            DisableControlAction(0, 20,  true)  -- Character wheel
-            DisableControlAction(0, 24,  true)  -- Attack
-            DisableControlAction(0, 25,  true)  -- Aim
-            DisableControlAction(0, 47,  true)  -- Weapon wheel
-            DisableControlAction(0, 58,  true)  -- Weapon wheel page
+            DisableControlAction(0, 19,  true)
+            DisableControlAction(0, 20,  true)
+            DisableControlAction(0, 24,  true)
+            DisableControlAction(0, 25,  true)
+            DisableControlAction(0, 47,  true)
+            DisableControlAction(0, 58,  true)
             DisablePlayerFiring(PlayerId(), true)
             SetPedCanSwitchWeapon(PlayerPedId(), false)
             Wait(0)

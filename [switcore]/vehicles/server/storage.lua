@@ -1,7 +1,3 @@
--- Portbagaj / torpedou (glovebox) per vehicul. Fiecare vehicul are propriile
--- inventare trunk:<plate>/glove:<plate>, persistate ca orice alt inventar
--- (inventory_items nu are schema fixa pe inventory_id). Accesul se acorda
--- doar dupa ce verificam ca jucatorul are cheia vehiculului.
 local STORAGE_CAPACITY = {
     trunk = { weight = 40.0, slots = 20 },
     glove = { weight = 5.0,  slots = 5  },

@@ -29,7 +29,6 @@ Sw.SecureEvent('mecanic:server:vehicleDamaged', {
         pcall(function() exports.vehicles:saveVehicleState(vehicleId, stateUpdate) end)
     end
 
-    -- Damage nu poate imbunatati o componenta, doar inrautati: merge cu min
     if compDelta and type(compDelta) == 'table' and next(compDelta) then
         local components = MecanicDB.getComponents(vehicleId) or {
             oil=100, battery=100, brakes=100, exhaust=100,
@@ -264,7 +263,6 @@ Sw.SecureEvent('mecanic:server:performService', {
         return
     end
 
-    -- Diagnoza: doar afiseaza, fara modificari pe componente
     if serviceType == 'inspect' then
         local components = MecanicDB.getComponents(vehicleId)
         local price      = Config.Prices.inspect
@@ -402,7 +400,6 @@ Sw.SecureEvent('mecanic:server:performService', {
     local paid = CompleteService(src, clientSrc, vehicleId, description,
         price, clientChar.id, char.id)
     if not paid then
-        -- Plata esuata: refund piesa pentru a nu pierde inventar pe tranzactie neefectuata
         if itemNeeded then
             pcall(function()
                 exports.inventory:AddItem('char:' .. char.id, itemNeeded, itemAmount)
@@ -439,10 +436,6 @@ Sw.SecureEvent('mecanic:server:performService', {
         plate     = vehicle.plate,
         state     = updatedState,
     }
-    -- Masina e de obicei parcata in atelier, nefolosita de nimeni (mecanicul
-    -- lucreaza de langa ea, nu din scaunul soferului) - trimitem si catre
-    -- mecanic, nu doar catre proprietar, ca oricare din ei o poate avea in
-    -- vizor cand se aplica repararea vizuala (SetVehicleFixed etc).
     TriggerClientEvent('mecanic:client:vehicleRepaired', clientSrc, repairPayload)
     if src ~= clientSrc then
         TriggerClientEvent('mecanic:client:vehicleRepaired', src, repairPayload)

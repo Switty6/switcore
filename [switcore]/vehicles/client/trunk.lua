@@ -1,6 +1,3 @@
--- Portbagaj (proximitate, oricine se apropie) + torpedou (comanda, doar cel
--- din scaunele fata). Serverul e singurul care verifica daca jucatorul are
--- cheia (vehicles:server:openVehicleStorage) - aici doar afisam promptul.
 local TRUNK_PROX_DIST = 2.5
 local trunkInteractions = {}
 local openTrunkVehicle  = nil
@@ -52,7 +49,6 @@ CreateThread(function()
         local ped = PlayerPedId()
         local pos = GetEntityCoords(ped)
 
-        -- Inchide portbagajul deschis daca ne indepartam prea mult
         if openTrunkVehicle then
             if not DoesEntityExist(openTrunkVehicle) or #(pos - GetEntityCoords(openTrunkVehicle)) > 8.0 then
                 CloseTrunkIfAny()

@@ -293,8 +293,6 @@ RegisterNUICallback('toggleGodmode', function(_, cb)
     SetPlayerInvincible(PlayerId(), godmode)
     SendNUIMessage({ action = 'godmodeState', active = godmode })
 
-    -- Re-aplica invincibilitatea pe ped-ul curent: dupa moarte/respawn ped-ul e
-    -- recreat si SetEntityInvincible setat o singura data se pierde.
     if godmode and not godmodeThread then
         godmodeThread = true
         CreateThread(function()
@@ -626,10 +624,6 @@ RegisterNetEvent('admin:client:resourceList', function(list)
 end)
 
 RegisterNetEvent('admin:client:teleport', function(coords)
-    -- SafeTeleport asteapta coliziunea incarcata inainte sa predea controlul -
-    -- fara asta, teleportul la coordonate indepartate/neincarcate (ex. un
-    -- magazin 24/7 dintr-o zona nevizitata) putea lasa jucatorul sa cada prin
-    -- harta si sa se deconecteze.
     exports.core:SafeTeleport(coords)
 end)
 

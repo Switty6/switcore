@@ -20,9 +20,6 @@ CreateThread(function()
         print('[EMS] EROARE: schema.sql nu a fost gasit la ' .. path)
     end
 
-    -- Migrare one-time: vechile coordonate de spawn cadeau in interiorul Pillbox
-    -- (fara MLO instalat, jucatorul cadea prin harta). Mutam doar valorile
-    -- vechi exacte, pastram orice valoare custom setata de admin.
     pcall(function()
         exports.postgres:query([[
             UPDATE settings SET value = '298.8'  WHERE key = 'ems.hospital_x'       AND value = '295.5'

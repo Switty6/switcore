@@ -1,8 +1,4 @@
 local isUIOpen      = false
--- Globale (nu locale) in mod deliberat: workshop.lua si roadside.lua citesc
--- isMechanic/myJob direct. Cu "local" aici, acele fisiere vedeau mereu
--- false/nil - interactiunile de service in atelier si apelurile roadside nu
--- se activau niciodata pentru niciun mecanic.
 isMechanic    = false
 myJob         = nil
 local workshopBlip  = {}
@@ -43,7 +39,6 @@ end)
 AddEventHandler('onResourceStart', function(resourceName)
     if GetCurrentResourceName() ~= resourceName then return end
     Wait(2000)
-    -- Serverul ignoră eventul dacă nu există character activ
     TriggerServerEvent('jobs:server:getMyJob')
 end)
 

@@ -1,5 +1,3 @@
--- Teleport sigur: fade, freeze si asteptarea coliziunii inainte sa predam
--- controlul, ca jucatorul sa nu cada prin harta la destinatii neincarcate.
 local function SafeTeleport(coords, heading)
     local ped = PlayerPedId()
     local veh = GetVehiclePedIsIn(ped, false)

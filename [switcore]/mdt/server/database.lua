@@ -2,9 +2,6 @@ exports.core:registerModuleLocales(GetCurrentResourceName())
 
 MDTDatabase = {}
 
--- Exporturile postgres sunt sincrone (returneaza valoarea, nu accepta callback).
--- Pastram semnaturile cu cb(...) pentru ca apelantii din police_mdt.lua sa ramana neschimbati.
-
 function MDTDatabase.createCitation(officerId, suspectId, offense, fineAmount, cb)
     local row = exports.postgres:queryOne(
         'INSERT INTO police_citations (officer_id, suspect_id, offense, fine_amount) VALUES ($1,$2,$3,$4) RETURNING *',

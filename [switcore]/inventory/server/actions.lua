@@ -1,13 +1,7 @@
 local drops = {}
 local dropCounter = 0
 
--- Sistemul foloseste inventare char:<id>/keys:<id> (proprietate directa) si,
--- pentru containere secundare (portbagaj/torpedou vehicul), acces temporar
--- acordat explicit de modulul care valideaza dreptul de acces (ex. vehicles
--- verifica cheia inainte sa acorde acces la trunk:<plate>/glove:<plate>).
--- Previne ca un client modificat sa trimita un invId arbitrar (ex. char:<alt_id>
--- sau trunk-ul unui vehicul strain) pentru a manipula inventarul altcuiva.
-local grantedAccess = {} -- [characterId][invId] = true
+local grantedAccess = {}
 
 local function ownsInventory(characterId, invId)
     if type(invId) ~= 'string' then return false end

@@ -1,6 +1,5 @@
 return {
     police = {
-        -- Notification titles
         title_access_denied   = 'Access denied',
         title_error           = 'Error',
         title_too_far         = 'Too far',
@@ -25,7 +24,6 @@ return {
         title_vehicle_sold      = 'Vehicle sold',
         title_management_error  = 'Error',
 
-        -- Notification messages
         released_msg           = 'You have been released from jail.',
         no_perm_handcuff       = 'You do not have permission to handcuff.',
         no_perm_uncuff         = 'You do not have permission to remove cuffs.',
@@ -81,11 +79,9 @@ return {
         equipment_already_exists = 'The equipment already exists.',
         equipment_add_label   = '{1} added.',
 
-        -- Internal errors (returned via exports / error messages)
         already_jailed        = 'The character is already jailed.',
         db_error              = 'Database error.',
 
-        -- Proximity interactions
         prox_armory           = 'Armory - Take Equipment',
         prox_cloakroom        = 'Cloakroom - Change Outfit',
         prox_handcuff         = 'Handcuff Player',
@@ -94,10 +90,8 @@ return {
         prox_pull_out         = 'Pull driver out of vehicle',
         prox_garage           = 'Police Garage',
 
-        -- Default blip
         blip_default          = 'Police',
 
-        -- NUI UI
         ui = {
             jail_label        = 'Jail',
             pay_bail          = 'Pay Bail',
@@ -170,7 +164,6 @@ return {
 
             mileage_default   = '0.0 km',
 
-            -- Strings generated from JS
             no_active_warrant = 'No active warrant',
             close             = 'Close',
             no_result         = 'No results',

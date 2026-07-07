@@ -1,12 +1,5 @@
--- Scoate soferul dintr-un vehicul ocupat, pentru ofiterii de politie in tura
--- cu permisiunea de arestare. Interactiunea e atasata vehiculului (nu pedului
--- din interior), la fel ca alte interactiuni pe vehicule din framework.
 local pullInteractions = {}
 
--- Copie locala deliberata a verificarii din handcuffs.lua - evitam sa
--- depindem de o functie 'local' definita in alt fisier (myJob/PoliceConfig
--- sunt globale in mod deliberat, dar functiile locale nu sunt vizibile
--- cross-file, exact bug-ul reparat mai devreme pentru catusare).
 local function IsOfficerWithArrestPerm()
     if not myJob then return false end
     if myJob.name ~= 'police' or not myJob.isOnDuty then return false end

@@ -8,11 +8,9 @@ if (!checkDependencies()) {
 
 const { Pool, types } = require('pg');
 
-// Pastreaza timestamp/timestamptz/date ca string ca să nu fie convertite în Date local
-// (altfel pg aplică timezone-ul procesului Node, ceea ce alterează valoarea citită)
-types.setTypeParser(1114, str => str); // timestamp
-types.setTypeParser(1184, str => str); // timestamptz
-types.setTypeParser(1082, str => str); // date
+types.setTypeParser(1114, str => str);
+types.setTypeParser(1184, str => str);
+types.setTypeParser(1082, str => str);
 
 const config = require('./config');
 const { initialize, applySchemaForResource, applySchemasAutomatically } = require('./init');

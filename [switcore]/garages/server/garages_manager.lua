@@ -1,20 +1,12 @@
 
 GaragesManager = {}
 
--- garage.spawn_point ramane un singur JSONB (fara migrare de schema): acceptam
--- fie un obiect unic {x,y,z,heading}, fie un array de asemenea obiecte, pentru
--- garaje cu mai multe locuri de parcare configurate manual in DB. Expuse pe
--- tabelul GaragesManager (nu 'local') ca sa fie folosite si din
--- impound_manager.lua, alt fisier din acelasi resource.
 function GaragesManager.normalizeSpawnPoints(raw)
     if not raw then return {} end
     if raw.x then return { raw } end
     return raw
 end
 
--- Necesita OneSync (obligatoriu pentru framework, vezi avertismentul din
--- core la pornire) ca GetAllVehicles()/GetEntityCoords server-side sa
--- returneze date corecte.
 function GaragesManager.pickFreeSpawnPoint(points)
     if #points == 0 then return nil end
     for _, sp in ipairs(points) do
@@ -62,9 +54,6 @@ function GaragesManager.parkVehicle(source, characterId, vehicleId, garageCode, 
         return false, Sw.TP(source, 'garages.error_park_failed')
     end
 
-    -- Stergere server-side (autoritara, are nevoie de OneSync) - nu depinde
-    -- de cache-ul client-side al jucatorului care a parcat, care poate lipsi
-    -- daca acesta s-a reconectat intre timp si lasa masina fantoma in lume.
     exports.vehicles:despawnVehicleEntity(vehicleId)
     TriggerClientEvent('vehicles:client:despawnVehicle', source, vehicle.plate)
 

@@ -720,9 +720,6 @@ Sw.SecureEvent('admin:server:givePlayerItem', {
             payload.targetId = targetId
             TriggerClientEvent('admin:client:playerInventory', src, payload)
         end
-        -- notifyInventoryUpdate din AddItem targeteaza deja jucatorul-tinta,
-        -- dar il redeclansam explicit ca sa nu depindem doar de randul lui din AddItem
-        -- daca panoul admin si inventarul propriu al jucatorului au desincronizat randarea.
         local invId = 'char:' .. tostring(charId)
         local inv = exports.inventory:GetInventory(invId)
         if inv then

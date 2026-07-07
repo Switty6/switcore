@@ -1,6 +1,5 @@
 return {
     admin = {
-        -- Client notifications (client.lua)
         client = {
             access_denied      = 'Access denied.',
             no_waypoint        = 'You have no waypoint set.',
@@ -9,7 +8,6 @@ return {
             dev_overlay_off    = 'Dev Overlay: DISABLED',
         },
 
-        -- Server messages to the admin / target (server.lua)
         notify = {
             access_denied        = 'Access denied.',
             player_not_found     = 'Player not found.',
@@ -95,14 +93,11 @@ return {
             you_were_fired       = 'You were fired by an admin.',
         },
 
-        -- NUI interface (index.html + script.js)
         ui = {
-            -- Header
             title          = 'SwitCore Admin',
             status_connected = 'connected',
             close_title    = 'Close (ESC)',
 
-            -- Sidebar / tabs
             tab_players    = 'Players',
             tab_self       = 'Self',
             tab_vehicle    = 'Vehicles',
@@ -117,7 +112,6 @@ return {
             toggle_on      = 'on',
             toggle_off     = 'off',
 
-            -- Players tab
             players_online = 'Online players',
             players_search = 'Search by ID or name...',
             refresh_title  = 'Refresh',
@@ -125,7 +119,6 @@ return {
             empty_no_match   = 'No matching player.',
             ping_suffix    = '{1}ms',
 
-            -- Self tab
             self_tools     = 'Self tools',
             card_noclip    = 'Noclip',
             card_godmode   = 'Godmode',
@@ -151,7 +144,6 @@ return {
             model_placeholder = 'mp_m_freemode_01, a_m_y_business_01...',
             apply_btn      = 'Apply',
 
-            -- ESP configuration
             esp_config_title = 'Entity ESP - configuration',
             save_btn       = 'Save',
             saved_btn      = 'Saved',
@@ -188,7 +180,6 @@ return {
             esp_f_zone     = 'Zone',
             esp_f_fps      = 'FPS',
 
-            -- Vehicle tab
             vehicle_tools  = 'Vehicle tools',
             spawn_vehicle_title = 'Spawn vehicle',
             spawn_model_placeholder = 'adder, zentorno, sultan...',
@@ -213,7 +204,6 @@ return {
             livery_label   = 'Livery',
             tint_label     = 'Tint',
 
-            -- World tab
             world_title    = 'World / Server',
             time_title     = 'Time',
             time_hour      = 'Hour',
@@ -231,7 +221,6 @@ return {
             res_stop       = 'Stop',
             res_start      = 'Start',
 
-            -- Items tab
             items_title    = 'Item catalog',
             items_search   = 'Search by name, label or type...',
             reload_title   = 'Reload',
@@ -263,7 +252,6 @@ return {
             delete_btn     = 'Delete',
             confirm_delete_item = 'Delete item "{1}"?',
 
-            -- Player modal
             modal_player   = 'Player',
             modal_no_data  = 'no data',
             modal_db       = 'DB #{1}',
@@ -278,7 +266,6 @@ return {
             mtab_groups    = 'Groups',
             mtab_info      = 'Info',
 
-            -- Modal actions
             ma_goto        = '→ Goto',
             ma_bring       = '← Bring',
             ma_spectate    = 'Spectate',
@@ -295,11 +282,9 @@ return {
             cancel_btn     = 'Cancel',
             confirm_btn    = 'Confirm',
 
-            -- Cash modal
             cash_amount_placeholder = 'Amount (can be negative)',
             cash_hint      = 'A negative amount removes money. The bank only works if the character has an open account.',
 
-            -- Inventory modal
             inv_search_placeholder = 'Search item by name or label...',
             add_btn        = 'Add',
             refresh_inv_title = 'Reload',
@@ -315,13 +300,11 @@ return {
             inv_remove     = 'Remove',
             inv_item_option = '{1} ({2}kg)',
 
-            -- Needs modal
             need_hunger    = 'Hunger',
             need_thirst    = 'Thirst',
             heal_full_btn  = 'Heal full',
             revive_btn     = 'Revive',
 
-            -- Character modal
             char_no_active = 'No active character.',
             char_all       = 'All of the player\'s characters',
             char_tp_title  = 'Teleport character to coords',
@@ -334,7 +317,6 @@ return {
             gender_male    = 'Male',
             gender_female  = 'Female',
 
-            -- Vehicles modal
             empty_loading_veh = 'Loading vehicles...',
             empty_no_veh   = 'The character owns no vehicles.',
             veh_count      = '{1} vehicles',
@@ -348,7 +330,6 @@ return {
             veh_release    = 'Release',
             veh_set_fuel   = 'Set fuel',
 
-            -- Job modal
             job_no_job     = 'The character has no job.',
             set_job_title  = 'Set job',
             fire_btn       = 'Fire',
@@ -360,12 +341,10 @@ return {
             duty_on        = 'on',
             duty_off       = 'off',
 
-            -- Groups modal
             group_remove_btn = 'Remove',
             current_groups = 'Current groups:',
             group_none     = '- no group -',
 
-            -- Info modal
             info_no_data   = 'No data found.',
             info_id        = 'ID:',
             info_name      = 'Name:',
@@ -378,10 +357,8 @@ return {
             info_heading   = 'Heading:',
             info_identifiers = 'Identifiers:',
 
-            -- Misc selects
             currency_none  = '- no currency -',
 
-            -- Weather names (weather grid, script.js)
             weather_extrasunny = 'Extra Sunny',
             weather_clear      = 'Clear',
             weather_clouds     = 'Clouds',

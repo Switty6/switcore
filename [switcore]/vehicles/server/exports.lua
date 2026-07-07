@@ -1,9 +1,4 @@
 
--- Urmarim network id-ul entitatii spawn-uite per vehicleId, ca sa putem sterge
--- masina server-side (autoritar, functioneaza cu OneSync) la parcare, in loc
--- sa depindem doar de clientul care a spawnat-o sa mai aiba cache-ul local
--- spawnedVehicles - daca acel client s-a deconectat/reconectat intre timp,
--- masina ramanea fantoma in lume (risc de duplicare la o viitoare scoatere).
 local vehicleNetIds = {}
 
 RegisterNetEvent('vehicles:server:vehicleSpawned', function(vehicleId, netId)
@@ -103,9 +98,6 @@ exports('saveVehicleComponents', function(vehicleId, components)
     return VehiclesManager.saveVehicleState(vehicleId, { components = components })
 end)
 
--- Blocheaza cereri suprapuse pentru acelasi vehicul: fara asta, doua click-uri
--- rapide pe "retrieve" citesc amandoua stored=true inainte ca oricare sa apuce
--- sa scrie stored=false, si ambele spawneaza cate o masina.
 local spawningVehicles = {}
 
 exports('spawnVehicleForPlayer', function(source, vehicleId, spawnPoint)

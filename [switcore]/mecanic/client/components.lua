@@ -85,7 +85,6 @@ CreateThread(function()
             end
         end
 
-        -- O notificare per nivel per vehicul per sesiune (evita spam)
         local key = vehicleId .. '_oil_warn'
         if oil <= Config.Thresholds.oil_warn and oil > Config.Thresholds.oil_crit
            and not notifiedThresholds[key] then
@@ -144,10 +143,6 @@ CreateThread(function()
     end
 end)
 
--- Cauta vehiculul reparat prin plate in apropiere - masina e de obicei
--- parcata (nefolosita) in atelier, deci nu putem presupune ca cel care
--- primeste evenimentul sta in ea (asa cum era inainte, ceea ce insemna ca
--- repararea vizuala aproape niciodata nu se aplica in fluxul normal).
 local function FindVehicleByPlateNearby(plate, radius)
     local ped    = PlayerPedId()
     local coords = GetEntityCoords(ped)
@@ -185,8 +180,6 @@ RegisterNetEvent('mecanic:client:vehicleRepaired', function(data)
     end
     if state.body_health then
         SetVehicleBodyHealth(vehicle, state.body_health)
-        -- Doar deformarea (caroserie/geamuri sparte in aspect), NU SetVehicleFixed -
-        -- acela ar reseta si motorul/anvelopele care nu au fost platite la acest service.
         SetVehicleDeformationFixed(vehicle)
         SetVehicleDirtLevel(vehicle, 0.0)
     end

@@ -8,7 +8,6 @@ local needsTintActive = false
 RegisterNetEvent('needs:client:applyDamage', function(amount)
     local ped = PlayerPedId()
     local currentHealth = GetEntityHealth(ped)
-    -- 100 = mort in GTA; clamp aici previne kill direct din damage de needs
     local newHealth = math.max(100, currentHealth - (amount or 2))
     SetEntityHealth(ped, newHealth)
 
@@ -26,13 +25,6 @@ RegisterNetEvent('switcore:needsUpdate', function(hunger, thirst)
         TriggerEvent('switcore:notify:local', 'warning', Sw.T('needs.warn_thirst'), 4000)
     end
 
-    -- Aplicam/curatam tint-ul doar la tranzitie. Altfel ClearTimecycleModifier()
-    -- pe fiecare update ar sterge si modificatorii setati de medical (febra etc.),
-    -- iar tint-ul 'damage' albastrui ar parea ca apare/dispare aleator.
-    -- Praguri diferite pentru activare (<=15, oricare din foame/sete) si
-    -- dezactivare (>20 amandoua) - altfel un singur stat scazut (ex. doar sete)
-    -- nu declansa niciodata efectul, sau acesta disparea instant la o mica
-    -- fluctuatie in jurul unui prag unic.
     if hunger <= 15.0 or thirst <= 15.0 then
         if not needsTintActive then
             SetTimecycleModifier('damage')

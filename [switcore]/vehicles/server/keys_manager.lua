@@ -106,11 +106,6 @@ function KeysManager.syncKeysToInventory(characterId)
     local charInvId    = 'char:' .. tostring(characterId)
     local keysInvId    = 'keys:' .. tostring(characterId)
 
-    -- Cheile fizic locuiesc in keys:<id> (routeInvId le muta acolo la AddItem).
-    -- Scanam inventarul GRESIT (char:) aici era cauza duplicarii: nu gasea
-    -- niciodata nimic de sters, deci fiecare reconectare readauga toate
-    -- cheile din DB peste cele deja existente. Acum facem diff (nu rebuild
-    -- complet): stergem doar cheile orfane, adaugam doar cele lipsa.
     local owned = {}
     for _, key in ipairs(keys) do
         owned[tonumber(key.vehicle_id)] = key

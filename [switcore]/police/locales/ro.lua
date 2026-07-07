@@ -1,6 +1,5 @@
 return {
     police = {
-        -- Titluri notificari
         title_access_denied   = 'Acces refuzat',
         title_error           = 'Eroare',
         title_too_far         = 'Prea departe',
@@ -25,7 +24,6 @@ return {
         title_vehicle_sold      = 'Vehicul vandut',
         title_management_error  = 'Eroare',
 
-        -- Mesaje notificari
         released_msg           = 'Ai fost eliberat din inchisoare.',
         no_perm_handcuff       = 'Nu ai permisiunea sa incatusezi.',
         no_perm_uncuff         = 'Nu ai permisiunea sa scoti catusele.',
@@ -81,11 +79,9 @@ return {
         equipment_already_exists = 'Echipamentul deja exista.',
         equipment_add_label   = '{1} adaugat.',
 
-        -- Erori interne (returnate prin export-uri / mesaje de eroare)
         already_jailed        = 'Personajul este deja inchis.',
         db_error              = 'Eroare baza de date.',
 
-        -- Interactiuni proximity
         prox_armory           = 'Armament - Ridica Echipament',
         prox_cloakroom        = 'Vestiar - Schimba Tinuta',
         prox_handcuff         = 'Incatuseza Jucator',
@@ -94,10 +90,8 @@ return {
         prox_pull_out         = 'Scoate soferul din vehicul',
         prox_garage           = 'Garaj Politie',
 
-        -- Blip implicit
         blip_default          = 'Politie',
 
-        -- UI NUI
         ui = {
             jail_label        = 'Inchisoare',
             pay_bail          = 'Plateste Cautiune',
@@ -170,7 +164,6 @@ return {
 
             mileage_default   = '0.0 km',
 
-            -- Stringuri generate din JS
             no_active_warrant = 'Niciun mandat activ',
             close             = 'Inchide',
             no_result         = 'Niciun rezultat',

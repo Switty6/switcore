@@ -34,7 +34,6 @@ end)
 AddEventHandler('onResourceStart', function(resourceName)
     if GetCurrentResourceName() ~= resourceName then return end
     Wait(2000)
-    -- Serverul ignoră eventul dacă nu există character activ
     TriggerServerEvent('jobs:server:getMyJob')
 end)
 
@@ -144,8 +143,6 @@ RegisterNetEvent('garbage:client:routeAbandoned', function(data)
     end
 end)
 
--- Serverul a respins sesiunea (ex. dublu-trigger la depou): resetam starea locala
--- ca jucatorul sa nu ramana blocat cu interactiunea de retur si eroarea in bucla.
 RegisterNetEvent('garbage:client:sessionInvalid', function()
     TriggerEvent('garbage:route:cleanup')
     if returnProxId then

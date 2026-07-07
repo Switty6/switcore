@@ -20,8 +20,6 @@ Config.Prices = {
 
 Config.Bonus = { [0]=8, [1]=12, [2]=18, [3]=25 }
 
--- Lista de ateliere; fiecare intrare are propriile coordonate si raza.
--- Suprascrisa la runtime din setarea mecanic.workshop_locations (server push).
 Config.WorkshopLocations = {
     { x = 375.84, y = -1888.77, z = 29.41, radius = 25.0 },
 }

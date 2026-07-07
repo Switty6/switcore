@@ -33,7 +33,6 @@ local function seedSettings()
         end
     end
 
-    -- Migrare one-time: seed-ul vechi setase 0.02 când multiplicatorul nu era folosit; trecem doar acea valoare la noul baseline 1.0, păstrând orice valoare custom setată de admin.
     pcall(function()
         exports.postgres:query([[
             UPDATE settings
@@ -126,9 +125,6 @@ end
 AddEventHandler('switcore:characterSelected', function(source, characterId, character)
     if not characterId then return end
     CreateThread(function()
-        -- Asteptam pana se incarca efectiv inventarul keys:<id> (LoadInventoryData
-        -- e asincron pe switcore:characterLoaded, un Wait fix risca sa ruleze
-        -- sync-ul inainte ca inventarul sa existe, gasind mereu 0 chei prezente).
         local keysInvId = 'keys:' .. tostring(characterId)
         local attempts = 0
         while not exports.inventory:GetInventory(keysInvId) and attempts < 50 do

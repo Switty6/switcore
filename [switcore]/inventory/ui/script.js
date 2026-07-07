@@ -230,15 +230,12 @@ function renderInventory(invType) {
 
         let itemData = invData.slots[i];
 
-        // Preserve the hotbar label child while clearing other content
         Array.from(slotEl.children).forEach(child => {
             if (!child.classList.contains('hotbar-label')) {
                 slotEl.removeChild(child);
             }
         });
 
-        // Defensive: never render key-type items in the main player grid;
-        // they belong to the dedicated keys section rendered via renderKeys().
         if (invType === 'player' && itemData && itemsConfig[itemData.name] && itemsConfig[itemData.name].type === 'key') {
             continue;
         }
@@ -349,7 +346,6 @@ function handleMouseUp(e) {
         draggedItem.element.classList.remove('dragging');
     }
 
-    // Hide ghost before elementFromPoint so it doesn't intercept the hit-test
     ghostDrag.style.display = 'none';
     let target = document.elementFromPoint(e.clientX, e.clientY);
     ghostDrag.style.display = '';

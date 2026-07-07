@@ -193,7 +193,6 @@ AddEventHandler('playerConnecting', function(name, setKickReason, deferrals)
         
         local groups = Database.getPlayerGroups(playerData.dbId)
         local permissions = Database.getPlayerPermissions(playerData.dbId)
-        -- pe public toti primesc limba serverului; per-jucator doar pe premium
         local playerLanguage = (Config.ALLOW_PLAYER_LANGUAGE and playerData.language)
             or LocalizationServer.getLanguage()
         PlayerCache.updateInCache(source, {
@@ -595,7 +594,6 @@ Sw.SecureEvent('switcore:setLanguage', {
     local source = ctx.source
     local language = ctx.args.language
 
-    -- pe public limba e unica pe server; selectia per-jucator e feature de premium
     if not Config.ALLOW_PLAYER_LANGUAGE then
         TriggerClientEvent('switcore:languageError', source, Localize('language.not_allowed', source))
         return

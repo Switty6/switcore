@@ -127,9 +127,6 @@ RegisterCommand('inventory', function()
 end, false)
 RegisterKeyMapping('inventory', Sw.T('inventory.keybind.open_inventory'), 'keyboard', 'TAB')
 
--- Folosit de alte module (ex. vehicles pentru portbagaj/torpedou) pentru a
--- deschide panoul principal cu un container secundar deja populat prin
--- switcore:inventoryUpdated (acelasi mecanism folosit deja de keys:<id>).
 exports('OpenSecondaryInventory', function()
     if isInventoryOpen then return end
     isInventoryOpen = true

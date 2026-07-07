@@ -144,7 +144,6 @@ Sw.SecureEvent('vehicles:server:mileageTick', {
     local vehicleId   = ctx.args.vehicleId
     local km          = ctx.args.km
 
-    -- Sanity cap pe tick (anti-cheat: la 100ms tick max distanță fizic plauzibilă ~5km)
     if km <= 0 or km > 5.0 then return end
 
     if not KeysManager.hasKey(vehicleId, characterId) then return end
@@ -234,10 +233,6 @@ Sw.SecureEvent('vehicles:server:onKeyItemLost', {
     VehiclesDatabase.removeVehicleKey(vehicleId, characterId)
 end)
 
--- Rezultatul skill-check-ului e determinat client-side (minigame de indemanare,
--- nu are impact economic direct); serverul valideaza doar preconditiile
--- (jucatorul chiar detine o ranga, vehiculul e inregistrat si nu are deja
--- cheie) inainte sa acorde efectele (cheie temporara / ruperea rangii / alerta politie).
 Sw.SecureEvent('vehicles:server:lockpickAttempt', {
     character = true,
     silent = true,
@@ -276,13 +271,11 @@ Sw.SecureEvent('vehicles:server:lockpickAttempt', {
         return
     end
 
-    -- Esec: 25% sansa sa se rupa ranga
     if math.random(100) <= 25 then
         pcall(function() exports.inventory:RemoveItem(invId, 'lockpick', 1) end)
         TriggerClientEvent('switcore:notify', src, 'error', Sw.TP(src, 'vehicles.lockpick_broken'), 4000)
     end
 
-    -- Alerteaza politistii aflati in tura despre o tentativa de furt vehicul
     local ok, roster = pcall(function() return exports.jobs:GetJobRoster('police') end)
     if ok and roster then
         for _, officer in ipairs(roster) do

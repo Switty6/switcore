@@ -36,9 +36,6 @@ local function DestroyShowroomCam()
     end
 end
 
--- Randurile de setari mai vechi din baza de date pot sa nu aiba inca
--- testDriveSpawn (camp adaugat ulterior); sintetizam un punct langa intrarea
--- dealership-ului in loc sa blocam test drive-ul cu "niciun punct disponibil".
 local function ResolveTestDriveSpawn(loc)
     if loc.testDriveSpawn then return loc.testDriveSpawn end
     if not loc.coords then return nil end
@@ -193,7 +190,6 @@ RegisterNetEvent('showroom:client:startTestDrive', function(data)
     for _, loc in ipairs(dealershipLocations) do
         if loc.code == currentDealershipCode then
             spawnPoint = ResolveTestDriveSpawn(loc)
-            -- Retinem punctul de intoarcere (intrarea dealership-ului) pentru finalul testului.
             testDriveReturnCoords = loc.coords
             break
         end
@@ -262,7 +258,6 @@ RegisterNetEvent('showroom:client:endTestDrive', function()
     end
     testDriveEntity = 0
 
-    -- Punctul de iesire din test-drive: aducem jucatorul inapoi la dealership.
     if testDriveReturnCoords then
         SetEntityCoords(ped, testDriveReturnCoords.x, testDriveReturnCoords.y, testDriveReturnCoords.z, false, false, false, false)
         testDriveReturnCoords = nil

@@ -48,10 +48,7 @@ local function buildBlipsConfig(src)
     }
     local fuelStations = exports.settings:GetSettingJSON('blips.fuel_stations', defaultFuelStations)
 
-    -- Puncte de interes (magazine, arme, haine, frizerii, tatuaje). Etichetele sunt
-    -- chei, traduse per-jucator. Editabile prin setarea blips.pois.
     local defaultPois = {
-        -- Magazine 24/7 / LTD
         { x = 24.5,    y = -1347.3, z = 29.5,  sprite = 52,  labelKey = 'blips.label.store' },
         { x = -48.5,   y = -1757.5, z = 29.4,  sprite = 52,  labelKey = 'blips.label.store' },
         { x = -707.5,  y = -914.3,  z = 19.2,  sprite = 52,  labelKey = 'blips.label.store' },
@@ -69,7 +66,6 @@ local function buildBlipsConfig(src)
         { x = -1820.5, y = 792.5,   z = 138.1, sprite = 52,  labelKey = 'blips.label.store' },
         { x = -1487.6, y = -379.1,  z = 40.2,  sprite = 52,  labelKey = 'blips.label.store' },
         { x = -1222.9, y = -908.0,  z = 12.3,  sprite = 52,  labelKey = 'blips.label.store' },
-        -- Ammu-Nation
         { x = 22.1,    y = -1107.3, z = 29.8,  sprite = 110, labelKey = 'blips.label.ammunation' },
         { x = -330.2,  y = -1297.7, z = 31.2,  sprite = 110, labelKey = 'blips.label.ammunation' },
         { x = 810.2,   y = -2157.5, z = 29.6,  sprite = 110, labelKey = 'blips.label.ammunation' },
@@ -80,7 +76,6 @@ local function buildBlipsConfig(src)
         { x = -662.1,  y = -935.3,  z = 21.8,  sprite = 110, labelKey = 'blips.label.ammunation' },
         { x = -1305.2, y = -393.5,  z = 36.7,  sprite = 110, labelKey = 'blips.label.ammunation' },
         { x = 842.4,   y = -1033.4, z = 28.2,  sprite = 110, labelKey = 'blips.label.ammunation' },
-        -- Magazine haine
         { x = 72.3,    y = -1399.1, z = 29.4,  sprite = 73,  labelKey = 'blips.label.clothing' },
         { x = -703.8,  y = -152.3,  z = 37.4,  sprite = 73,  labelKey = 'blips.label.clothing' },
         { x = -167.9,  y = -298.9,  z = 39.7,  sprite = 73,  labelKey = 'blips.label.clothing' },
@@ -93,7 +88,6 @@ local function buildBlipsConfig(src)
         { x = 618.1,   y = 2759.6,  z = 42.1,  sprite = 73,  labelKey = 'blips.label.clothing' },
         { x = -3172.5, y = 1048.1,  z = 20.9,  sprite = 73,  labelKey = 'blips.label.clothing' },
         { x = 1190.0,  y = 2713.4,  z = 38.2,  sprite = 73,  labelKey = 'blips.label.clothing' },
-        -- Frizerii
         { x = -814.3,  y = -183.8,  z = 37.6,  sprite = 71,  labelKey = 'blips.label.barber' },
         { x = 136.8,   y = -1708.4, z = 29.3,  sprite = 71,  labelKey = 'blips.label.barber' },
         { x = -1282.6, y = -1116.8, z = 6.99,  sprite = 71,  labelKey = 'blips.label.barber' },
@@ -101,7 +95,6 @@ local function buildBlipsConfig(src)
         { x = -32.9,   y = -152.8,  z = 57.1,  sprite = 71,  labelKey = 'blips.label.barber' },
         { x = -278.0,  y = 6228.5,  z = 31.7,  sprite = 71,  labelKey = 'blips.label.barber' },
         { x = 1212.8,  y = -472.9,  z = 66.2,  sprite = 71,  labelKey = 'blips.label.barber' },
-        -- Saloane de tatuaje
         { x = 322.1,   y = 180.5,   z = 103.6, sprite = 75,  labelKey = 'blips.label.tattoo' },
         { x = -1153.6, y = -1425.6, z = 4.9,   sprite = 75,  labelKey = 'blips.label.tattoo' },
         { x = 1864.6,  y = 3747.7,  z = 33.0,  sprite = 75,  labelKey = 'blips.label.tattoo' },
@@ -109,9 +102,6 @@ local function buildBlipsConfig(src)
         { x = 1322.7,  y = -1651.6, z = 52.3,  sprite = 75,  labelKey = 'blips.label.tattoo' },
         { x = -293.7,  y = 6200.0,  z = 31.5,  sprite = 75,  labelKey = 'blips.label.tattoo' },
     }
-    -- Daca setarea exista dar a fost salvata goala (randuri mai vechi din
-    -- baza de date, dinainte sa existe aceste POI-uri implicite), revenim la
-    -- lista implicita in loc sa afisam harta fara ele.
     local pois = exports.settings:GetSettingJSON('blips.pois', defaultPois)
     if not pois or #pois == 0 then
         pois = defaultPois
