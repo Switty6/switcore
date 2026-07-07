@@ -97,10 +97,10 @@ function RespawnAtHospital(source)
 
     local charId      = data.characterId
     local bill        = exports.settings:GetSettingNumber('ems.hospital_bill', 5000)
-    local hospitalX   = exports.settings:GetSettingNumber('ems.hospital_x',   295.5)
-    local hospitalY   = exports.settings:GetSettingNumber('ems.hospital_y',  -1446.8)
-    local hospitalZ   = exports.settings:GetSettingNumber('ems.hospital_z',    29.9)
-    local hospitalH   = exports.settings:GetSettingNumber('ems.hospital_heading', 180.0)
+    local hospitalX   = exports.settings:GetSettingNumber('ems.hospital_x',   298.8)
+    local hospitalY   = exports.settings:GetSettingNumber('ems.hospital_y',  -584.9)
+    local hospitalZ   = exports.settings:GetSettingNumber('ems.hospital_z',    43.3)
+    local hospitalH   = exports.settings:GetSettingNumber('ems.hospital_heading', 75.0)
 
     unconsciousPlayers[source] = nil
 
