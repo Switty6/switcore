@@ -59,10 +59,6 @@ pool.on('error', (err) => {
     console.error('[POSTGRES] Eroare neașteptată pe client inactiv', err);
 });
 
-// Sentinel cross-resource pentru SQL NULL. Lua nil nu poate sta intr-un table
-// fara sa rupa secventa, iar boolean false e o valoare valida care trebuie sa
-// ajunga false in DB (vip_only, finance_eligible). Folosim un string unic pe
-// care il mapam explicit la NULL, ca sa nu confundam NULL cu false.
 const SQL_NULL = '\x00__SQL_NULL__\x00';
 
 function sanitizeParam(v) {

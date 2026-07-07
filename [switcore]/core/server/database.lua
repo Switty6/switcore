@@ -4,9 +4,6 @@ local function getPostgres()
     return exports.postgres
 end
 
--- Sentinel pentru SQL NULL la parametri nullable. json.null traverseaza granita
--- de resursa ca boolean false, deci nu poate fi distins de un false real; folosim
--- sentinel-ul dedicat expus de postgres.
 local sqlNullCache
 local function sqlNull()
     if sqlNullCache == nil then

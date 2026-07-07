@@ -2,10 +2,6 @@ exports.core:registerModuleLocales(GetCurrentResourceName())
 
 local function L(src, label)
     if not label or label == '' then return '' end
-    -- Doar cheile de traducere (identificatori cu punct, fara spatii, ex.
-    -- blips.label.bank) trec prin localizare. Numele proprii din setari/DB
-    -- (ex. "Fleeca Bank - Hawick") sunt deja afisabile si se intorc ca atare,
-    -- altfel Sw.TP le-ar trata ca pe chei lipsa si ar umple consola.
     if label:find('%s') or not label:find('%.') then
         return label
     end
